@@ -24,8 +24,11 @@ $this->params['breadcrumbs'][] = ['label' => Yii::$app->session->get('previousTi
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="news-create">
-    <?= $this->render('_form', [
-        'model' => $model,
-    ]) ?>
-
+<?= $this->render(
+  '_form', [
+    'model' => $model,
+    'moduleCwh' => $moduleCwh,
+    'scope' => $scope
+  ]) 
+?>
 </div>

@@ -48,7 +48,7 @@ class NewsCategoryRolesMm extends \lispa\amos\core\record\Record
         return [
             [['news_category_id', 'role'], 'required'],
             [['role'], 'string'],
-            [['news_category_id', 'created_by', 'updated_by', 'deleted_by', 'version'], 'integer'],
+            [['news_category_id', 'created_by', 'updated_by', 'deleted_by',], 'integer'],
             [['created_at', 'updated_at', 'deleted_at'], 'safe'],
             [['role'], 'string', 'max' => 255]
         ];

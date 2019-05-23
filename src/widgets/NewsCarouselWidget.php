@@ -43,14 +43,15 @@ class NewsCarouselWidget extends AmosCarouselWidget
             /** @var \amos\highlights\Module $highlightsModule */
             $newsHighlightsIds = $highlightsModule->getHighlightedContents(News::className());
             /** @var ActiveQuery $query */
-            $query = News::find();
-            $query->distinct();
-            $query->andWhere(['id' => $newsHighlightsIds]);
-            $query->andWhere(['status' => News::NEWS_WORKFLOW_STATUS_VALIDATO]);
-            $query->andWhere(['or',
-                ['data_rimozione' => null],
-                ['>=', 'data_rimozione', date('Y-m-d')]
-            ]);
+            $query = News::find()
+                ->distinct()
+                ->andWhere(['id' => $newsHighlightsIds])
+                ->andWhere(['status' => News::NEWS_WORKFLOW_STATUS_VALIDATO])
+                ->andWhere(['or',
+                    ['data_rimozione' => null],
+                    ['>=', 'data_rimozione', date('Y-m-d')]
+                ]);
+            
             $newsHighlights = $query->all();
         }
 

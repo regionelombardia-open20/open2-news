@@ -89,6 +89,7 @@ return [
     '#end_publication_date_hint' => 'Se vuota la notizia sarà sempre visibile',
     '#ERROR_WHILE_REJECTING_NEWS' => 'Errore durante il rifiuto della notizia',
     '#ERROR_WHILE_VALIDATING_NEWS' => 'Errore durante la validazione della notizia',
+    'FACILITATORE_NEWS' => 'Facilitatore News',
     'Finish' => 'Fine',
     '#go_back' => 'Torna indietro',
     'I campi' => 'I campi',
@@ -226,5 +227,11 @@ return [
     '#wizard_introduction_press_continue' => 'Per creare una notizia, premi PROSEGUI in basso a destra',
     'You are not authorized to delete this news category' => 'Non sei autorizzato a cancellare questa categoria delle notizie',
     "Choose if you want to publish the news also on the portal" => "Scegli se pubblicare la Notizia anche sul portale pubblico",
-    "Pubblication on the portal mode" => "Modalità di pubblicazione sul portale"
+    "Pubblication on the portal mode" => "Modalità di pubblicazione sul portale",
+	"#showAll" => "Visualizza tutto",
+    '#enter_into_platform' => 'Entra nella piattaforma',
+    'Notify category' => 'Invia notifiche per questa categoria',
+    'Publish Only On Community' => 'Pubblica soltanto sulle community',
+    'Configuration for community' => 'Configurazioni per la community',
+    'Roles' => 'Ruoli',
 ];

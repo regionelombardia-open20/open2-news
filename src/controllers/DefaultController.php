@@ -36,7 +36,12 @@ class DefaultController extends DashboardController
      */
     public function actionIndex()
     {
-        return $this->redirect(['/news/news/own-interest-news']);
+        $url = '/news/news/own-interest-news';
+        $module = \Yii::$app->getModule('news');
+        if($module){
+            $url =  $module->defaultWidgetIndexUrl;
+        }
+        return $this->redirect([$url]);
 
         Url::remember();
         $params = [

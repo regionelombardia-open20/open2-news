@@ -102,6 +102,12 @@ if($model->status != News::NEWS_WORKFLOW_STATUS_VALIDATO) {
         </div>
         <div class="widget-body-content col-xs-12 nop">
             <?php
+            
+            echo \lispa\amos\core\forms\editors\likeWidget\LikeWidget::widget([
+                'model' => $model,
+            ]);
+            ?>
+            <?php
             $reportModule = \Yii::$app->getModule('report');
             if (isset($reportModule) && in_array($model->className(), $reportModule->modelsEnabled)) {
                 echo \lispa\amos\report\widgets\ReportDropdownWidget::widget([
@@ -110,11 +116,12 @@ if($model->status != News::NEWS_WORKFLOW_STATUS_VALIDATO) {
             }
             ?>
             <?php
+            $url = !empty(\Yii::$app->params['platform']['backendUrl']) ? \Yii::$app->params['platform']['backendUrl'] : "";
             echo \lispa\amos\core\forms\editors\socialShareWidget\SocialShareWidget::widget([
                 'mode' => \lispa\amos\core\forms\editors\socialShareWidget\SocialShareWidget::MODE_DROPDOWN,
                 'configuratorId'  => 'socialShare',
                 'model' => $model,
-                'url'           => \yii\helpers\Url::to(\Yii::$app->params['platform']['backendUrl'].'/news/news/view?id='.$model->id, true),
+                'url'           => \yii\helpers\Url::to($url.'/news/news/public?id='.$model->id, true),
                 'title'         => $model->title,
                 'description'   => $model->descrizione_breve,
                 'imageUrl'      => !empty($model->getNewsImage()) ? $model->getNewsImage()->getWebUrl('square_small') : '',

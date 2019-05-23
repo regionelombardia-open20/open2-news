@@ -79,6 +79,7 @@ return [
     '#end_publication_date_hint' => 'If the news is empty, it will always be visible',
     '#ERROR_WHILE_REJECTING_NEWS' => 'Error while rejecting the news',
     '#ERROR_WHILE_VALIDATING_NEWS' => 'Error while validating the news',
+    'FACILITATORE_NEWS' => 'News Facilitator',
     'Finish' => 'Finish',
     '#go_back' => 'Go back',
     'I campi' => 'The fields',
@@ -210,4 +211,5 @@ return [
     '#wizard_introduction_insert_information' => 'In the following steps you have to insert',
     '#wizard_introduction_press_continue' => 'In order to create a news, press CONTINUE (in the lower right corner)',
     'You are not authorized to delete this news category' => 'You are not authorized to delete this news category',
+    "#showAll" => "Show all",
 ];

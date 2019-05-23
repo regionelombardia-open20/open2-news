@@ -15,73 +15,114 @@ use lispa\amos\core\widget\WidgetIcon;
 use lispa\amos\dashboard\models\AmosUserDashboards;
 use lispa\amos\news\widgets\icons\WidgetIconAllNews;
 use lispa\amos\news\AmosNews;
+use lispa\amos\core\widget\WidgetAbstract;
+use lispa\amos\core\icons\AmosIcons;
+use Yii;
 use yii\base\Exception;
 use yii\helpers\ArrayHelper;
-use Yii;
-
 
 class WidgetIconNewsDashboard extends WidgetIcon
 {
+
+    /**
+     * @inheritdoc
+     */
     public function init()
     {
         parent::init();
 
+        $paramsClassSpan = [
+            'bk-backgroundIcon',
+            'color-primary'
+        ];
+
         $this->setLabel(AmosNews::tHtml('amosnews', 'Notizie'));
         $this->setDescription(AmosNews::t('amosnews', 'Modulo news'));
 
-        $this->setIcon('feed');
-        //$this->setIconFramework();
+        if (!empty(\Yii::$app->params['dashboardEngine']) && \Yii::$app->params['dashboardEngine'] == WidgetAbstract::ENGINE_ROWS) {
+            $this->setIconFramework(AmosIcons::IC);
+            $this->setIcon('news');
+            $paramsClassSpan = [];
+        } else {
+            $this->setIcon('feed');
+        }
 
         $this->setUrl(['/news']);
-
         $this->setCode('NEWS_MODULE');
         $this->setModuleName('news-dashboard');
         $this->setNamespace(__CLASS__);
-        $this->setBulletCount($this->getBulletCountChildWidgets());
-        $this->setClassSpan(ArrayHelper::merge($this->getClassSpan(), [
-            'bk-backgroundIcon',
-            'color-primary'
-        ]));
 
+        $this->setClassSpan(
+            ArrayHelper::merge(
+                $this->getClassSpan(),
+                $paramsClassSpan
+            )
+        );
+
+        $this->setBulletCount(
+            $this->makeBulletCounter(\Yii::$app->user->id)
+        );
     }
 
     /**
-     *
-     * @return int - the sum of bulletCount internal widget
-     *
+     * 
+     * @param type $user_id
+     * @return type
      */
-    private function getBulletCountChildWidgets()
+    public function makeBulletCounter($user_id = null)
+    {
+        return $this->getBulletCountChildWidgets($user_id);
+    }
+
+    /**
+     * 
+     * @param type $user_id
+     * @return int - the sum of bulletCount internal widget
+     */
+    private function getBulletCountChildWidgets($user_id = null)
     {
         $count = 0;
 
         try {
             /** @var AmosUserDashboards $userModuleDashboard */
             $userModuleDashboard = AmosUserDashboards::findOne([
-                'user_id' => \Yii::$app->user->id,
+                'user_id' => $user_id,
                 'module' => AmosNews::getModuleName()
             ]);
-            if (is_null($userModuleDashboard)) return 0;
+
+            if (is_null($userModuleDashboard)) {
+                return 0;
+            }
 
             $widgetAllnews = \Yii::createObject(WidgetIconAllNews::className());
             $widgetCreatedBy = \Yii::createObject(WidgetIconNewsCreatedBy::className());
 
-            $count = $widgetAllnews->getBulletCount()+ $widgetCreatedBy->getBulletCount();
-        }catch(Exception $ex){
+            $count = $widgetAllnews->getBulletCount() + $widgetCreatedBy->getBulletCount();
+        } catch (Exception $ex) {
             Yii::getLogger()->log($ex->getMessage(), \yii\log\Logger::LEVEL_ERROR);
         }
 
         return $count;
     }
 
+    /**
+     * Aggiunge all'oggetto container tutti i widgets recuperati dal controller del modulo
+     * 
+     * @return type
+     */
     public function getOptions()
     {
-        $options = parent::getOptions();
-
-        //aggiunge all'oggetto container tutti i widgets recuperati dal controller del modulo
-        return ArrayHelper::merge($options, ["children" => $this->getWidgetsIcon()]);
+        return ArrayHelper::merge(
+            parent::getOptions(),
+            ['children' => $this->getWidgetsIcon()]
+        );
     }
 
-    /* TEMPORANEA */
+    /**
+     * TEMPORANEA
+     * 
+     * @return type
+     */
     public function getWidgetsIcon()
     {
         $widgets = [];
@@ -98,4 +139,5 @@ class WidgetIconNewsDashboard extends WidgetIcon
 
         return $widgets;
     }
+
 }

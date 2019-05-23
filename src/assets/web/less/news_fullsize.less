@@ -1,60 +1,19 @@
 /**
 IMPORT AMOS-LAYOUT VARIABLES
  */
-@import (optional) "../../vendor/lispa/amos-layout/src/assets/resources/base/less/variables.less";
-@import (optional) "../../vendor/lispa/amos-layout/src/assets/resources/base/less/utility.less";
+@import (optional) "../../vendor/lispa/amos-layout/src/assets/resources/base/less/v2/variables.less";
+@import (optional) "../../vendor/lispa/amos-layout/src/assets/resources/base/less/v2/utility.less";
 /**
 IMPORT STYLE-CUSTOM
  */
 @import (optional) "../../backend/web/less/style_custom.less";
 
-//-----------------------------------------------
-// DASHBOARD WIDGET GRAPHIC
-//-----------------------------------------------
-.latest-news {
-  height: 100%;
-  overflow: hidden;
-  display: block;
-  background-color: @white-color;
-  section {
-    padding: 0;
-    height: 83%;
-  }
-  .widget-listbox-option {
-    margin-top: @margin-medium;
-    article {
-      padding: 0;
-      border: 1px solid @border-color-default;
-      .container-img {
-        float: none;
-        width: 100%;
-        overflow: hidden;
 
-        @media (min-width: 640px) {
-          height: 100px;
-        }
-        img {
-          width: 100%;
-        }
-      }
-      .container-text {
-        float: none !important;
-        width: 100% !important;
-
-        @media (min-width: 640px) {
-          height: 125px;
-        }
-      }
-    }
-  }
-}
-
-@media screen and (max-width: 939px) and (min-width: 640px) {
-  .latest-news {
-    .widget-listbox-option {
-      width: 33%;
-    }
-  }
+/**
+GRAPHIC WIDGET
+ */
+.wrap-graphic-widget .box-widget.latest-news section{
+  padding: 0;
 }
 
 .field-news-comments_enabled {
@@ -216,6 +175,3 @@ NEWS CARD
     }
   }
 }
-
-
-

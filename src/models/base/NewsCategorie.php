@@ -25,6 +25,7 @@ use yii\helpers\ArrayHelper;
  * @property string $sottotitolo
  * @property string $descrizione_breve
  * @property string $descrizione
+ * @property string $notify_category
  * @property string $created_at
  * @property string $updated_at
  * @property string $deleted_at
@@ -35,6 +36,7 @@ use yii\helpers\ArrayHelper;
  *
  * @property \lispa\amos\news\models\News $news
  * @property \lispa\amos\news\models\NewsCategoryRolesMm[] $newsCategoryRolesMms
+ * @property \lispa\amos\news\models\NewsCategoryCommunityMm[] $newsCategoryCommunityMms
  *
  * @package lispa\amos\news\models\base
  */
@@ -56,7 +58,7 @@ class NewsCategorie extends Record
         return [
             [['titolo'], 'required'],
             [['descrizione'], 'string'],
-            [['created_by', 'updated_by', 'deleted_by', 'version'], 'integer'],
+            [['created_by', 'updated_by', 'deleted_by', 'version','notify_category'], 'integer'],
             [['created_at', 'updated_at', 'deleted_at'], 'safe'],
             [['titolo', 'sottotitolo', 'descrizione_breve'], 'string', 'max' => 255]
         ];
@@ -73,6 +75,7 @@ class NewsCategorie extends Record
             'sottotitolo' => AmosNews::t('amosnews', 'Sottotitolo'),
             'descrizione_breve' => AmosNews::t('amosnews', 'Descrizione breve'),
             'descrizione' => AmosNews::t('amosnews', 'Descrizione'),
+            'notify_category' => AmosNews::t('amosnews', 'Notify category'),
             'created_at' => AmosNews::t('amosnews', 'Creato il'),
             'updated_at' => AmosNews::t('amosnews', 'Aggiornato il'),
             'deleted_at' => AmosNews::t('amosnews', 'Cancellato il'),
@@ -103,5 +106,16 @@ class NewsCategorie extends Record
     public function getNewsCategoryRolesMms()
     {
         return $this->hasMany(\lispa\amos\news\models\NewsCategoryRolesMm::className(), ['news_category_id' => 'id']);
+    }
+
+    /**
+     * Relation between category and category-roles mm table.
+     * Returns an ActiveQuery related to model NewsCategoryCommunityMm.
+     *
+     * @return \yii\db\ActiveQuery
+     */
+    public function getNewsCategoryCommunityMms()
+    {
+        return $this->hasMany(\lispa\amos\news\models\NewsCategoryCommunityMm::className(), ['news_category_id' => 'id']);
     }
 }

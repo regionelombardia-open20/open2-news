@@ -1,3 +1,1 @@
-
-
-
+$amos.ready($amos.newsModule.init());

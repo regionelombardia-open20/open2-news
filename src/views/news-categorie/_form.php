@@ -22,9 +22,13 @@ use yii\bootstrap\Tabs;
  * @var lispa\amos\news\models\NewsCategorie $model
  * @var yii\widgets\ActiveForm $form
  */
+
+$module = \Yii::$app->getModule('news');
+$enableCategoriesForCommunity = $module->enableCategoriesForCommunity;
+$filterCategoriesByRole = $module->filterCategoriesByRole;
 ?>
 
-<div class="news-categorie-form col-xs-12">
+<div class="news-categorie-form">
 
     <?php
     $form = ActiveForm::begin([
@@ -80,6 +84,63 @@ use yii\bootstrap\Tabs;
             ]) ?>
         </div>
     </div>
+
+    <?php if($filterCategoriesByRole) {
+        $whiteRoles = $module->whiteListRolesCategories;
+        $roles =  array_combine($whiteRoles, $whiteRoles);
+        ?>
+        <div class="row">
+            <div class="col-lg-12 col-sm-12">
+                <?= $form->field($model, 'newsCategoryRoles')->widget(\kartik\select2\Select2::className(),[
+                    'data' => $roles,
+                    'pluginOptions' => [
+                        'allowClear' => true
+                    ],
+                    'options' => ['multiple' => true, 'placeholder' => AmosNews::t('amosnews', 'Select...')]
+                ])->label(AmosNews::t('amosnews', 'Roles')) ?>
+            </div>
+
+        </div>
+    <?php  } ?>
+
+    <div class="row">
+        <div class="col-lg-12 col-sm-12">
+            <?= $form->field($model, 'notify_category')->checkbox() ?>
+        </div>
+    </div>
+    <?php if($enableCategoriesForCommunity) {?>
+        <hr>
+        <h3><?= AmosNews::t('amosnews', 'Configuration for community')?></h3>
+        <div class="row">
+            <div class="col-lg-6 col-sm-12">
+                <?= $form->field($model, 'newsCategoryCommunities')->widget(\kartik\select2\Select2::className(),[
+                    'data' => \yii\helpers\ArrayHelper::map(\lispa\amos\community\models\Community::find()->all(), 'id', 'name'),
+                    'pluginOptions' => [
+                        'allowClear' => true
+                    ],
+                    'options' => ['multiple' => true, 'placeholder' => AmosNews::t('amosnews', 'Select...')]
+                ])->label(AmosNews::t('amosnews', 'Community')) ?>
+            </div>
+            <div class="col-lg-6 col-sm-12">
+                <?= $form->field($model, 'visibleToCommunityRole')->widget(\kartik\select2\Select2::className(),[
+                    'data' => [
+                        'COMMUNITY_MANAGER' => AmosNews::t('amosnews', 'Community manager'),
+                        'PARTICIPANT' => AmosNews::t('amosnews', 'Participant'),
+                    ],
+                    'options' =>  [
+                        'placeholder' => 'Select...',
+                        'multiple' => true
+
+                    ]
+                ])->label(AmosNews::t('amosnews', 'Visible to Community roles')); ?>
+            </div>
+        </div>
+<!--        <div class="row">-->
+<!--            <div class="col-lg-12 col-sm-12">-->
+<!--                --><?php //echo $form->field($model, 'publish_only_on_community')->checkbox()->label(AmosNews::t('amosnews', 'Publish Only On Community')) ?>
+<!--            </div>-->
+<!--        </div>-->
+    <?php } ?>
     <div class="clearfix"></div>
     <?php $this->endBlock(); ?>
 

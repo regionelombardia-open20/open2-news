@@ -1,7 +1,4 @@
 <?php
-
-
-
 /**
  * Lombardia Informatica S.p.A.
  * OPEN 2.0
@@ -9,11 +6,6 @@
  *
  * @package    lispa\amos\news\models
  * @category   CategoryName
- * 
- * 
- * 
- * 
- * 
  */
 
 namespace lispa\amos\news\models;
@@ -23,6 +15,7 @@ use lispa\amos\attachments\models\File;
 use lispa\amos\comments\models\CommentInterface;
 use lispa\amos\core\helpers\Html;
 use lispa\amos\core\interfaces\ContentModelInterface;
+use lispa\amos\core\interfaces\FacilitatorInterface;
 use lispa\amos\core\interfaces\ModelImageInterface;
 use lispa\amos\core\interfaces\ViewModelInterface;
 use lispa\amos\seo\interfaces\SeoModelInterface;
@@ -136,6 +129,14 @@ class News extends \lispa\amos\news\models\base\News implements ContentModelInte
             }
         }
     }
+
+    /**
+     */
+    // TODO Abilitare per inserire questo ruolo nella select2 gestione ruolo facilitator nel form user profile
+//    public function getFacilitatorRole()
+//    {
+//        return "FACILITATORE_NEWS";
+//    }
 
     /**
      * @inheritdoc
@@ -595,7 +596,7 @@ class News extends \lispa\amos\news\models\base\News implements ContentModelInte
     {
         $panels         = [];
         $count_comments = 0;
-
+        return $panels;
         try {
             $panels     = parent::getStatsToolbar($disableLink);
             $filescount = !is_null($this->newsImage) ? $this->getFileCount() - 1 : $this->getFileCount();
@@ -610,7 +611,7 @@ class News extends \lispa\amos\news\models\base\News implements ContentModelInte
                 $panels = ArrayHelper::merge($panels,
                         StatsToolbarPanels::getCommentsPanel($this, $count_comments, $disableLink));
             }
-            $reportCount = count(ReportUtil::retrieveReports($this, $this->id));
+            $reportCount = ReportUtil::retrieveReportsCount(get_class($this), $this->id);
             $panels      = ArrayHelper::merge($panels,
                     StatsToolbarPanels::getReportsPanel($this, $reportCount, $disableLink));
         } catch (\Exception $ex) {

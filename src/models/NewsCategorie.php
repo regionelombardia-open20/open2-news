@@ -30,6 +30,9 @@ class NewsCategorie extends \lispa\amos\news\models\base\NewsCategorie
      * @var File $categoryIcon
      */
     public $categoryIcon;
+    public $newsCategoryCommunities;
+    public $newsCategoryRoles;
+    public $visibleToCommunityRole;
 
     /**
      * @inheritdoc
@@ -38,6 +41,7 @@ class NewsCategorie extends \lispa\amos\news\models\base\NewsCategorie
     {
         return ArrayHelper::merge(parent::rules(), [
             [['categoryIcon'], 'file', 'maxFiles' => 1, 'extensions' => 'jpeg, jpg, png, gif'],
+            [['newsCategoryCommunities','newsCategoryRoles','visibleToCommunityRole', 'publish_only_on_community'], 'safe']
         ]);
     }
 
@@ -109,4 +113,72 @@ class NewsCategorie extends \lispa\amos\news\models\base\NewsCategorie
         }
         return $url;
     }
+
+    /**
+     *
+     */
+    public function saveNewsCategorieCommunityMm(){
+        NewsCategoryCommunityMm::deleteAll(['news_category_id' => $this->id]);
+        foreach ((Array) $this->newsCategoryCommunities as $community_id){
+            $newsCommunityMm = new NewsCategoryCommunityMm();
+            $newsCommunityMm->news_category_id = $this->id;
+            $newsCommunityMm->community_id = $community_id;
+
+            $newsCommunityMm->visible_to_cm = 0;
+            if(array_search('COMMUNITY_MANAGER', $this->visibleToCommunityRole) !== false){
+                $newsCommunityMm->visible_to_cm = 1;
+            }
+            $newsCommunityMm->visible_to_participant = 0;
+            if(array_search('PARTICIPANT', $this->visibleToCommunityRole) !== false){
+                $newsCommunityMm->visible_to_participant = 1;
+
+            }
+            $newsCommunityMm->save();
+        }
+    }
+
+    /**
+     *  load newsCategoryCommunities for Select2
+     */
+    public function loadNewsCategoryCommunities(){
+        $community_ids = [];
+        foreach ((Array) $this->newsCategoryCommunityMms as $categoryCommunityMms){
+            $community_ids []= $categoryCommunityMms->community_id;
+
+            if($categoryCommunityMms->visible_to_cm){
+                $this->visibleToCommunityRole []= 'COMMUNITY_MANAGER';
+            }
+            if($categoryCommunityMms->visible_to_participant){
+                $this->visibleToCommunityRole []= 'PARTICIPANT';
+            }
+        };
+        $this->newsCategoryCommunities = $community_ids;
+
+    }
+
+
+    /**
+     *
+     */
+    public function saveNewsCategorieRolesMm(){
+        NewsCategoryRolesMm::deleteAll(['news_category_id' => $this->id]);
+        foreach ((Array) $this->newsCategoryRoles as $role){
+            $newsRoleMm = new NewsCategoryRolesMm();
+            $newsRoleMm->news_category_id = $this->id;
+            $newsRoleMm->role = $role;
+            $newsRoleMm->save();
+        }
+    }
+    /**
+     *  load newsCategoryCommunities for Select2
+     */
+    public function loadNewsCategoryRoles(){
+        $roles = [];
+        foreach ((Array) $this->newsCategoryRolesMms as $categoryRolesMms){
+            $roles [$categoryRolesMms->role]= $categoryRolesMms->role;
+        };
+        $this->newsCategoryRoles = $roles;
+    }
+
+
 }

@@ -57,19 +57,21 @@ use lispa\amos\notificationmanager\forms\NewsWidget;
         </div>
     </div>
     <div class="col-xs-12 nop icon-body">
-        <div class="col-xs-3 nop counter-column">
-            <?php
-            $visible = isset($statsToolbar) ? $statsToolbar : false;
-            if ($visible) {
+
+        <?php $visible = isset($statsToolbar) ? $statsToolbar : false; ?>
+        <?php if ($visible) : ?>
+            <div class="col-xs-3 nop counter-column">
+                <?php
                 echo StatsToolbar::widget([
                     'model' => $model,
                     'layoutType' => StatsToolbar::LAYOUT_VERTICAL,
                     'disableLink' => true,
                 ]);
-            }
-            ?>
-        </div>
-        <div class="col-xs-9 nop text-column">
+                ?>
+            </div>
+        <?php endif; ?>
+
+        <div class="<?= ($visible) ? 'col-xs-9 nop' : 'col-xs-12' ?> text-column">
             <?= Html::a(Html::tag('h3', $model->titolo), $model->getFullViewUrl(), ['class' => 'title']) ?>
             <?= Html::tag('p', $model->descrizione_breve . Html::a(AmosNews::t('amosnews', 'Leggi tutto'), $model->getFullViewUrl(), ['class' => 'read-all']), ['class' => 'text']) ?>
         </div>

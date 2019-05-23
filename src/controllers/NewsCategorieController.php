@@ -17,9 +17,12 @@ use lispa\amos\core\icons\AmosIcons;
 use lispa\amos\dashboard\controllers\TabDashboardControllerTrait;
 use lispa\amos\news\AmosNews;
 use lispa\amos\news\models\NewsCategorie;
+use lispa\amos\news\models\NewsCategoryCommunityMm;
+use lispa\amos\news\models\NewsCategoryRolesMm;
 use lispa\amos\news\models\search\NewsCategorieSearch;
 use Yii;
 use yii\helpers\Url;
+use lispa\amos\core\widget\WidgetAbstract;
 
 /**
  * Class NewsCategorieController
@@ -63,6 +66,10 @@ class NewsCategorieController extends CrudController
 
         parent::init();
 
+        if(!empty(\Yii::$app->params['dashboardEngine']) && \Yii::$app->params['dashboardEngine'] == WidgetAbstract::ENGINE_ROWS) {
+            $this->view->pluginIcon = 'ic ic-news';
+        }
+
         $this->setUpLayout();
     }
 
@@ -74,11 +81,12 @@ class NewsCategorieController extends CrudController
     {
         Url::remember();
 
-        $this->setUpLayout('list');
+        $this->layout = 'list';
+
         $this->view->params['currentDashboard'] = $this->getCurrentDashboard();
 
         $this->setDataProvider($this->getModelSearch()->search(Yii::$app->request->getQueryParams()));
-        return parent::actionIndex();
+        return parent::actionIndex($this->layout);
     }
 
     /**
@@ -88,6 +96,9 @@ class NewsCategorieController extends CrudController
      */
     public function actionView($id)
     {
+
+        $this->setUpLayout('main');
+
         $this->model = $this->findModel($id);
 
         if ($this->model->load(Yii::$app->request->post()) && $this->model->save()) {
@@ -104,12 +115,16 @@ class NewsCategorieController extends CrudController
      */
     public function actionCreate()
     {
+
         $this->setUpLayout('form');
+
         $this->model = new NewsCategorie;
 
         if ($this->model->load(Yii::$app->request->post())) {
             if ($this->model->validate()) {
                 if ($this->model->save()) {
+                    $this->model->saveNewsCategorieCommunityMm();
+                    $this->model->saveNewsCategorieRolesMm();
                     Yii::$app->getSession()->addFlash('success', AmosNews::t('amosnews', 'Categoria News salvata con successo.'));
                     return $this->redirect(['/news/news-categorie/update', 'id' => $this->model->id]);
                 } else {
@@ -134,11 +149,17 @@ class NewsCategorieController extends CrudController
     public function actionUpdate($id)
     {
         $this->setUpLayout('form');
+
+
         $this->model = $this->findModel($id);
+        $this->model->loadNewsCategoryCommunities();
+        $this->model->loadNewsCategoryRoles();
 
         if ($this->model->load(Yii::$app->request->post())) {
             if ($this->model->validate()) {
                 if ($this->model->save()) {
+                    $this->model->saveNewsCategorieCommunityMm();
+                    $this->model->saveNewsCategorieRolesMm();
                     Yii::$app->getSession()->addFlash('success', AmosNews::t('amosnews', 'Categoria News aggiornata con successo.'));
                     return $this->redirect(['/news/news-categorie/update', 'id' => $this->model->id]);
                 } else {
@@ -164,6 +185,8 @@ class NewsCategorieController extends CrudController
     {
         $this->model = $this->findModel($id);
         if ($this->model) {
+            NewsCategoryCommunityMm::deleteAll(['news_category_id' => $this->model->id]);
+            NewsCategoryRolesMm::deleteAll(['news_category_id' => $this->model->id]);
             $this->model->delete();
             if (!$this->model->hasErrors()) {
                 Yii::$app->getSession()->addFlash('success', AmosNews::t('amosnews', 'News category successfully deleted'));

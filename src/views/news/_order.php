@@ -32,7 +32,9 @@ use yii\widgets\ActiveForm;
             'class' => 'default-form'
         ]
     ]);
-    echo Html::hiddenInput("currentView", Yii::$app->request->getQueryParam('currentView')); ?>
+//    echo Html::hiddenInput("currentView", Yii::$app->request->getQueryParam('currentView'));
+    echo Html::hiddenInput("currentView", $queryParamCurrentView);
+    ?>
     
     <div class="col-sm-6 col-lg-4">
         <?= $form->field($model, 'orderAttribute')->dropDownList($model->getOrderAttributesLabels()) ?>
