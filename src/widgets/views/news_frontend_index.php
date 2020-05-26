@@ -1,15 +1,24 @@
 <?php
 
-use lispa\amos\core\helpers\Html;
-use lispa\amos\news\AmosNews;
+/**
+ * Aria S.p.A.
+ * OPEN 2.0
+ *
+ *
+ * @package    Open20Package
+ * @category   CategoryName
+ */
+
+use open20\amos\core\helpers\Html;
+use open20\amos\news\AmosNews;
 ?>
 
 <?php
-/** @var $model \lispa\amos\news\models\base\News
+/** @var $model \open20\amos\news\models\base\News
  * @var $view_item string
  */?>
 <?php
-echo \lispa\amos\core\views\AmosGridView::widget([
+echo \open20\amos\core\views\AmosGridView::widget([
     'dataProvider' => $dataProvider,
     'columns' => [
         [

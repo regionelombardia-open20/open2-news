@@ -1,15 +1,15 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\news
+ * @package    open20\amos\news
  * @category   CategoryName
  */
 
-use lispa\amos\core\migration\AmosMigration;
+use open20\amos\core\migration\AmosMigration;
 
 class m160912_084946_alter_workflow_tables_news extends AmosMigration
 {
@@ -20,6 +20,7 @@ class m160912_084946_alter_workflow_tables_news extends AmosMigration
 
     /**
      * Use this instead of function up().
+     * @see \Yii\db\Migration::safeUp() for more info.
      */
     public function safeUp()
     {
@@ -52,6 +53,7 @@ class m160912_084946_alter_workflow_tables_news extends AmosMigration
 
     /**
      * Use this instead of function down().
+     * @see \Yii\db\Migration::safeDown() for more info.
      */
     public function safeDown()
     {

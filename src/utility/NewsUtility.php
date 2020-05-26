@@ -1,18 +1,18 @@
 <?php
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\news\utility
+ * @package    open20\amos\news\utility
  * @category   CategoryName
  */
 
-namespace lispa\amos\news\utility;
+namespace open20\amos\news\utility;
 
 
-use lispa\amos\news\models\NewsCategorie;
-use lispa\amos\news\models\NewsCategoryRolesMm;
+use open20\amos\news\models\NewsCategorie;
+use open20\amos\news\models\NewsCategoryRolesMm;
 use yii\base\BaseObject;
 use yii\db\ActiveQuery;
 
@@ -93,10 +93,10 @@ class NewsUtility extends BaseObject
      * @throws \yii\base\InvalidConfigException
      */
     public static function isCommunityManager($community_id){
-        $count = \lispa\amos\community\models\CommunityUserMm::find()
+        $count = \open20\amos\community\models\CommunityUserMm::find()
             ->andWhere(['community_id' => $community_id])
             ->andWhere(['user_id' => \Yii::$app->user->id])
-            ->andWhere(['role' => \lispa\amos\community\models\Community::ROLE_COMMUNITY_MANAGER])->count();
+            ->andWhere(['role' => \open20\amos\community\models\Community::ROLE_COMMUNITY_MANAGER])->count();
         return ($count > 0);
 
     }

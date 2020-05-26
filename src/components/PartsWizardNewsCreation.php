@@ -1,26 +1,26 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\news\components
+ * @package    open20\amos\news\components
  * @category   CategoryName
  */
 
-namespace lispa\amos\news\components;
+namespace open20\amos\news\components;
 
-use lispa\amos\attachments\models\File;
-use lispa\amos\core\components\PartQuestionarioAbstract;
-use lispa\amos\news\AmosNews;
-use lispa\amos\news\models\News;
+use open20\amos\attachments\models\File;
+use open20\amos\core\components\PartQuestionarioAbstract;
+use open20\amos\news\AmosNews;
+use open20\amos\news\models\News;
 use Yii;
 use yii\web\UploadedFile;
 
 /**
  * Class PartsWizardNewsCreation
- * @package lispa\amos\news\components
+ * @package open20\amos\news\components
  */
 class PartsWizardNewsCreation extends PartQuestionarioAbstract
 {

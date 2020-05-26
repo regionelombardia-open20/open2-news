@@ -1,16 +1,16 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\news
+ * @package    open20\amos\news
  * @category   CategoryName
  */
 
-use lispa\amos\news\AmosNews;
-use lispa\amos\news\models\News;
+use open20\amos\news\AmosNews;
+use open20\amos\news\models\News;
 use kartik\select2\Select2;
 use kartik\datecontrol\DateControl;
 use yii\helpers\Html;
@@ -18,7 +18,7 @@ use yii\widgets\ActiveForm;
 
 /**
  * @var yii\web\View $this
- * @var lispa\amos\news\models\search\NewsSearch $model
+ * @var open20\amos\news\models\search\NewsSearch $model
  * @var yii\widgets\ActiveForm $form
  */
 
@@ -71,7 +71,7 @@ $enableAutoOpenSearchPanel = isset(\Yii::$app->params['enableAutoOpenSearchPanel
     <div class="col-sm-6 col-lg-4">
         <?php
         $creator = '';
-        $userProfileCreator = \lispa\amos\admin\models\UserProfile::find()->andWhere(['user_id' => $model->created_by])->one();
+        $userProfileCreator = \open20\amos\admin\models\UserProfile::find()->andWhere(['user_id' => $model->created_by])->one();
         if(!empty($userProfileCreator)) {
             $creator = $userProfileCreator->getNomeCognome();
         }
@@ -101,7 +101,7 @@ $enableAutoOpenSearchPanel = isset(\Yii::$app->params['enableAutoOpenSearchPanel
     <div class="col-xs-12">
         <?php
         $params = \Yii::$app->request->getQueryParams();
-        /*echo \lispa\amos\tag\widgets\TagWidget::widget([
+        /*echo \open20\amos\tag\widgets\TagWidget::widget([
             'model' => $model,
             'attribute' => 'tagValues',
             'form' => $form,

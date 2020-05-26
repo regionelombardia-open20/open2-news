@@ -1,8 +1,17 @@
 <?php
-use lispa\amos\core\helpers\Html;
-use lispa\amos\news\AmosNews;
+
+/**
+ * Aria S.p.A.
+ * OPEN 2.0
+ *
+ *
+ * @package    Open20Package
+ * @category   CategoryName
+ */
+use open20\amos\core\helpers\Html;
+use open20\amos\news\AmosNews;
 ?>
-<?php /** @var $model \lispa\amos\news\models\base\News */?>
+<?php /** @var $model \open20\amos\news\models\base\News */?>
 
     <div class="col-xs-12">
         <div class="col-xs-12 news-image">

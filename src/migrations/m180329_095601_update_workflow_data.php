@@ -1,18 +1,18 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\news\migrations
+ * @package    open20\amos\news\migrations
  * @category   CategoryName
  */
 
 /**
  * Class m180329_095601_update_workflow_data
  */
-class m180329_095601_update_workflow_data extends \lispa\amos\core\migration\AmosMigration
+class m180329_095601_update_workflow_data extends \open20\amos\core\migration\AmosMigration
 {
     const MODULE_NAME = 'news';
 

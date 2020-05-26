@@ -1,21 +1,21 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\news
+ * @package    open20\amos\news
  * @category   CategoryName
  */
 
-use lispa\amos\core\views\DataProviderView;
-use lispa\amos\news\AmosNews;
+use open20\amos\core\views\DataProviderView;
+use open20\amos\news\AmosNews;
 
 /**
  * @var yii\web\View $this
  * @var yii\data\ActiveDataProvider $dataProvider
- * @var lispa\amos\news\models\search\NewsSearch $searchModel
+ * @var open20\amos\news\models\search\NewsSearch $searchModel
  */
 $this->title = AmosNews::t('amosnews', 'Notizie');
 $this->params['breadcrumbs'][] = $this->title;
@@ -57,7 +57,7 @@ $this->params['breadcrumbs'][] = $this->title;
                   'label' => 'Stato'
                   ], */
                 [
-                    'class' => 'lispa\amos\core\views\grid\ActionColumn',
+                    'class' => 'open20\amos\core\views\grid\ActionColumn',
                 ],
             ],
         ],

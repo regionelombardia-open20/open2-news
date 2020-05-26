@@ -1,25 +1,25 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\news\views\news-categorie
+ * @package    open20\amos\news\views\news-categorie
  * @category   CategoryName
  */
 
-use lispa\amos\attachments\components\AttachmentsInput;
-use lispa\amos\core\forms\ActiveForm;
-use lispa\amos\core\forms\CloseSaveButtonWidget;
-use lispa\amos\core\forms\CreatedUpdatedWidget;
-use lispa\amos\core\forms\RequiredFieldsTipWidget;
-use lispa\amos\news\AmosNews;
+use open20\amos\attachments\components\AttachmentsInput;
+use open20\amos\core\forms\ActiveForm;
+use open20\amos\core\forms\CloseSaveButtonWidget;
+use open20\amos\core\forms\CreatedUpdatedWidget;
+use open20\amos\core\forms\RequiredFieldsTipWidget;
+use open20\amos\news\AmosNews;
 use yii\bootstrap\Tabs;
 
 /**
  * @var yii\web\View $this
- * @var lispa\amos\news\models\NewsCategorie $model
+ * @var open20\amos\news\models\NewsCategorie $model
  * @var yii\widgets\ActiveForm $form
  */
 
@@ -114,7 +114,7 @@ $filterCategoriesByRole = $module->filterCategoriesByRole;
         <div class="row">
             <div class="col-lg-6 col-sm-12">
                 <?= $form->field($model, 'newsCategoryCommunities')->widget(\kartik\select2\Select2::className(),[
-                    'data' => \yii\helpers\ArrayHelper::map(\lispa\amos\community\models\Community::find()->all(), 'id', 'name'),
+                    'data' => \yii\helpers\ArrayHelper::map(\open20\amos\community\models\Community::find()->all(), 'id', 'name'),
                     'pluginOptions' => [
                         'allowClear' => true
                     ],

@@ -1,22 +1,22 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\news\views\news-categorie
+ * @package    open20\amos\news\views\news-categorie
  * @category   CategoryName
  */
 
-use lispa\amos\core\forms\ContextMenuWidget;
-use lispa\amos\core\helpers\Html;
-use lispa\amos\core\icons\AmosIcons;
-use lispa\amos\news\AmosNews;
+use open20\amos\core\forms\ContextMenuWidget;
+use open20\amos\core\helpers\Html;
+use open20\amos\core\icons\AmosIcons;
+use open20\amos\news\AmosNews;
 
 /**
  * @var yii\web\View $this
- * @var lispa\amos\news\models\NewsCategorie $model
+ * @var open20\amos\news\models\NewsCategorie $model
  */
 
 $this->title = $model->titolo;

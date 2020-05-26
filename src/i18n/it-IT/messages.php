@@ -1,11 +1,11 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\comments\i18n\it-IT
+ * @package    open20\amos\comments\i18n\it-IT
  * @category   CategoryName
  */
 
@@ -57,6 +57,7 @@ return [
     '#comments_ok' => 'Si',
     'Crea categoria' => 'Crea categoria',
     'Crea' => 'Crea',
+    '#create_news_dashboard_description' => '',
     'Create da me' => 'Create da me',
     'created and is now waiting to be published' => 'creata ed è in attesa di essere pubblicata',
     'creato da' => 'creato da',
@@ -129,6 +130,7 @@ return [
     '#news_category_id' => 'Id Categoria Notizie',
     'News category not found' => 'Categoria news non trovata',
     'News category successfully deleted' => 'Categoria news cancellata correttamente',
+    '#news_dashboard_description' => '',
     '#news_description' => 'Le notizie sono contenuti che è possibile pubblicare entro un certo periodo di validità e scegliendone la regola di pubblicazione',
     'News ID' => 'News ID',
     'News image' => 'Immagine della notizia',

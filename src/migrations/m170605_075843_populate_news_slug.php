@@ -1,5 +1,14 @@
 <?php
 
+/**
+ * Aria S.p.A.
+ * OPEN 2.0
+ *
+ *
+ * @package    Open20Package
+ * @category   CategoryName
+ */
+
 use yii\db\Migration;
 
 class m170605_075843_populate_news_slug extends Migration
@@ -7,7 +16,7 @@ class m170605_075843_populate_news_slug extends Migration
     public function safeUp()
     {
 
-        foreach (\lispa\amos\news\models\News::find()
+        foreach (\open20\amos\news\models\News::find()
                      ->andWhere([
                          'slug' => null
                      ])
@@ -15,7 +24,7 @@ class m170605_075843_populate_news_slug extends Migration
                      ->all() as $news) {
 
 
-            /**@var $news \lispa\amos\news\models\News */
+            /**@var $news \open20\amos\news\models\News */
             $news->detachBehaviors();
 
             $news->attachBehavior('slug', [

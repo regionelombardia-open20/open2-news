@@ -1,15 +1,15 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\news\migrations
+ * @package    open20\amos\news\migrations
  * @category   CategoryName
  */
 
-use lispa\amos\core\migration\AmosMigrationWidgets;
+use open20\amos\core\migration\AmosMigrationWidgets;
 
 /**
  * Class m180202_123801_change_widget_UltimeNews_dashboard_visible
@@ -25,7 +25,7 @@ class m180202_123801_change_widget_UltimeNews_dashboard_visible extends AmosMigr
     {
         $this->widgets = [
             [
-                'classname' => lispa\amos\news\widgets\graphics\WidgetGraphicsUltimeNews::className(),
+                'classname' => open20\amos\news\widgets\graphics\WidgetGraphicsUltimeNews::className(),
                 'dashboard_visible' => 1,
                 'update' => true
             ]

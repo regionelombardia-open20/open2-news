@@ -1,19 +1,19 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\news\models
+ * @package    open20\amos\news\models
  * @category   CategoryName
  */
 
-namespace lispa\amos\news\models;
+namespace open20\amos\news\models;
 
-use lispa\amos\attachments\behaviors\FileBehavior;
-use lispa\amos\attachments\models\File;
-use lispa\amos\news\AmosNews;
+use open20\amos\attachments\behaviors\FileBehavior;
+use open20\amos\attachments\models\File;
+use open20\amos\news\AmosNews;
 use yii\helpers\ArrayHelper;
 
 /**
@@ -22,9 +22,9 @@ use yii\helpers\ArrayHelper;
  *
  * @method \yii\db\ActiveQuery hasOneFile($attribute = 'file', $sort = 'id')
  *
- * @package lispa\amos\news\models
+ * @package open20\amos\news\models
  */
-class NewsCategorie extends \lispa\amos\news\models\base\NewsCategorie
+class NewsCategorie extends \open20\amos\news\models\base\NewsCategorie
 {
     /**
      * @var File $categoryIcon

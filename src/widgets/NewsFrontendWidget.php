@@ -1,14 +1,19 @@
 <?php
+
 /**
- * Created by PhpStorm.
- * User: michele.lafrancesca
- * Date: 15/11/2018
- * Time: 16:06
+ * Aria S.p.A.
+ * OPEN 2.0
+ *
+ *
+ * @package    Open20Package
+ * @category   CategoryName
+ */
+/**
  */
 
-namespace lispa\amos\news\widgets;
+namespace open20\amos\news\widgets;
 
-use lispa\amos\news\models\News;
+use open20\amos\news\models\News;
 use yii\base\Widget;
 use yii\data\ActiveDataProvider;
 
@@ -25,7 +30,7 @@ class NewsFrontendWidget extends Widget
     public $statuses                = [];
     public $validated_at_least_once = false;
     public $queryOrderBy;
-    public $view_path               = '@vendor/lispa/amos-news/src/widgets/views/news_frontend_item';
+    public $view_path               = '@vendor/open20/amos-news/src/widgets/views/news_frontend_item';
     public $paginationPageSize = 20;
 
     /**

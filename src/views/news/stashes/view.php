@@ -1,33 +1,33 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\news
+ * @package    open20\amos\news
  * @category   CategoryName
  */
 
-use lispa\amos\attachments\components\AttachmentsTableWithPreview;
-use lispa\amos\core\forms\ContextMenuWidget;
-use lispa\amos\core\forms\ItemAndCardHeaderWidget;
-use lispa\amos\core\forms\PublishedByWidget;
-use lispa\amos\core\forms\ShowUserTagsWidget;
-use lispa\amos\core\helpers\Html;
-use lispa\amos\core\icons\AmosIcons;
-use lispa\amos\core\views\toolbars\StatsToolbar;
-use lispa\amos\news\AmosNews;
-use lispa\amos\core\forms\CreatedUpdatedWidget;
-use lispa\amos\attachments\components\AttachmentsList;
-use lispa\amos\core\forms\InteractionMenuWidget;
-use lispa\amos\news\assets\ModuleNewsAsset;
-use \lispa\amos\news\models\News;
+use open20\amos\attachments\components\AttachmentsTableWithPreview;
+use open20\amos\core\forms\ContextMenuWidget;
+use open20\amos\core\forms\ItemAndCardHeaderWidget;
+use open20\amos\core\forms\PublishedByWidget;
+use open20\amos\core\forms\ShowUserTagsWidget;
+use open20\amos\core\helpers\Html;
+use open20\amos\core\icons\AmosIcons;
+use open20\amos\core\views\toolbars\StatsToolbar;
+use open20\amos\news\AmosNews;
+use open20\amos\core\forms\CreatedUpdatedWidget;
+use open20\amos\attachments\components\AttachmentsList;
+use open20\amos\core\forms\InteractionMenuWidget;
+use open20\amos\news\assets\ModuleNewsAsset;
+use \open20\amos\news\models\News;
 ModuleNewsAsset::register($this);
 
 /**
  * @var yii\web\View $this
- * @var lispa\amos\news\models\News $model
+ * @var open20\amos\news\models\News $model
  */
 
 $this->title = $model->titolo;
@@ -37,13 +37,14 @@ if (isset($ruolo['ADMIN'])) {
     $url = ['index'];
 }
 
-/** @var \lispa\amos\news\controllers\NewsController $controller */
+/** @var \open20\amos\news\controllers\NewsController $controller */
 $controller = Yii::$app->controller;
 $controller->setNetworkDashboardBreadcrumb();
 $this->params['breadcrumbs'][] = ['label' => Yii::$app->session->get('previousTitle'), 'url' => Yii::$app->session->get('previousUrl')];
 $this->params['breadcrumbs'][] = $this->title;
 
 $hidePubblicationDate = Yii::$app->controller->newsModule->hidePubblicationDate;
+$numberListTag = Yii::$app->controller->newsModule->numberListTag;
 
 $url = '/img/img_default.jpg';
 if (!is_null($model->newsImage)) {
@@ -51,7 +52,7 @@ if (!is_null($model->newsImage)) {
 }
 
 if($model->status != News::NEWS_WORKFLOW_STATUS_VALIDATO) {
-    echo \lispa\amos\workflow\widgets\WorkflowTransitionStateDescriptorWidget::widget([
+    echo \open20\amos\workflow\widgets\WorkflowTransitionStateDescriptorWidget::widget([
         'model' => $model,
         'workflowId' => News::NEWS_WORKFLOW,
         'classDivMessage' => 'message',
@@ -82,7 +83,7 @@ if($model->status != News::NEWS_WORKFLOW_STATUS_VALIDATO) {
                 <?php
                 $reportModule = \Yii::$app->getModule('report');
                 if (isset($reportModule) && in_array($model->className(), $reportModule->modelsEnabled)) {
-                    echo \lispa\amos\report\widgets\ReportFlagWidget::widget([
+                    echo \open20\amos\report\widgets\ReportFlagWidget::widget([
                         'model' => $model,
                     ]);
                 }
@@ -107,15 +108,15 @@ if($model->status != News::NEWS_WORKFLOW_STATUS_VALIDATO) {
                 <?php
                 $reportModule = \Yii::$app->getModule('report');
                 if (isset($reportModule) && in_array($model->className(), $reportModule->modelsEnabled)) {
-                    echo \lispa\amos\report\widgets\ReportDropdownWidget::widget([
+                    echo \open20\amos\report\widgets\ReportDropdownWidget::widget([
                         'model' => $model,
                     ]);
                 }
                 ?>
 
                 <?php $baseUrl = (!empty(\Yii::$app->params['platform']['backendUrl']) ? \Yii::$app->params['platform']['backendUrl'] : '') ?>
-                <?= \lispa\amos\core\forms\editors\socialShareWidget\SocialShareWidget::widget([
-                    'mode' => \lispa\amos\core\forms\editors\socialShareWidget\SocialShareWidget::MODE_DROPDOWN,
+                <?= \open20\amos\core\forms\editors\socialShareWidget\SocialShareWidget::widget([
+                    'mode' => \open20\amos\core\forms\editors\socialShareWidget\SocialShareWidget::MODE_DROPDOWN,
                     'configuratorId'  => 'socialShare',
                     'model' => $model,
                     'url'           => \yii\helpers\Url::to($baseUrl . '/news/news/view?id='.$model->id, true),
@@ -142,10 +143,11 @@ if($model->status != News::NEWS_WORKFLOW_STATUS_VALIDATO) {
             <div class="tags-section-sidebar col-xs-12 nop" id="section-tags">
                 <?= Html::tag('h2', AmosIcons::show('tag', [], 'dash') . AmosNews::t('amosnews', '#tags_title')) ?>
                 <div class="col-xs-12">
-                    <?= \lispa\amos\core\forms\ListTagsWidget::widget([
+                    <?= \open20\amos\core\forms\ListTagsWidget::widget([
                         'userProfile' => $model->id,
                         'className' => $model->className(),
                         'viewFilesCounter' => true,
+                        'pageSize' => $numberListTag,
                     ]);
                     ?>
                 </div>

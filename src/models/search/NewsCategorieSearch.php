@@ -1,26 +1,27 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\news\models\search
+ * @package    open20\amos\news\models\search
  * @category   CategoryName
  */
 
-namespace lispa\amos\news\models\search;
+namespace open20\amos\news\models\search;
 
-use lispa\amos\news\models\NewsCategorie;
+use open20\amos\news\models\NewsCategorie;
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
 
 /**
- * NewsCategorieSearch represents the model behind the search form about `lispa\amos\news\models\NewsCategorie`.
+ * NewsCategorieSearch represents the model behind the search form about `open20\amos\news\models\NewsCategorie`.
  */
 class NewsCategorieSearch extends NewsCategorie
 {
     /**
+     * @see    \yii\base\Model::rules()    for more info.
      */
     public function rules()
     {
@@ -31,6 +32,7 @@ class NewsCategorieSearch extends NewsCategorie
     }
 
     /**
+     * @see    \yii\base\Model::scenarios()    for more info.
      */
     public function scenarios()
     {

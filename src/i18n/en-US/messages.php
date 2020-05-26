@@ -1,11 +1,11 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\comments\i18n\en-GB
+ * @package    open20\amos\comments\i18n\en-GB
  * @category   CategoryName
  */
 
@@ -50,6 +50,7 @@ return [
     '#comments_ok' => 'Yes',
     'Crea categoria' => 'Create category',
     'Crea' => 'Create',
+    '#create_news_dashboard_description' => '',
     'Create da me' => 'Created by me',
     'created and is now waiting to be published' => 'created and is now waiting to be published',
     'creato da' => 'created by',
@@ -118,6 +119,7 @@ return [
     '#news_category_id' => 'News Category Id',
     'News category not found' => 'News category not found',
     'News category successfully deleted' => 'News category successfully deleted',
+    '#news_dashboard_description' => '',
     '#news_description' => 'The news are contents that can be published within a specific period and choosing a publication rule',
     'News ID' => 'News ID',
     'News image' => 'News image',

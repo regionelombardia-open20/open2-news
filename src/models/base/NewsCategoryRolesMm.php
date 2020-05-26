@@ -1,22 +1,22 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\news\models\base
+ * @package    open20\amos\news\models\base
  * @category   CategoryName
  */
 
-namespace lispa\amos\news\models\base;
+namespace open20\amos\news\models\base;
 
-use lispa\amos\news\AmosNews;
+use open20\amos\news\AmosNews;
 use yii\helpers\ArrayHelper;
 
 /**
  * Class NewsCategoryRolesMm
- * @package lispa\amos\news\models\base
+ * @package open20\amos\news\models\base
  *
  * This is the base-model class for table "news_category_roles_mm".
  *
@@ -30,11 +30,12 @@ use yii\helpers\ArrayHelper;
  * @property    integer $updated_by
  * @property    integer $deleted_by
  *
- * @property \lispa\amos\news\models\NewsCategorie $newsCategory
+ * @property \open20\amos\news\models\NewsCategorie $newsCategory
  */
-class NewsCategoryRolesMm extends \lispa\amos\core\record\Record
+class NewsCategoryRolesMm extends \open20\amos\core\record\Record
 {
     /**
+     * @see    \yii\db\ActiveRecord::tableName()    for more info.
      */
     public static function tableName()
     {
@@ -42,6 +43,7 @@ class NewsCategoryRolesMm extends \lispa\amos\core\record\Record
     }
 
     /**
+     * @see    \yii\base\Model::rules()    for more info.
      */
     public function rules()
     {
@@ -55,6 +57,7 @@ class NewsCategoryRolesMm extends \lispa\amos\core\record\Record
     }
 
     /**
+     * @see    \open20\amos\core\record\Record::attributeLabels()    for more info.
      */
     public function attributeLabels()
     {
@@ -73,7 +76,7 @@ class NewsCategoryRolesMm extends \lispa\amos\core\record\Record
      */
     public function getNewsCategory()
     {
-        return $this->hasOne(\lispa\amos\news\models\NewsCategorie::className(), ['id' => 'news_category_id']);
+        return $this->hasOne(\open20\amos\news\models\NewsCategorie::className(), ['id' => 'news_category_id']);
     }
 
 }

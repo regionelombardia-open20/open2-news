@@ -1,33 +1,33 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\news\views\news
+ * @package    open20\amos\news\views\news
  * @category   CategoryName
  */
-use lispa\amos\attachments\components\AttachmentsInput;
-use lispa\amos\attachments\components\CropInput;
-use lispa\amos\attachments\components\AttachmentsList;
-use lispa\amos\core\forms\AccordionWidget;
-use lispa\amos\core\forms\ActiveForm;
-use lispa\amos\core\forms\CreatedUpdatedWidget;
-use lispa\amos\core\forms\editors\Select;
-use lispa\amos\core\helpers\Html;
-use lispa\amos\news\AmosNews;
-use lispa\amos\news\models\News;
-use lispa\amos\news\utility\NewsUtility;
-use lispa\amos\workflow\widgets\WorkflowTransitionButtonsWidget;
-use lispa\amos\workflow\widgets\WorkflowTransitionStateDescriptorWidget;
+use open20\amos\attachments\components\AttachmentsInput;
+use open20\amos\attachments\components\CropInput;
+use open20\amos\attachments\components\AttachmentsList;
+use open20\amos\core\forms\AccordionWidget;
+use open20\amos\core\forms\ActiveForm;
+use open20\amos\core\forms\CreatedUpdatedWidget;
+use open20\amos\core\forms\editors\Select;
+use open20\amos\core\helpers\Html;
+use open20\amos\news\AmosNews;
+use open20\amos\news\models\News;
+use open20\amos\news\utility\NewsUtility;
+use open20\amos\workflow\widgets\WorkflowTransitionButtonsWidget;
+use open20\amos\workflow\widgets\WorkflowTransitionStateDescriptorWidget;
 use kartik\datecontrol\DateControl;
 use yii\helpers\ArrayHelper;
-use lispa\amos\core\forms\TextEditorWidget;
+use open20\amos\core\forms\TextEditorWidget;
 
 /**
  * @var yii\web\View $this
- * @var lispa\amos\news\models\News $model
+ * @var open20\amos\news\models\News $model
  * @var yii\widgets\ActiveForm $form
  */
 $dateErrorMessage = AmosNews::t('error', "Controllare data");
@@ -35,7 +35,7 @@ $dateErrorMessage = AmosNews::t('error', "Controllare data");
 $todayDate    = date('d-m-Y');
 $tomorrowDate = (new DateTime('tomorrow'))->format('d-m-Y');
 
-//\lispa\amos\layout\assets\SpinnerWaitAsset::register($this);
+//\open20\amos\layout\assets\SpinnerWaitAsset::register($this);
 $js2 = <<<JS
     $(document).ready(function () {
 
@@ -75,7 +75,7 @@ WorkflowTransitionStateDescriptorWidget::widget([
             $reportModule     = \Yii::$app->getModule('report');
             $reportFlagWidget = '';
             if (isset($reportModule) && in_array($model->className(), $reportModule->modelsEnabled)) {
-                $reportFlagWidget = \lispa\amos\report\widgets\ReportFlagWidget::widget([
+                $reportFlagWidget = \open20\amos\report\widgets\ReportFlagWidget::widget([
                     'model' => $model,
                 ]);
             }
@@ -188,8 +188,8 @@ WorkflowTransitionStateDescriptorWidget::widget([
         if (!$model->isNewRecord && isset($moduleCwh)) {
             if (!empty($model->validatori)) {
                 foreach ($model->validatori as $validatore) {
-                    $network = \lispa\amos\cwh\utility\CwhUtil::getNetworkFromId($validatore);
-                    if ($network instanceof \lispa\amos\community\models\Community) {
+                    $network = \open20\amos\cwh\utility\CwhUtil::getNetworkFromId($validatore);
+                    if ($network instanceof \open20\amos\community\models\Community) {
                         $pubblicatedForCommunity = true;
                     }
                 }
@@ -208,7 +208,7 @@ WorkflowTransitionStateDescriptorWidget::widget([
                 ?>
                 <div class="col-xs-12 receiver-section">
                     <?=
-                    \lispa\amos\cwh\widgets\DestinatariPlusTagWidget::widget([
+                    \open20\amos\cwh\widgets\DestinatariPlusTagWidget::widget([
                         'model' => $model,
                     ]);
                     ?>
@@ -348,7 +348,7 @@ WorkflowTransitionStateDescriptorWidget::widget([
                     'items' => [
                         [
                             'header' => AmosNews::t('amosnews', '#settings_seo_title'),
-                            'content' => \lispa\amos\seo\widgets\SeoWidget::widget([
+                            'content' => \open20\amos\seo\widgets\SeoWidget::widget([
                                 'contentModel' => $model,
                             ]),
                         ]
@@ -402,7 +402,7 @@ WorkflowTransitionStateDescriptorWidget::widget([
                     'description' => 'le modifiche e mantieni la notizia in "richiesta di pubblicazione"'
                 ],
                 News::NEWS_WORKFLOW_STATUS_VALIDATO => [
-                    'button' => \lispa\amos\core\helpers\Html::submitButton(AmosNews::t('amosnews', 'Salva'),
+                    'button' => \open20\amos\core\helpers\Html::submitButton(AmosNews::t('amosnews', 'Salva'),
                         ['class' => 'btn btn-workflow']),
                     'description' => AmosNews::t('amosnews', 'le modifiche e mantieni la notizia "pubblicata"'),
                 ],

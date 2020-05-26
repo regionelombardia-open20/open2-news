@@ -1,16 +1,16 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\news\migrations
+ * @package    open20\amos\news\migrations
  * @category   CategoryName
  */
 
 use cornernote\workflow\manager\models\Status;
-use lispa\amos\core\migration\libs\common\MigrationCommon;
+use open20\amos\core\migration\libs\common\MigrationCommon;
 use yii\db\Migration;
 
 /**

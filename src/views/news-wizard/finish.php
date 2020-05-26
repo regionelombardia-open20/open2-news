@@ -1,19 +1,19 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\news\views\news-wizard
+ * @package    open20\amos\news\views\news-wizard
  * @category   CategoryName
  */
 
-use lispa\amos\news\AmosNews;
+use open20\amos\news\AmosNews;
 
 /**
  * @var yii\web\View $this
- * @var lispa\amos\news\models\News $model
+ * @var open20\amos\news\models\News $model
  * @var string $finishMessage
  */
 
@@ -26,7 +26,7 @@ $this->title = $model;
         <div class="pull-left">
             <!-- ?= AmosIcons::show('feed', ['class' => 'am-4 icon-calendar-intro m-r-15'], 'dash') ?-->
             <div class="like-widget-img color-primary ">
-                <?= \lispa\amos\core\icons\AmosIcons::show('feed', [], 'dash'); ?>
+                <?= \open20\amos\core\icons\AmosIcons::show('feed', [], 'dash'); ?>
             </div>
         </div>
         <div class="text-wrapper">
@@ -37,7 +37,7 @@ $this->title = $model;
 </div>
 
 
-<?= \lispa\amos\core\forms\WizardPrevAndContinueButtonWidget::widget([
+<?= \open20\amos\core\forms\WizardPrevAndContinueButtonWidget::widget([
     'model' => $model,
     'previousUrl' => Yii::$app->getUrlManager()->createUrl(['/news/news-wizard/summary', 'id' => $model->id]),
     'viewPreviousBtn' => false,

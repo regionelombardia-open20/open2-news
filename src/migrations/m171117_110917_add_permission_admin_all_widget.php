@@ -1,16 +1,16 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\news\migrations
+ * @package    open20\amos\news\migrations
  * @category   CategoryName
  */
 
 use yii\db\Migration;
-use lispa\amos\core\migration\AmosMigrationPermissions;
+use open20\amos\core\migration\AmosMigrationPermissions;
 use yii\rbac\Permission;
 
 /**
@@ -22,7 +22,7 @@ class m171117_110917_add_permission_admin_all_widget extends AmosMigrationPermis
     {
         $this->authorizations = [
             [
-                'name' => \lispa\amos\news\widgets\icons\WidgetIconAdminAllNews::className(),
+                'name' => \open20\amos\news\widgets\icons\WidgetIconAdminAllNews::className(),
                 'type' => Permission::TYPE_PERMISSION,
                 'description' => 'Permission description',
                 'ruleName' => null,

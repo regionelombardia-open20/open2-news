@@ -1,38 +1,38 @@
 <?php
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\news\models
+ * @package    open20\amos\news\models
  * @category   CategoryName
  */
 
-namespace lispa\amos\news\models;
+namespace open20\amos\news\models;
 
-use lispa\amos\attachments\behaviors\FileBehavior;
-use lispa\amos\attachments\models\File;
-use lispa\amos\comments\models\CommentInterface;
-use lispa\amos\core\helpers\Html;
-use lispa\amos\core\interfaces\ContentModelInterface;
-use lispa\amos\core\interfaces\FacilitatorInterface;
-use lispa\amos\core\interfaces\ModelImageInterface;
-use lispa\amos\core\interfaces\ViewModelInterface;
-use lispa\amos\seo\interfaces\SeoModelInterface;
-use lispa\amos\core\views\toolbars\StatsToolbarPanels;
-use lispa\amos\news\AmosNews;
-use lispa\amos\news\i18n\grammar\NewsGrammar;
-use lispa\amos\news\widgets\icons\WidgetIconNewsDashboard;
-use lispa\amos\notificationmanager\behaviors\NotifyBehavior;
-use lispa\amos\seo\behaviors\SeoContentBehavior;
-use lispa\amos\report\utilities\ReportUtil;
-use lispa\amos\workflow\behaviors\WorkflowLogFunctionsBehavior;
+use open20\amos\attachments\behaviors\FileBehavior;
+use open20\amos\attachments\models\File;
+use open20\amos\comments\models\CommentInterface;
+use open20\amos\core\helpers\Html;
+use open20\amos\core\interfaces\ContentModelInterface;
+use open20\amos\core\interfaces\ModelImageInterface;
+use open20\amos\core\interfaces\ViewModelInterface;
+use open20\amos\core\views\toolbars\StatsToolbarPanels;
+use open20\amos\news\AmosNews;
+use open20\amos\news\i18n\grammar\NewsGrammar;
+use open20\amos\news\widgets\icons\WidgetIconNewsDashboard;
+use open20\amos\notificationmanager\behaviors\NotifyBehavior;
+use open20\amos\report\utilities\ReportUtil;
+use open20\amos\seo\behaviors\SeoContentBehavior;
+use open20\amos\seo\interfaces\SeoModelInterface;
+use open20\amos\workflow\behaviors\WorkflowLogFunctionsBehavior;
 use raoul2000\workflow\base\SimpleWorkflowBehavior;
 use Yii;
 use yii\behaviors\SluggableBehavior;
 use yii\helpers\ArrayHelper;
 use yii\helpers\Url;
 use yii\log\Logger;
+use open20\amos\core\interfaces\CustomUrlModelInterface;
 
 /**
  * Class News
@@ -43,17 +43,17 @@ use yii\log\Logger;
  * @method string|null getRegolaPubblicazione()
  * @method array getTargets()
  *
- * @package lispa\amos\news\models
+ * @package open20\amos\news\models
  */
-class News extends \lispa\amos\news\models\base\News implements ContentModelInterface, CommentInterface, ViewModelInterface,
-    ModelImageInterface, SeoModelInterface
+class News extends \open20\amos\news\models\base\News implements ContentModelInterface, CommentInterface, ViewModelInterface,
+    ModelImageInterface, SeoModelInterface, CustomUrlModelInterface
 {
     // Workflow ID
-    const NEWS_WORKFLOW                    = 'NewsWorkflow';
+    const NEWS_WORKFLOW = 'NewsWorkflow';
     // Workflow states IDS
-    const NEWS_WORKFLOW_STATUS_BOZZA       = 'NewsWorkflow/BOZZA';
-    const NEWS_WORKFLOW_STATUS_DAVALIDARE  = 'NewsWorkflow/DAVALIDARE';
-    const NEWS_WORKFLOW_STATUS_VALIDATO    = 'NewsWorkflow/VALIDATO';
+    const NEWS_WORKFLOW_STATUS_BOZZA = 'NewsWorkflow/BOZZA';
+    const NEWS_WORKFLOW_STATUS_DAVALIDARE = 'NewsWorkflow/DAVALIDARE';
+    const NEWS_WORKFLOW_STATUS_VALIDATO = 'NewsWorkflow/VALIDATO';
     const NEWS_WORKFLOW_STATUS_NONVALIDATO = 'NewsWorkflow/NONVALIDATO';
 
     /**
@@ -64,15 +64,15 @@ class News extends \lispa\amos\news\models\base\News implements ContentModelInte
     /**
      * All the scenarios listed below are for the wizard.
      */
-    const SCENARIO_INTRODUCTION                   = 'scenario_introduction';
-    const SCENARIO_DETAILS                        = 'scenario_details';
-    const SCENARIO_PUBLICATION                    = 'scenario_publication';
-    const SCENARIO_SUMMARY                        = 'scenario_summary';
+    const SCENARIO_INTRODUCTION = 'scenario_introduction';
+    const SCENARIO_DETAILS = 'scenario_details';
+    const SCENARIO_PUBLICATION = 'scenario_publication';
+    const SCENARIO_SUMMARY = 'scenario_summary';
     const SCENARIO_DETAILS_HIDE_PUBBLICATION_DATE = 'scenario_details_hide_pubblication_date';
-    const SCENARIO_CREATE_HIDE_PUBBLICATION_DATE  = 'scenario_create_hide_pubblication_date';
-    const SCENARIO_UPDATE_HIDE_PUBBLICATION_DATE  = 'scenario_update_hide_pubblication_date';
+    const SCENARIO_CREATE_HIDE_PUBBLICATION_DATE = 'scenario_create_hide_pubblication_date';
+    const SCENARIO_UPDATE_HIDE_PUBBLICATION_DATE = 'scenario_update_hide_pubblication_date';
 
-    
+
     const NEWS_CLUSTERCAT_AGRIFOOD_ID = '4';
     const NEWS_CLUSTERCAT_AEROSPAZIO_ID = '5';
     const NEWS_CLUSTERCAT_CHIMICAVERDE_ID = '6';
@@ -90,7 +90,7 @@ class News extends \lispa\amos\news\models\base\News implements ContentModelInte
     const NEWS_CLUSTERCAT_FOROREGIONALE_ID = '18';
     const NEWS_CLUSTERCAT_LEGGEREGIONALE_ID = '19';
     const NEWS_CLUSTERCAT_REDAZIONE_ID = '20';
-    
+
     /**
      * @var string $distance Distanza
      */
@@ -112,6 +112,7 @@ class News extends \lispa\amos\news\models\base\News implements ContentModelInte
     private $attachmentsForItemView;
 
     /**
+     * @see \yii\db\BaseActiveRecord::init() for more info.
      */
     public function init()
     {
@@ -131,6 +132,7 @@ class News extends \lispa\amos\news\models\base\News implements ContentModelInte
     }
 
     /**
+     * @see \open20\amos\core\interfaces\FacilitatorInterface for more info
      */
     // TODO Abilitare per inserire questo ruolo nella select2 gestione ruolo facilitator nel form user profile
 //    public function getFacilitatorRole()
@@ -234,8 +236,8 @@ class News extends \lispa\amos\news\models\base\News implements ContentModelInte
     public function getAttachments()
     {
         if (empty($this->attachments)) {
-            $query             = $this->hasMultipleFiles('attachments');
-            $query->multiple   = false;
+            $query = $this->hasMultipleFiles('attachments');
+            $query->multiple = false;
             $this->attachments = $query->one();
         }
         return $this->attachments;
@@ -256,8 +258,8 @@ class News extends \lispa\amos\news\models\base\News implements ContentModelInte
     {
 
         if (empty($this->attachmentsForItemView)) {
-            $query                        = $this->hasMultipleFiles('attachments');
-            $query->multiple              = false;
+            $query = $this->hasMultipleFiles('attachments');
+            $query->multiple = false;
             $this->attachmentsForItemView = $query->all();
         }
         return $this->attachmentsForItemView;
@@ -276,15 +278,15 @@ class News extends \lispa\amos\news\models\base\News implements ContentModelInte
      */
     public function scenarios()
     {
-        $parentScenarios                        = parent::scenarios();
-        $scenarios                              = ArrayHelper::merge(
-                $parentScenarios,
-                [
+        $parentScenarios = parent::scenarios();
+        $scenarios = ArrayHelper::merge(
+            $parentScenarios,
+            [
                 self::SCENARIO_CREATE => $parentScenarios[self::SCENARIO_DEFAULT]
-                ]
+            ]
         );
         $scenarios[self::SCENARIO_INTRODUCTION] = [];
-        $scenarios[self::SCENARIO_DETAILS]      = [
+        $scenarios[self::SCENARIO_DETAILS] = [
             'titolo',
             'sottotitolo',
             'descrizione_breve',
@@ -294,15 +296,15 @@ class News extends \lispa\amos\news\models\base\News implements ContentModelInte
             'comments_enabled',
             'status',
         ];
-        $scenarios[self::SCENARIO_PUBLICATION]  = [
+        $scenarios[self::SCENARIO_PUBLICATION] = [
             'destinatari_pubblicazione',
             'destinatari_notifiche'
         ];
-        $scenarios[self::SCENARIO_SUMMARY]      = [
+        $scenarios[self::SCENARIO_SUMMARY] = [
             'status'
         ];
         /** @var AmosNews $newsModule */
-        $newsModule                             = Yii::$app->getModule(AmosNews::getModuleName());
+        $newsModule = Yii::$app->getModule(AmosNews::getModuleName());
         if ($newsModule->params['site_publish_enabled']) {
             $scenarios[self::SCENARIO_DETAILS][] = 'primo_piano';
         }
@@ -310,7 +312,7 @@ class News extends \lispa\amos\news\models\base\News implements ContentModelInte
             $scenarios[self::SCENARIO_DETAILS][] = 'in_evidenza';
         }
         $scenarios[self::SCENARIO_DETAILS_HIDE_PUBBLICATION_DATE] = $scenarios[self::SCENARIO_DETAILS];
-        $scenarios[self::SCENARIO_CREATE_HIDE_PUBBLICATION_DATE]  = $scenarios[self::SCENARIO_CREATE];
+        $scenarios[self::SCENARIO_CREATE_HIDE_PUBBLICATION_DATE] = $scenarios[self::SCENARIO_CREATE];
 
         return $scenarios;
     }
@@ -320,18 +322,18 @@ class News extends \lispa\amos\news\models\base\News implements ContentModelInte
      */
     public function rules()
     {
-        $modelNews     = \Yii::$app->getModule('news');
+        $modelNews = \Yii::$app->getModule('news');
         $requiredArray = [];
         if (!empty($modelNews)) {
             $requiredArray = $modelNews->newsRequiredFields;
         }
         $rules = ArrayHelper::merge(parent::rules(),
-                [
+            [
                 [$requiredArray, 'required'],
                 [['slug', 'destinatari_pubblicazione', 'destinatari_notifiche'], 'safe'],
                 [['attachments'], 'file', 'maxFiles' => 0],
                 [['newsImage'], 'file', 'extensions' => 'jpeg, jpg, png, gif'],
-        ]);
+            ]);
 
         if ($this->scenario != self::SCENARIO_DETAILS_HIDE_PUBBLICATION_DATE && $this->scenario != self::SCENARIO_CREATE_HIDE_PUBBLICATION_DATE
             && $this->scenario != self::SCENARIO_UPDATE_HIDE_PUBBLICATION_DATE) {
@@ -344,12 +346,12 @@ class News extends \lispa\amos\news\models\base\News implements ContentModelInte
 //            }
             if ($enableScenario) {
                 $rules = ArrayHelper::merge($rules,
-                        [
+                    [
                         [['data_pubblicazione', 'data_rimozione'], 'required'],
                         ['data_pubblicazione', 'compare', 'compareAttribute' => 'data_rimozione', 'operator' => '<='],
                         ['data_rimozione', 'compare', 'compareAttribute' => 'data_pubblicazione', 'operator' => '>='],
                         ['data_pubblicazione', 'checkDate'],
-                ]);
+                    ]);
             }
         }
         return $rules;
@@ -361,12 +363,12 @@ class News extends \lispa\amos\news\models\base\News implements ContentModelInte
     public function behaviors()
     {
         return ArrayHelper::merge(parent::behaviors(),
-                [
+            [
                 'slug' => [
                     'class' => SluggableBehavior::className(),
                     'attribute' => 'titolo',
                     'ensureUnique' => true
-                // 'slugAttribute' => 'slug',
+                    // 'slugAttribute' => 'slug',
                 ],
                 'workflow' => [
                     'class' => SimpleWorkflowBehavior::className(),
@@ -389,7 +391,7 @@ class News extends \lispa\amos\news\models\base\News implements ContentModelInte
                     'defaultOgType' => 'article',
                     'schema' => 'NewsArticle'
                 ]
-        ]);
+            ]);
     }
 
     /**
@@ -398,14 +400,14 @@ class News extends \lispa\amos\news\models\base\News implements ContentModelInte
     public function attributeLabels()
     {
         return ArrayHelper::merge(parent::attributeLabels(),
-                [
+            [
                 'newsImage' => AmosNews::t('amosnews', 'News image')
-                ]
+            ]
         );
     }
 
     /**
-     * @see\lispa\amos\core\record\Record::representingColumn() or more info.
+     * @see\open20\amos\core\record\Record::representingColumn() or more info.
      */
     public function representingColumn()
     {
@@ -445,9 +447,9 @@ class News extends \lispa\amos\news\models\base\News implements ContentModelInte
                         $url = $model->newsImage->getUrl('original');
                     }
                     return Html::img($url,
-                            [
+                        [
                             'class' => 'gridview-image'
-                    ]);
+                        ]);
                 },
                 'headerOptions' => [
                     'id' => AmosNews::t('amosnews', 'immagine'),
@@ -493,6 +495,11 @@ class News extends \lispa\amos\news\models\base\News implements ContentModelInte
     public function getViewUrl()
     {
         return "news/news/view";
+    }
+
+    public function getFrontendViewUrl()
+    {
+        return \Yii::$app->params['urlFrontend']['NewsModel'];
     }
 
     /**
@@ -550,7 +557,7 @@ class News extends \lispa\amos\news\models\base\News implements ContentModelInte
     protected function image_exists($url)
     {
         try {
-            if (getimagesize(Yii::$app->getBasePath().'/web'.$url)) {
+            if (getimagesize(Yii::$app->getBasePath() . '/web' . $url)) {
                 return true;
             } else {
                 return false;
@@ -594,22 +601,22 @@ class News extends \lispa\amos\news\models\base\News implements ContentModelInte
      */
     public function getStatsToolbar($disableLink = false)
     {
-        $panels         = [];
+        $panels = [];
         $count_comments = 0;
         return $panels;
         try {
-            $panels     = parent::getStatsToolbar($disableLink);
+            $panels = parent::getStatsToolbar($disableLink);
             $filescount = !is_null($this->newsImage) ? $this->getFileCount() - 1 : $this->getFileCount();
-            $panels     = ArrayHelper::merge($panels,
-                    StatsToolbarPanels::getDocumentsPanel($this, $filescount, $disableLink));
+            $panels = ArrayHelper::merge($panels,
+                StatsToolbarPanels::getDocumentsPanel($this, $filescount, $disableLink));
             if ($this->isCommentable()) {
                 $commentModule = \Yii::$app->getModule('comments');
                 if ($commentModule) {
-                    /** @var \lispa\amos\comments\AmosComments $commentModule */
+                    /** @var \open20\amos\comments\AmosComments $commentModule */
                     $count_comments = $commentModule->countComments($this);
                 }
                 $panels = ArrayHelper::merge($panels,
-                        StatsToolbarPanels::getCommentsPanel($this, $count_comments, $disableLink));
+                    StatsToolbarPanels::getCommentsPanel($this, $count_comments, $disableLink));
             }
             $reportCount = ReportUtil::retrieveReportsCount(get_class($this), $this->id);
             $panels      = ArrayHelper::merge($panels,
@@ -644,7 +651,7 @@ class News extends \lispa\amos\news\models\base\News implements ContentModelInte
      */
     public function getCategory()
     {
-        return $this->hasOne(\lispa\amos\news\models\NewsCategorie::className(), ['id' => 'news_categorie_id']);
+        return $this->hasOne(\open20\amos\news\models\NewsCategorie::className(), ['id' => 'news_categorie_id']);
     }
 
     /**
@@ -652,7 +659,19 @@ class News extends \lispa\amos\news\models\base\News implements ContentModelInte
      */
     public function getFullViewUrl()
     {
-        return Url::toRoute(["/".$this->getViewUrl(), "id" => $this->id]);
+        return Url::toRoute(["/" . $this->getViewUrl(), "id" => $this->id]);
+    }
+
+    public function getFullFrontendViewUrl()
+    {
+        $url = $this->getFrontendViewUrl();
+        if (strpos($url, '{Id}')) {
+            $url = str_replace("{Id}", $this->id, $url);
+        }
+        if (strpos($url, '{Slug}')) {
+            $url = str_replace("{Slug}", $this->slug, $url);
+        }
+        return Url::toRoute(["/" . $url]);
     }
 
     /**
@@ -686,64 +705,75 @@ class News extends \lispa\amos\news\models\base\News implements ContentModelInte
      */
     public function getStatusToRenderToHide()
     {
-        $statusToRender     = [
+        $statusToRender = [
             News::NEWS_WORKFLOW_STATUS_BOZZA => AmosNews::t('amosnews', 'Modifica in corso'),
         ];
         $isCommunityManager = false;
         if (\Yii::$app->getModule('community')) {
-            $isCommunityManager = \lispa\amos\community\utilities\CommunityUtil::isLoggedCommunityManager();
+            $isCommunityManager = \open20\amos\community\utilities\CommunityUtil::isLoggedCommunityManager();
             if ($isCommunityManager) {
                 $isCommunityManager = true;
             }
         }
         // if you are a community manager a validator/facilitator or ADMIN you Can publish directly
         if (Yii::$app->user->can('NewsValidate', ['model' => $this]) || Yii::$app->user->can('ADMIN') || $isCommunityManager) {
-            $statusToRender  = ArrayHelper::merge($statusToRender,
-                    [News::NEWS_WORKFLOW_STATUS_VALIDATO => AmosNews::t('amosnews', 'Pubblicata')]);
+            $statusToRender = ArrayHelper::merge($statusToRender,
+                [News::NEWS_WORKFLOW_STATUS_VALIDATO => AmosNews::t('amosnews', 'Pubblicata')]);
             $hideDraftStatus = [];
         } else {
-            $statusToRender    = ArrayHelper::merge($statusToRender,
-                    [
+            $statusToRender = ArrayHelper::merge($statusToRender,
+                [
                     News::NEWS_WORKFLOW_STATUS_DAVALIDARE => AmosNews::t('amosnews', 'Richiedi pubblicazione'),
-            ]);
+                ]);
             $hideDraftStatus[] = News::NEWS_WORKFLOW_STATUS_VALIDATO;
         }
         return ['statusToRender' => $statusToRender, 'hideDraftStatus' => $hideDraftStatus];
     }
 
     /**
-     * 
+     *
      * @return type
      */
     public function getSchema()
     {
-        $news        = new \simialbi\yii2\schemaorg\models\NewsArticle();
-        $publisher   = new \simialbi\yii2\schemaorg\models\Organization();
-        $author      = new \simialbi\yii2\schemaorg\models\Person();
+        $news = new \simialbi\yii2\schemaorg\models\NewsArticle();
+        $publisher = new \simialbi\yii2\schemaorg\models\Organization();
+        $author = new \simialbi\yii2\schemaorg\models\Person();
         $userProfile = $this->createdUserProfile;
         if (!is_null($userProfile)) {
-            $logo            = new \simialbi\yii2\schemaorg\models\ImageObject();
+            $logo = new \simialbi\yii2\schemaorg\models\ImageObject();
             $publisher->name = $userProfile->nomeCognome;
-            $img             = $userProfile->userProfileImage;
+            $img = $userProfile->userProfileImage;
             if (!is_null($img)) {
                 $logo->url = $img->getWebUrl(false, true);
             }
             $publisher->logo = $logo;
-            $author->name    = $userProfile->nomeCognome;
+            $author->name = $userProfile->nomeCognome;
         }
-        $image     = new \simialbi\yii2\schemaorg\models\ImageObject();
+        $image = new \simialbi\yii2\schemaorg\models\ImageObject();
         $newsImage = $this->getNewsImage();
         if (!empty($newsImage)) {
             $image->url = $newsImage->getWebUrl(false, true);
         }
-        $news->author        = $author;
+        $news->author = $author;
         $news->datePublished = $this->data_pubblicazione;
-        $news->headline      = substr($this->getShortDescription(), 0, 110);
-        $news->image         = $image;
-        $news->publisher     = $publisher;
+        $news->headline = substr($this->getShortDescription(), 0, 110);
+        $news->image = $image;
+        $news->publisher = $publisher;
 
         \simialbi\yii2\schemaorg\helpers\JsonLDHelper::add($news);
 
         return \simialbi\yii2\schemaorg\helpers\JsonLDHelper::render();
+    }
+
+    /**
+     * @return string
+     */
+    public function getModelUrl()
+    {
+        if ($this->primo_piano) {
+            return \Yii::$app->params['platform']['frontendUrl'] . $this->getFullFrontendViewUrl();
+        } else
+            return \Yii::$app->params['platform']['backendUrl'] . $this->getFullViewUrl();
     }
 }

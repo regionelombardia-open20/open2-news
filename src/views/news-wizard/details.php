@@ -1,26 +1,26 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\news\views\news-wizard
+ * @package    open20\amos\news\views\news-wizard
  * @category   CategoryName
  */
 
-use lispa\amos\attachments\components\AttachmentsInput;
-use lispa\amos\core\forms\ActiveForm;
-use lispa\amos\core\forms\editors\Select;
-use lispa\amos\core\forms\WizardPrevAndContinueButtonWidget;
-use lispa\amos\news\AmosNews;
+use open20\amos\attachments\components\AttachmentsInput;
+use open20\amos\core\forms\ActiveForm;
+use open20\amos\core\forms\editors\Select;
+use open20\amos\core\forms\WizardPrevAndContinueButtonWidget;
+use open20\amos\news\AmosNews;
 use kartik\datecontrol\DateControl;
 use yii\helpers\ArrayHelper;
 use yii\redactor\widgets\Redactor;
 
 /**
  * @var yii\web\View $this
- * @var lispa\amos\news\models\News $model
+ * @var open20\amos\news\models\News $model
  * @var yii\widgets\ActiveForm $form
  */
 
@@ -90,7 +90,7 @@ $this->title = AmosNews::t('amosnews', '#news_wizard_page_title');
                         'id' => 'news_categorie_id-id',
                         'disabled' => false
                     ],
-                    'data' => ArrayHelper::map(\lispa\amos\news\utility\NewsUtility::getNewsCategories()->orderBy('titolo')->all(), 'id', 'titolo')
+                    'data' => ArrayHelper::map(\open20\amos\news\utility\NewsUtility::getNewsCategories()->orderBy('titolo')->all(), 'id', 'titolo')
                 ]); ?>
             </div>
             <div class="col-lg-6 col-sm-6">

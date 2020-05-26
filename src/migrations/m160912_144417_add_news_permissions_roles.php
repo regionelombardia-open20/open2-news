@@ -1,20 +1,20 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\news\migrations
+ * @package    open20\amos\news\migrations
  * @category   CategoryName
  */
 
-use lispa\amos\core\migration\AmosMigrationPermissions;
-use lispa\amos\news\models\News;
-use lispa\amos\news\rules\DeleteFacilitatorOwnNewsRule;
-use lispa\amos\news\rules\DeleteOwnNewsRule;
-use lispa\amos\news\rules\UpdateFacilitatorOwnNewsRule;
-use lispa\amos\news\rules\UpdateOwnNewsRule;
+use open20\amos\core\migration\AmosMigrationPermissions;
+use open20\amos\news\models\News;
+use open20\amos\news\rules\DeleteFacilitatorOwnNewsRule;
+use open20\amos\news\rules\DeleteOwnNewsRule;
+use open20\amos\news\rules\UpdateFacilitatorOwnNewsRule;
+use open20\amos\news\rules\UpdateOwnNewsRule;
 use yii\helpers\ArrayHelper;
 use yii\rbac\Permission;
 
@@ -260,37 +260,37 @@ class m160912_144417_add_news_permissions_roles extends AmosMigrationPermissions
     {
         return [
             [
-                'name' => lispa\amos\news\widgets\icons\WidgetIconNewsDashboard::className(),
+                'name' => open20\amos\news\widgets\icons\WidgetIconNewsDashboard::className(),
                 'type' => Permission::TYPE_PERMISSION,
                 'description' => 'Permesso per il widget WidgetIconNewsDashboard',
                 'parent' => ['AMMINISTRATORE_NEWS', 'FACILITATORE_NEWS']
             ],
             [
-                'name' => lispa\amos\news\widgets\icons\WidgetIconNews::className(),
+                'name' => open20\amos\news\widgets\icons\WidgetIconNews::className(),
                 'type' => Permission::TYPE_PERMISSION,
                 'description' => 'Permesso per il widget WidgetIconNews',
                 'parent' => ['LETTORE_NEWS', 'FACILITATORE_NEWS']
             ],
             [
-                'name' => lispa\amos\news\widgets\graphics\WidgetGraphicsUltimeNews::className(),
+                'name' => open20\amos\news\widgets\graphics\WidgetGraphicsUltimeNews::className(),
                 'type' => Permission::TYPE_PERMISSION,
                 'description' => 'Permesso per il widget WidgetGraphicsUltimeNews',
                 'parent' => ['LETTORE_NEWS', 'FACILITATORE_NEWS']
             ],
             [
-                'name' => lispa\amos\news\widgets\icons\WidgetIconNewsCategorie::className(),
+                'name' => open20\amos\news\widgets\icons\WidgetIconNewsCategorie::className(),
                 'type' => Permission::TYPE_PERMISSION,
                 'description' => 'Permesso per il widget WidgetIconNewsCategorie',
                 'parent' => ['AMMINISTRATORE_CATEGORIE_NEWS']
             ],
             [
-                'name' => lispa\amos\news\widgets\icons\WidgetIconNewsCreatedBy::className(),
+                'name' => open20\amos\news\widgets\icons\WidgetIconNewsCreatedBy::className(),
                 'type' => Permission::TYPE_PERMISSION,
                 'description' => 'Permesso per il widget WidgetIconNewsCreatedBy',
                 'parent' => ['CREATORE_NEWS', 'FACILITATORE_NEWS']
             ],
             [
-                'name' => lispa\amos\news\widgets\icons\WidgetIconNewsDaValidare::className(),
+                'name' => open20\amos\news\widgets\icons\WidgetIconNewsDaValidare::className(),
                 'type' => Permission::TYPE_PERMISSION,
                 'description' => 'Permesso per il widget WidgetIconNewsDaValidare',
                 'parent' => ['VALIDATORE_NEWS', 'FACILITATORE_NEWS']

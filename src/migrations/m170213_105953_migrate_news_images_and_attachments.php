@@ -1,18 +1,18 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\news
+ * @package    open20\amos\news
  * @category   CategoryName
  */
 
-use lispa\amos\attachments\components\FileImport;
-use lispa\amos\core\migration\libs\common\MigrationCommon;
-use lispa\amos\news\AmosNews;
-use lispa\amos\news\models\News;
+use open20\amos\attachments\components\FileImport;
+use open20\amos\core\migration\libs\common\MigrationCommon;
+use open20\amos\news\AmosNews;
+use open20\amos\news\models\News;
 use yii\db\Migration;
 use yii\db\Query;
 

@@ -1,25 +1,25 @@
 <?php
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\news
+ * @package    open20\amos\news
  * @category   CategoryName
  */
 
-namespace lispa\amos\news\controllers;
+namespace open20\amos\news\controllers;
 
-use lispa\amos\core\controllers\CrudController;
-use lispa\amos\core\helpers\BreadcrumbHelper;
-use lispa\amos\core\helpers\Html;
-use lispa\amos\core\icons\AmosIcons;
-use lispa\amos\cwh\query\CwhActiveQuery;
-use lispa\amos\dashboard\controllers\TabDashboardControllerTrait;
-use lispa\amos\news\AmosNews;
-use lispa\amos\news\assets\ModuleNewsAsset;
-use lispa\amos\news\models\News;
-use lispa\amos\news\models\search\NewsSearch;
+use open20\amos\core\controllers\CrudController;
+use open20\amos\core\helpers\BreadcrumbHelper;
+use open20\amos\core\helpers\Html;
+use open20\amos\core\icons\AmosIcons;
+use open20\amos\cwh\query\CwhActiveQuery;
+use open20\amos\dashboard\controllers\TabDashboardControllerTrait;
+use open20\amos\news\AmosNews;
+use open20\amos\news\assets\ModuleNewsAsset;
+use open20\amos\news\models\News;
+use open20\amos\news\models\search\NewsSearch;
 use raoul2000\workflow\base\WorkflowException;
 use Yii;
 use yii\filters\AccessControl;
@@ -28,14 +28,14 @@ use yii\helpers\ArrayHelper;
 use yii\helpers\Url;
 use yii\web\View;
 use ReflectionClass;
-use lispa\amos\core\widget\WidgetAbstract;
+use open20\amos\core\widget\WidgetAbstract;
 
 /**
  * Class NewsController
  *
  * NewsController implements the CRUD actions for News model.
  *
- * @package lispa\amos\news\controllers
+ * @package open20\amos\news\controllers
  */
 class NewsController extends CrudController
 {
@@ -249,7 +249,7 @@ class NewsController extends CrudController
         if (!empty($this->scope)) {
             if (isset($this->scope['community'])) {
                 $communityId                             = $this->scope['community'];
-                $community                               = \lispa\amos\community\models\Community::findOne($communityId);
+                $community                               = \open20\amos\community\models\Community::findOne($communityId);
                 $dashboardCommunityTitle                 = AmosNews::t('amosnews', "Dashboard").' '.$community->name;
                 $dasbboardCommunityUrl                   = Yii::$app->urlManager->createUrl(['community/join', 'id' => $communityId]);
                 Yii::$app->view->params['breadcrumbs'][] = ['label' => $dashboardCommunityTitle, 'url' => $dasbboardCommunityUrl];
@@ -258,7 +258,7 @@ class NewsController extends CrudController
     }
 
     /**
-     * Set a view param used in \lispa\amos\core\forms\CreateNewButtonWidget
+     * Set a view param used in \open20\amos\core\forms\CreateNewButtonWidget
      */
     private function setCreateNewBtnLabel()
     {
@@ -426,6 +426,8 @@ class NewsController extends CrudController
         $this->setUpLayout('form');
         $this->registerConfirmJs();
 
+        Yii::$app->view->params['textHelp']['filename'] = 'create_news_dashboard_description';
+
         $module = \Yii::$app->getModule(AmosNews::getModuleName());
         if ($module->hidePubblicationDate) {
             $scenario = News::SCENARIO_CREATE_HIDE_PUBBLICATION_DATE;
@@ -566,6 +568,7 @@ class NewsController extends CrudController
         $model = $this->findModel($id);
         $this->registerConfirmJs();
 
+        Yii::$app->view->params['textHelp']['filename'] = 'create_news_dashboard_description';
         $redirectToUpdatePage = false;
         if (Yii::$app->getUser()->can('NEWS_UPDATE', ['model' => $model])) {
             $redirectToUpdatePage = true;
@@ -683,6 +686,7 @@ class NewsController extends CrudController
     {
         Url::remember();
 
+        Yii::$app->view->params['textHelp']['filename'] = 'news_dashboard_description';
         $this->setDataProvider(
             $this->getModelSearch()
                 ->searchOwnNews(Yii::$app->request->getQueryParams())
@@ -728,6 +732,7 @@ class NewsController extends CrudController
     {
         Url::remember();
 
+        Yii::$app->view->params['textHelp']['filename'] = 'news_dashboard_description';
         $this->setDataProvider($this->getModelSearch()->searchToValidateNews(Yii::$app->request->getQueryParams()));
         $this->setTitleAndBreadcrumbs(AmosNews::t('amosnews', 'Notizie da validare'));
         $this->setListViewsParams();
@@ -773,6 +778,7 @@ class NewsController extends CrudController
             $currentView = reset($this->newsModule->defaultListViews);
         }
 
+        Yii::$app->view->params['textHelp']['filename'] = 'news_dashboard_description';
         $this->setDataProvider($this->getModelSearch()->searchAll(Yii::$app->request->getQueryParams()));
         $this->setTitleAndBreadcrumbs(AmosNews::t('amosnews', 'Tutte le notizie'));
         $this->setListViewsParams();
@@ -836,6 +842,7 @@ class NewsController extends CrudController
     {
         Url::remember();
 
+        Yii::$app->view->params['textHelp']['filename'] = 'news_dashboard_description';
         if (empty($currentView)) {
             $currentView = reset($this->newsModule->defaultListViews);
         }

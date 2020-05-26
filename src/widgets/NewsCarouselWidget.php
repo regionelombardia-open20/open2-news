@@ -1,23 +1,23 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\news\widgets
+ * @package    open20\amos\news\widgets
  * @category   CategoryName
  */
 
-namespace lispa\amos\news\widgets;
+namespace open20\amos\news\widgets;
 
-use lispa\amos\core\forms\AmosCarouselWidget;
-use lispa\amos\news\models\News;
+use open20\amos\core\forms\AmosCarouselWidget;
+use open20\amos\news\models\News;
 use yii\db\ActiveQuery;
 
 /**
  * Class NewsCarouselWidget
- * @package lispa\amos\news\widgets
+ * @package open20\amos\news\widgets
  */
 class NewsCarouselWidget extends AmosCarouselWidget
 {

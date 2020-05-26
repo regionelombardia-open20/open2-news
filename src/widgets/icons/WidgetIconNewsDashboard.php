@@ -1,22 +1,25 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\news
+ * @package    open20\amos\news
  * @category   CategoryName
  */
 
-namespace lispa\amos\news\widgets\icons;
+namespace open20\amos\news\widgets\icons;
 
-use lispa\amos\core\widget\WidgetIcon;
-use lispa\amos\dashboard\models\AmosUserDashboards;
-use lispa\amos\news\widgets\icons\WidgetIconAllNews;
-use lispa\amos\news\AmosNews;
-use lispa\amos\core\widget\WidgetAbstract;
-use lispa\amos\core\icons\AmosIcons;
+use open20\amos\core\widget\WidgetIcon;
+use open20\amos\core\widget\WidgetAbstract;
+use open20\amos\core\icons\AmosIcons;
+
+use open20\amos\dashboard\models\AmosUserDashboards;
+
+use open20\amos\news\widgets\icons\WidgetIconAllNews;
+use open20\amos\news\AmosNews;
+
 use Yii;
 use yii\base\Exception;
 use yii\helpers\ArrayHelper;
@@ -39,7 +42,7 @@ class WidgetIconNewsDashboard extends WidgetIcon
         $this->setLabel(AmosNews::tHtml('amosnews', 'Notizie'));
         $this->setDescription(AmosNews::t('amosnews', 'Modulo news'));
 
-        if (!empty(\Yii::$app->params['dashboardEngine']) && \Yii::$app->params['dashboardEngine'] == WidgetAbstract::ENGINE_ROWS) {
+        if (!empty(Yii::$app->params['dashboardEngine']) && Yii::$app->params['dashboardEngine'] == WidgetAbstract::ENGINE_ROWS) {
             $this->setIconFramework(AmosIcons::IC);
             $this->setIcon('news');
             $paramsClassSpan = [];
@@ -60,33 +63,35 @@ class WidgetIconNewsDashboard extends WidgetIcon
         );
 
         $this->setBulletCount(
-            $this->makeBulletCounter(\Yii::$app->user->id)
+            $this->makeBulletCounter(
+                Yii::$app->user->getId()
+            )
         );
     }
 
     /**
      * 
-     * @param type $user_id
+     * @param type $userId
      * @return type
      */
-    public function makeBulletCounter($user_id = null)
+    public function makeBulletCounter($userId = null, $className = null, $externalQuery = null)
     {
-        return $this->getBulletCountChildWidgets($user_id);
+        return $this->getBulletCountChildWidgets($userId);
     }
 
     /**
      * 
-     * @param type $user_id
+     * @param type $userId
      * @return int - the sum of bulletCount internal widget
      */
-    private function getBulletCountChildWidgets($user_id = null)
+    private function getBulletCountChildWidgets($userId = null)
     {
         $count = 0;
 
         try {
             /** @var AmosUserDashboards $userModuleDashboard */
             $userModuleDashboard = AmosUserDashboards::findOne([
-                'user_id' => $user_id,
+                'user_id' => $userId,
                 'module' => AmosNews::getModuleName()
             ]);
 

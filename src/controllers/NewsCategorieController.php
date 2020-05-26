@@ -1,28 +1,28 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\news
+ * @package    open20\amos\news
  * @category   CategoryName
  */
 
-namespace lispa\amos\news\controllers;
+namespace open20\amos\news\controllers;
 
-use lispa\amos\core\controllers\CrudController;
-use lispa\amos\core\helpers\Html;
-use lispa\amos\core\icons\AmosIcons;
-use lispa\amos\dashboard\controllers\TabDashboardControllerTrait;
-use lispa\amos\news\AmosNews;
-use lispa\amos\news\models\NewsCategorie;
-use lispa\amos\news\models\NewsCategoryCommunityMm;
-use lispa\amos\news\models\NewsCategoryRolesMm;
-use lispa\amos\news\models\search\NewsCategorieSearch;
+use open20\amos\core\controllers\CrudController;
+use open20\amos\core\helpers\Html;
+use open20\amos\core\icons\AmosIcons;
+use open20\amos\dashboard\controllers\TabDashboardControllerTrait;
+use open20\amos\news\AmosNews;
+use open20\amos\news\models\NewsCategorie;
+use open20\amos\news\models\NewsCategoryCommunityMm;
+use open20\amos\news\models\NewsCategoryRolesMm;
+use open20\amos\news\models\search\NewsCategorieSearch;
 use Yii;
 use yii\helpers\Url;
-use lispa\amos\core\widget\WidgetAbstract;
+use open20\amos\core\widget\WidgetAbstract;
 
 /**
  * Class NewsCategorieController
@@ -30,7 +30,7 @@ use lispa\amos\core\widget\WidgetAbstract;
  *
  * @property NewsCategorie $model
  *
- * @package lispa\amos\news\controllers
+ * @package open20\amos\news\controllers
  */
 class NewsCategorieController extends CrudController
 {
@@ -83,6 +83,7 @@ class NewsCategorieController extends CrudController
 
         $this->layout = 'list';
 
+        Yii::$app->view->params['textHelp']['filename'] = 'news_dashboard_description';
         $this->view->params['currentDashboard'] = $this->getCurrentDashboard();
 
         $this->setDataProvider($this->getModelSearch()->search(Yii::$app->request->getQueryParams()));
@@ -99,6 +100,7 @@ class NewsCategorieController extends CrudController
 
         $this->setUpLayout('main');
 
+        Yii::$app->view->params['textHelp']['filename'] = 'news_dashboard_description';
         $this->model = $this->findModel($id);
 
         if ($this->model->load(Yii::$app->request->post()) && $this->model->save()) {
@@ -120,6 +122,7 @@ class NewsCategorieController extends CrudController
 
         $this->model = new NewsCategorie;
 
+        Yii::$app->view->params['textHelp']['filename'] = 'create_news_dashboard_description';
         if ($this->model->load(Yii::$app->request->post())) {
             if ($this->model->validate()) {
                 if ($this->model->save()) {
@@ -150,7 +153,7 @@ class NewsCategorieController extends CrudController
     {
         $this->setUpLayout('form');
 
-
+        Yii::$app->view->params['textHelp']['filename'] = 'create_news_dashboard_description';
         $this->model = $this->findModel($id);
         $this->model->loadNewsCategoryCommunities();
         $this->model->loadNewsCategoryRoles();
@@ -213,7 +216,7 @@ class NewsCategorieController extends CrudController
         $module = \Yii::$app->getModule('layout');
         if (empty($module)) {
             if (strpos($this->layout, '@') === false) {
-                $this->layout = '@vendor/lispa/amos-core/views/layouts/' . (!empty($layout) ? $layout : $this->layout);
+                $this->layout = '@vendor/open20/amos-core/views/layouts/' . (!empty($layout) ? $layout : $this->layout);
             }
             return true;
         }

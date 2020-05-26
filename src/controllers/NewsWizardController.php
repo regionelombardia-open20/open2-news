@@ -1,23 +1,23 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\news\controllers
+ * @package    open20\amos\news\controllers
  * @category   CategoryName
  */
 
-namespace lispa\amos\news\controllers;
+namespace open20\amos\news\controllers;
 
-use lispa\amos\core\behaviors\TaggableBehavior;
-use lispa\amos\core\controllers\CrudController;
-use lispa\amos\core\module\BaseAmosModule;
-use lispa\amos\news\AmosNews;
-use lispa\amos\news\components\PartsWizardNewsCreation;
-use lispa\amos\news\models\News;
-use lispa\amos\news\models\search\NewsSearch;
+use open20\amos\core\behaviors\TaggableBehavior;
+use open20\amos\core\controllers\CrudController;
+use open20\amos\core\module\BaseAmosModule;
+use open20\amos\news\AmosNews;
+use open20\amos\news\components\PartsWizardNewsCreation;
+use open20\amos\news\models\News;
+use open20\amos\news\models\search\NewsSearch;
 use Yii;
 use yii\filters\AccessControl;
 use yii\filters\VerbFilter;
@@ -27,9 +27,9 @@ use yii\helpers\Url;
 /**
  * Class NewsWizardController
  *
- * @property \lispa\amos\news\models\News $model
+ * @property \open20\amos\news\models\News $model
  *
- * @package lispa\amos\news\controllers
+ * @package open20\amos\news\controllers
  */
 class NewsWizardController extends CrudController
 {
@@ -312,7 +312,7 @@ class NewsWizardController extends CrudController
         $module = \Yii::$app->getModule('layout');
         if (empty($module)) {
             if (strpos($this->layout, '@') === false) {
-                $this->layout = '@vendor/lispa/amos-core/views/layouts/'.(!empty($layout) ? $layout : $this->layout);
+                $this->layout = '@vendor/open20/amos-core/views/layouts/'.(!empty($layout) ? $layout : $this->layout);
             }
             return true;
         }

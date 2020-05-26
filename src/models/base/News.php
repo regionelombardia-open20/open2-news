@@ -1,18 +1,18 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\news\models\base
+ * @package    open20\amos\news\models\base
  * @category   CategoryName
  */
 
-namespace lispa\amos\news\models\base;
+namespace open20\amos\news\models\base;
 
-use lispa\amos\core\record\ContentModel;
-use lispa\amos\news\AmosNews;
+use open20\amos\core\record\ContentModel;
+use open20\amos\news\AmosNews;
 use yii\helpers\ArrayHelper;
 
 /**
@@ -46,14 +46,15 @@ use yii\helpers\ArrayHelper;
  * @property integer $deleted_by
  * @property integer $version
  *
- * @property \lispa\amos\news\models\NewsCategorie $newsCategorie
- * @property \lispa\amos\upload\models\FilemanagerMediafile $immagineNews
+ * @property \open20\amos\news\models\NewsCategorie $newsCategorie
+ * @property \open20\amos\upload\models\FilemanagerMediafile $immagineNews
  *
- * @package lispa\amos\news\models\base
+ * @package open20\amos\news\models\base
  */
 abstract class News extends ContentModel
 {
     /**
+     * @see    \yii\db\ActiveRecord::tableName()    for more info.
      */
     public static function tableName()
     {
@@ -61,6 +62,7 @@ abstract class News extends ContentModel
     }
 
     /**
+     * @see    \yii\base\Model::rules()    for more info.
      */
     public function rules()
     {
@@ -77,6 +79,7 @@ abstract class News extends ContentModel
     }
 
     /**
+     * @see    \open20\amos\core\record\Record::attributeLabels()    for more info.
      */
     public function attributeLabels()
     {
@@ -170,7 +173,7 @@ abstract class News extends ContentModel
      */
     public function getNewsCategorie()
     {
-        return $this->hasOne(\lispa\amos\news\models\NewsCategorie::className(), ['id' => 'news_categorie_id']);
+        return $this->hasOne(\open20\amos\news\models\NewsCategorie::className(), ['id' => 'news_categorie_id']);
     }
 
 
@@ -183,6 +186,6 @@ abstract class News extends ContentModel
      */
     public function getImmagineNews()
     {
-        return $this->hasOne(\lispa\amos\upload\models\FilemanagerMediafile::className(), ['id' => 'immagine']);
+        return $this->hasOne(\open20\amos\upload\models\FilemanagerMediafile::className(), ['id' => 'immagine']);
     }
 }

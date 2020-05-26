@@ -1,29 +1,32 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\news
+ * @package    open20\amos\news
  * @category   CategoryName
  */
 
-namespace lispa\amos\news\widgets\icons;
+namespace open20\amos\news\widgets\icons;
 
-use lispa\amos\core\widget\WidgetIcon;
-use lispa\amos\dashboard\models\AmosWidgets;
-use lispa\amos\news\AmosNews;
-use lispa\amos\news\models\search\NewsSearch;
-use lispa\amos\news\models\News;
-use lispa\amos\core\widget\WidgetAbstract;
-use lispa\amos\core\icons\AmosIcons;
+use open20\amos\core\widget\WidgetIcon;
+use open20\amos\core\widget\WidgetAbstract;
+use open20\amos\core\icons\AmosIcons;
+
+use open20\amos\dashboard\models\AmosWidgets;
+
+use open20\amos\news\AmosNews;
+use open20\amos\news\models\search\NewsSearch;
+use open20\amos\news\models\News;
+
 use Yii;
 use yii\helpers\ArrayHelper;
 
 /**
  * Class WidgetIconNews
- * @package lispa\amos\news\widgets\icons
+ * @package open20\amos\news\widgets\icons
  */
 class WidgetIconNews extends WidgetIcon
 {
@@ -43,7 +46,7 @@ class WidgetIconNews extends WidgetIcon
         $this->setLabel(AmosNews::tHtml('amosnews', 'Notizie di mio interesse'));
         $this->setDescription(AmosNews::t('amosnews', 'Visualizza le notizie di mio interesse'));
 
-        if (!empty(\Yii::$app->params['dashboardEngine']) && \Yii::$app->params['dashboardEngine'] == WidgetAbstract::ENGINE_ROWS) {
+        if (!empty(Yii::$app->params['dashboardEngine']) && Yii::$app->params['dashboardEngine'] == WidgetAbstract::ENGINE_ROWS) {
             $this->setIconFramework(AmosIcons::IC);
             $this->setIcon('news');
             $paramsClassSpan = [];
@@ -63,31 +66,14 @@ class WidgetIconNews extends WidgetIcon
             )
         );
 
-        $this->setBulletCount(
-            $this->makeBulletCounter(Yii::$app->getUser()->id)
-        );
-    }
-
-    /**
-     * 
-     * @param type $user_id
-     * @return type
-     */
-    public function makeBulletCounter($user_id = null)
-    {
         $search = new NewsSearch();
-        $notifier = Yii::$app->getModule('notify');
-        
-        $count = 0;
-        if ($notifier) {
-            $count = $notifier->countNotRead(
-                $user_id,
+        $this->setBulletCount(
+            $this->makeBulletCounter(
+                Yii::$app->getUser()->getId(),
                 News::className(),
                 $search->buildQuery([], 'own-interest')
-            );
-        }
-
-        return $count;
+            )
+        );
     }
 
     /**

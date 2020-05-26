@@ -1,5 +1,14 @@
 <?php
 
+/**
+ * Aria S.p.A.
+ * OPEN 2.0
+ *
+ *
+ * @package    Open20Package
+ * @category   CategoryName
+ */
+
 use yii\db\Migration;
 
 class m170605_073900_add_news_slug extends Migration
@@ -8,7 +17,7 @@ class m170605_073900_add_news_slug extends Migration
     public function safeUp()
     {
 
-        $this->addColumn(\lispa\amos\news\models\News::tableName(), 'slug',
+        $this->addColumn(\open20\amos\news\models\News::tableName(), 'slug',
             $this->text()
                 ->null()
                 ->after('id')
@@ -19,7 +28,7 @@ class m170605_073900_add_news_slug extends Migration
 
     public function safeDown()
     {
-        $this->dropColumn(\lispa\amos\news\models\News::tableName(), 'slug');
+        $this->dropColumn(\open20\amos\news\models\News::tableName(), 'slug');
 
         return true;
     }

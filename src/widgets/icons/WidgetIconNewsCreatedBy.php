@@ -1,28 +1,30 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\news
+ * @package    open20\amos\news
  * @category   CategoryName
  */
 
-namespace lispa\amos\news\widgets\icons;
+namespace open20\amos\news\widgets\icons;
 
-use lispa\amos\core\widget\WidgetIcon;
-use lispa\amos\news\AmosNews;
-use lispa\amos\news\models\search\NewsSearch;
-use lispa\amos\news\models\News;
-use lispa\amos\core\widget\WidgetAbstract;
-use lispa\amos\core\icons\AmosIcons;
+use open20\amos\core\widget\WidgetIcon;
+use open20\amos\core\widget\WidgetAbstract;
+use open20\amos\core\icons\AmosIcons;
+
+use open20\amos\news\AmosNews;
+use open20\amos\news\models\search\NewsSearch;
+use open20\amos\news\models\News;
+
 use Yii;
 use yii\helpers\ArrayHelper;
 
 /**
  * Class WidgetIconNewsCreatedBy
- * @package lispa\amos\news\widgets\icons
+ * @package open20\amos\news\widgets\icons
  */
 class WidgetIconNewsCreatedBy extends WidgetIcon
 {
@@ -41,7 +43,7 @@ class WidgetIconNewsCreatedBy extends WidgetIcon
         $this->setLabel(AmosNews::tHtml('amosnews', 'Notizie create da me'));
         $this->setDescription(AmosNews::t('amosnews', 'Visualizza le notizie create da me'));
 
-        if (!empty(\Yii::$app->params['dashboardEngine']) && \Yii::$app->params['dashboardEngine'] == WidgetAbstract::ENGINE_ROWS) {
+        if (!empty(Yii::$app->params['dashboardEngine']) && Yii::$app->params['dashboardEngine'] == WidgetAbstract::ENGINE_ROWS) {
             $this->setIconFramework(AmosIcons::IC);
             $this->setIcon('news');
             $paramsClassSpan = [];
@@ -61,26 +63,14 @@ class WidgetIconNewsCreatedBy extends WidgetIcon
             )
         );
 
-        $this->setBulletCount(
-            $this->makeBulletCounter(null)
-        );
-    }
-
-    /**
-     * Make the number to set in the bullet count.
-     * 
-     * @param type $user_id
-     * @return type
-     */
-    public function makeBulletCounter($user_id = null)
-    {
-        $modelSearch = new NewsSearch();
-        $dataProvider = $modelSearch->searchOwnNews([]);
-
-        return $dataProvider->query
-            ->andWhere([News::tableName() . '.status' => News::NEWS_WORKFLOW_STATUS_BOZZA])
-            ->asArray()
-            ->count();
+//        $search = new NewsSearch();
+//        $this->setBulletCount(
+//            $this->makeBulletCounter(
+//                Yii::$app->getUser()->getId(),
+//                News::className(),
+//                $search->searchCreatedByMeQuery([])
+//            )
+//        );
     }
 
     /**

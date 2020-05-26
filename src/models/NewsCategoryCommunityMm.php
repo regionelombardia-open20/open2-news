@@ -1,6 +1,15 @@
 <?php
 
-namespace lispa\amos\news\models;
+/**
+ * Aria S.p.A.
+ * OPEN 2.0
+ *
+ *
+ * @package    Open20Package
+ * @category   CategoryName
+ */
+
+namespace open20\amos\news\models;
 
 use Yii;
 use yii\helpers\ArrayHelper;
@@ -8,7 +17,7 @@ use yii\helpers\ArrayHelper;
 /**
  * This is the model class for table "news_category_community_mm".
  */
-class NewsCategoryCommunityMm extends \lispa\amos\news\models\base\NewsCategoryCommunityMm
+class NewsCategoryCommunityMm extends \open20\amos\news\models\base\NewsCategoryCommunityMm
 {
     public function representingColumn()
     {
@@ -27,6 +36,7 @@ class NewsCategoryCommunityMm extends \lispa\amos\news\models\base\NewsCategoryC
      * Returns the text hint for the specified attribute.
      * @param string $attribute the attribute name
      * @return string the attribute hint
+     * @see attributeHints
      */
     public function getAttributeHint($attribute)
     {

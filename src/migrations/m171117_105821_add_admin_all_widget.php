@@ -1,16 +1,16 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\news\migrations
+ * @package    open20\amos\news\migrations
  * @category   CategoryName
  */
 
 use yii\db\Migration;
-use lispa\amos\dashboard\models\AmosWidgets;
+use open20\amos\dashboard\models\AmosWidgets;
 
 /**
  * Class m171117_105821_add_admin_all_widget
@@ -24,11 +24,11 @@ class m171117_105821_add_admin_all_widget extends Migration
     {
         $this->widgets = [
             [
-                'classname' => \lispa\amos\news\widgets\icons\WidgetIconAdminAllNews::className(),
+                'classname' => \open20\amos\news\widgets\icons\WidgetIconAdminAllNews::className(),
                 'type' => AmosWidgets::TYPE_ICON,
                 'module' => self::MODULE_NAME,
                 'status' => AmosWidgets::STATUS_ENABLED,
-                'child_of' => \lispa\amos\news\widgets\icons\WidgetIconNewsDashboard::className(),
+                'child_of' => \open20\amos\news\widgets\icons\WidgetIconNewsDashboard::className(),
                 'default_order' => 80
             ],
 

@@ -1,26 +1,26 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\news\views\news
+ * @package    open20\amos\news\views\news
  * @category   CategoryName
  */
-use lispa\amos\core\helpers\Html;
-use lispa\amos\core\icons\AmosIcons;
-use lispa\amos\core\utilities\ModalUtility;
-use lispa\amos\core\views\DataProviderView;
-use lispa\amos\news\AmosNews;
-use lispa\amos\news\models\News;
-use lispa\amos\news\widgets\NewsCarouselWidget;
+use open20\amos\core\helpers\Html;
+use open20\amos\core\icons\AmosIcons;
+use open20\amos\core\utilities\ModalUtility;
+use open20\amos\core\views\DataProviderView;
+use open20\amos\news\AmosNews;
+use open20\amos\news\models\News;
+use open20\amos\news\widgets\NewsCarouselWidget;
 
 /**
  * @var yii\web\View $this
  * @var yii\data\ActiveDataProvider $dataProvider
- * @var lispa\amos\news\models\search\NewsSearch $searchModel
- * @var \lispa\amos\dashboard\models\AmosUserDashboards $currentDashboard
+ * @var open20\amos\news\models\search\NewsSearch $searchModel
+ * @var \open20\amos\dashboard\models\AmosUserDashboards $currentDashboard
  * @var string $currentView
  */
 $actionColumnDefault = '{view}{update}{delete}';
@@ -63,7 +63,7 @@ $queryParamCurrentView = Yii::$app->request->getQueryParam('currentView');
               /** @var News $model */
               $url = '/img/img_default.jpg';
               if (!is_null($model->newsImage)) {
-                $url = $model->newsImage->getUrl('square_large', false, true);
+                $url = $model->newsImage->getUrl('table_small', false, true);
               }
               $contentImage = Html::img($url, ['class' => 'gridview-image', 'alt' => AmosNews::t('amosnews', 'Immagine della notizia')]);
               
@@ -110,7 +110,7 @@ $queryParamCurrentView = Yii::$app->request->getQueryParam('currentView');
           ],
 //            ['attribute'=>'data_rimozione','format'=>['date',(isset(Yii::$app->modules['datecontrol']['displaySettings']['date'])) ? Yii::$app->modules['datecontrol']['displaySettings']['date'] : 'd-m-Y']],
           [
-            'class' => 'lispa\amos\core\views\grid\ActionColumn',
+            'class' => 'open20\amos\core\views\grid\ActionColumn',
             'template' => $actionColumn,
             'buttons' => [
               'validate' => function ($url, $model) {

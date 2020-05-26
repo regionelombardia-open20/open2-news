@@ -1,16 +1,16 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\news
+ * @package    open20\amos\news
  * @category   CategoryName
  */
 
 use yii\db\Migration;
-use lispa\amos\news\models\News;
+use open20\amos\news\models\News;
 
 class m160912_085025_create_news_workflow extends Migration
 {

@@ -1,22 +1,22 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\news
+ * @package    open20\amos\news
  * @category   CategoryName
  */
 
-namespace lispa\amos\news\assets;
+namespace open20\amos\news\assets;
 
 use yii\web\AssetBundle;
-use lispa\amos\core\widget\WidgetAbstract;
+use open20\amos\core\widget\WidgetAbstract;
 
 class ModuleNewsAsset extends AssetBundle
 {
-    public $sourcePath = '@vendor/lispa/amos-news/src/assets/web';
+    public $sourcePath = '@vendor/open20/amos-news/src/assets/web';
 
     public $css = [
         'less/news.less',
@@ -37,9 +37,9 @@ class ModuleNewsAsset extends AssetBundle
         }
 
         if(!empty($moduleL)){
-            $this->depends [] = 'lispa\amos\layout\assets\BaseAsset';
+            $this->depends [] = 'open20\amos\layout\assets\BaseAsset';
         }else{
-            $this->depends [] = 'lispa\amos\core\views\assets\AmosCoreAsset';
+            $this->depends [] = 'open20\amos\core\views\assets\AmosCoreAsset';
         }
         parent::init();
     }

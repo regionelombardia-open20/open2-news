@@ -1,24 +1,24 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\news\views\news
+ * @package    open20\amos\news\views\news
  * @category   CategoryName
  */
 
-use lispa\amos\core\forms\ContextMenuWidget;
-use lispa\amos\core\forms\ItemAndCardHeaderWidget;
-use lispa\amos\core\forms\PublishedByWidget;
-use lispa\amos\core\helpers\Html;
-use lispa\amos\core\views\toolbars\StatsToolbar;
-use lispa\amos\news\AmosNews;
-use lispa\amos\notificationmanager\forms\NewsWidget;
+use open20\amos\core\forms\ContextMenuWidget;
+use open20\amos\core\forms\ItemAndCardHeaderWidget;
+use open20\amos\core\forms\PublishedByWidget;
+use open20\amos\core\helpers\Html;
+use open20\amos\core\views\toolbars\StatsToolbar;
+use open20\amos\news\AmosNews;
+use open20\amos\notificationmanager\forms\NewsWidget;
 
 /**
- * @var \lispa\amos\news\models\News $model
+ * @var \open20\amos\news\models\News $model
  */
 ?>
 <div class="listview-container news-item grid-item nop">
@@ -38,7 +38,7 @@ use lispa\amos\notificationmanager\forms\NewsWidget;
             <?php
             $url = '/img/img_default.jpg';
             if (!is_null($model->newsImage)) {
-                $url = $model->newsImage->getUrl('square_medium', false, true);
+                $url = $model->newsImage->getUrl('item_news', false, true);
             }
             $contentImage = Html::img($url, [
                 'class' => 'img-responsive',

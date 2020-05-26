@@ -1,18 +1,18 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\news\models\base
+ * @package    open20\amos\news\models\base
  * @category   CategoryName
  */
 
-namespace lispa\amos\news\models\base;
+namespace open20\amos\news\models\base;
 
-use lispa\amos\core\record\Record;
-use lispa\amos\news\AmosNews;
+use open20\amos\core\record\Record;
+use open20\amos\news\AmosNews;
 use yii\helpers\ArrayHelper;
 
 /**
@@ -34,11 +34,11 @@ use yii\helpers\ArrayHelper;
  * @property integer $deleted_by
  * @property integer $version
  *
- * @property \lispa\amos\news\models\News $news
- * @property \lispa\amos\news\models\NewsCategoryRolesMm[] $newsCategoryRolesMms
- * @property \lispa\amos\news\models\NewsCategoryCommunityMm[] $newsCategoryCommunityMms
+ * @property \open20\amos\news\models\News $news
+ * @property \open20\amos\news\models\NewsCategoryRolesMm[] $newsCategoryRolesMms
+ * @property \open20\amos\news\models\NewsCategoryCommunityMm[] $newsCategoryCommunityMms
  *
- * @package lispa\amos\news\models\base
+ * @package open20\amos\news\models\base
  */
 class NewsCategorie extends Record
 {
@@ -94,7 +94,7 @@ class NewsCategorie extends Record
      */
     public function getNews()
     {
-        return $this->hasMany(\lispa\amos\news\models\News::className(), ['news_categorie_id' => 'id']);
+        return $this->hasMany(\open20\amos\news\models\News::className(), ['news_categorie_id' => 'id']);
     }
 
     /**
@@ -105,7 +105,7 @@ class NewsCategorie extends Record
      */
     public function getNewsCategoryRolesMms()
     {
-        return $this->hasMany(\lispa\amos\news\models\NewsCategoryRolesMm::className(), ['news_category_id' => 'id']);
+        return $this->hasMany(\open20\amos\news\models\NewsCategoryRolesMm::className(), ['news_category_id' => 'id']);
     }
 
     /**
@@ -116,6 +116,6 @@ class NewsCategorie extends Record
      */
     public function getNewsCategoryCommunityMms()
     {
-        return $this->hasMany(\lispa\amos\news\models\NewsCategoryCommunityMm::className(), ['news_category_id' => 'id']);
+        return $this->hasMany(\open20\amos\news\models\NewsCategoryCommunityMm::className(), ['news_category_id' => 'id']);
     }
 }

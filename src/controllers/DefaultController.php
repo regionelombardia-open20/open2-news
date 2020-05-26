@@ -1,17 +1,17 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\news\controllers
+ * @package    open20\amos\news\controllers
  * @category   CategoryName
  */
 
-namespace lispa\amos\news\controllers;
+namespace open20\amos\news\controllers;
 
-use lispa\amos\dashboard\controllers\base\DashboardController;
+use open20\amos\dashboard\controllers\base\DashboardController;
 use yii\helpers\Url;
 
 class DefaultController extends DashboardController
@@ -43,6 +43,7 @@ class DefaultController extends DashboardController
         }
         return $this->redirect([$url]);
 
+        Yii::$app->view->params['textHelp']['filename'] = 'news_dashboard_description';
         Url::remember();
         $params = [
             'currentDashboard' => $this->getCurrentDashboard()
@@ -65,7 +66,7 @@ class DefaultController extends DashboardController
         $module = \Yii::$app->getModule('layout');
         if (empty($module)) {
             if (strpos($this->layout, '@') === false) {
-                $this->layout = '@vendor/lispa/amos-core/views/layouts/'.(!empty($layout) ? $layout : $this->layout);
+                $this->layout = '@vendor/open20/amos-core/views/layouts/'.(!empty($layout) ? $layout : $this->layout);
             }
             return true;
         }

@@ -1,26 +1,26 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\news\views\news-wizard
+ * @package    open20\amos\news\views\news-wizard
  * @category   CategoryName
  */
 
-use lispa\amos\core\forms\ActiveForm;
-use lispa\amos\core\forms\PublishedByWidget;
-use lispa\amos\core\forms\ShowUserTagsWidget;
-use lispa\amos\core\helpers\Html;
-use lispa\amos\core\icons\AmosIcons;
-use lispa\amos\news\AmosNews;
-use lispa\amos\news\models\News;
+use open20\amos\core\forms\ActiveForm;
+use open20\amos\core\forms\PublishedByWidget;
+use open20\amos\core\forms\ShowUserTagsWidget;
+use open20\amos\core\helpers\Html;
+use open20\amos\core\icons\AmosIcons;
+use open20\amos\news\AmosNews;
+use open20\amos\news\models\News;
 use yii\web\View;
 
 /**
  * @var yii\web\View $this
- * @var lispa\amos\news\models\News $model
+ * @var open20\amos\news\models\News $model
  * @var yii\widgets\ActiveForm $form
  * @var string $viewPublish
  * @var string $viewPublishRequest
@@ -114,7 +114,7 @@ $hideWorkflow = isset(Yii::$app->params['hideWorkflowTransitionWidget']) && Yii:
                             'layout' => '{publisher}{publishingRules}{targetAdv}',
                             'renderSections' => [
                                 '{publisher}' => function ($model, $widget) {
-                                    /** @var \lispa\amos\core\forms\PublishedByWidget $widget */
+                                    /** @var \open20\amos\core\forms\PublishedByWidget $widget */
                                     /** @var News $model */
                                     $content = Html::beginTag('dl');
                                     $content .= Html::beginTag('dt') . AmosNews::tHtml('amosnews', 'Published by') . Html::endTag('dt');
@@ -123,19 +123,19 @@ $hideWorkflow = isset(Yii::$app->params['hideWorkflowTransitionWidget']) && Yii:
                                     return $content;
                                 },
                                 '{publishingRules}' => function ($model, $widget) {
-                                    /** @var \lispa\amos\core\forms\PublishedByWidget $widget */
+                                    /** @var \open20\amos\core\forms\PublishedByWidget $widget */
                                     /** @var News $model */
                                     $content = Html::beginTag('dl');
                                     $content .= Html::beginTag('dt') . AmosNews::tHtml('amosnews', 'Publication rule') . Html::endTag('dt');
-                                    $content .= Html::beginTag('dd') . \lispa\amos\cwh\utility\CwhUtil::getPublicationRuleLabel($model->regola_pubblicazione) . Html::endTag('dd');
+                                    $content .= Html::beginTag('dd') . \open20\amos\cwh\utility\CwhUtil::getPublicationRuleLabel($model->regola_pubblicazione) . Html::endTag('dd');
                                     $content .= Html::endTag('dl');
                                     return $content;
                                 },
                                 '{targetAdv}' => function ($model, $widget) {
-                                    /** @var \lispa\amos\core\forms\PublishedByWidget $widget */
+                                    /** @var \open20\amos\core\forms\PublishedByWidget $widget */
                                     /** @var News $model */
                                     $targets = $model->destinatari;
-                                    $publicationRule = \lispa\amos\cwh\utility\CwhUtil::getPublicationRuleLabel($model->regola_pubblicazione);
+                                    $publicationRule = \open20\amos\cwh\utility\CwhUtil::getPublicationRuleLabel($model->regola_pubblicazione);
                                     $targetsString = $widget->getNodesAsString($targets);
                                     $content = Html::beginTag('dl');
                                     $content .= Html::beginTag('dt') . AmosNews::tHtml('amosnews', 'Recipients') . Html::endTag('dt');
@@ -188,7 +188,7 @@ $hideWorkflow = isset(Yii::$app->params['hideWorkflowTransitionWidget']) && Yii:
     <?php endif; ?>
 </div>
 
-<?= \lispa\amos\core\forms\WizardPrevAndContinueButtonWidget::widget([
+<?= \open20\amos\core\forms\WizardPrevAndContinueButtonWidget::widget([
     'model' => $model,
     'previousUrl' => Yii::$app->getUrlManager()->createUrl(['/news/news-wizard/publication', 'id' => $model->id]),
     'cancelUrl' => $hideWorkflow ? '' : Yii::$app->session->get(AmosNews::beginCreateNewSessionKey()),

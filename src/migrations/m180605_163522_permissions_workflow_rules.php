@@ -1,15 +1,15 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\news\migrations
+ * @package    open20\amos\news\migrations
  * @category   CategoryName
  */
 
-use lispa\amos\core\migration\AmosMigrationPermissions;
+use open20\amos\core\migration\AmosMigrationPermissions;
 use yii\rbac\Permission;
 
 /**
@@ -24,10 +24,10 @@ class m180605_163522_permissions_workflow_rules extends AmosMigrationPermissions
     {
         return [
             [
-                'name' => \lispa\amos\news\rules\workflow\NewsToValidateWorkflowRule::className(),
+                'name' => \open20\amos\news\rules\workflow\NewsToValidateWorkflowRule::className(),
                 'type' => Permission::TYPE_PERMISSION,
                 'description' => 'Check if you are an author',
-                'ruleName' => \lispa\amos\news\rules\workflow\NewsToValidateWorkflowRule::className(),
+                'ruleName' => \open20\amos\news\rules\workflow\NewsToValidateWorkflowRule::className(),
                 'parent' => ['CREATORE_NEWS', 'FACILITATORE_NEWS', 'NewsValidate', 'VALIDATORE_NEWS']
             ],
             [
@@ -35,7 +35,7 @@ class m180605_163522_permissions_workflow_rules extends AmosMigrationPermissions
                 'update' => true,
                 'newValues' => [
                     'addParents' => [
-                        \lispa\amos\news\rules\workflow\NewsToValidateWorkflowRule::className()
+                        \open20\amos\news\rules\workflow\NewsToValidateWorkflowRule::className()
                     ],
                     'removeParents' => [
                         'CREATORE_NEWS', 'FACILITATORE_NEWS', 'NewsValidate', 'VALIDATORE_NEWS'

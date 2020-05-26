@@ -1,17 +1,17 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\news
+ * @package    open20\amos\news
  * @category   CategoryName
  */
 
-namespace lispa\amos\news\rules;
+namespace open20\amos\news\rules;
 
-use lispa\amos\admin\rules\DefaultFacilitatorOwnContentRule;
+use open20\amos\admin\rules\DefaultFacilitatorOwnContentRule;
 
 class UpdateFacilitatorOwnNewsRule extends DefaultFacilitatorOwnContentRule
 {

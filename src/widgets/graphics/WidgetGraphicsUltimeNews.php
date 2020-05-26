@@ -1,21 +1,21 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\news\widgets\graphics
+ * @package    open20\amos\news\widgets\graphics
  * @category   CategoryName
  */
 
-namespace lispa\amos\news\widgets\graphics;
+namespace open20\amos\news\widgets\graphics;
 
-use lispa\amos\core\widget\WidgetAbstract;
-use lispa\amos\core\widget\WidgetGraphic;
-use lispa\amos\news\AmosNews;
-use lispa\amos\news\models\search\NewsSearch;
-use lispa\amos\notificationmanager\base\NotifyWidgetDoNothing;
+use open20\amos\core\widget\WidgetAbstract;
+use open20\amos\core\widget\WidgetGraphic;
+use open20\amos\news\AmosNews;
+use open20\amos\news\models\search\NewsSearch;
+use open20\amos\notificationmanager\base\NotifyWidgetDoNothing;
 
 class WidgetGraphicsUltimeNews extends WidgetGraphic {
 
@@ -38,7 +38,7 @@ class WidgetGraphicsUltimeNews extends WidgetGraphic {
     $search = new NewsSearch();    
     $search->setNotifier(new NotifyWidgetDoNothing());
 
-    $viewPath = '@vendor/lispa/amos-news/src/widgets/graphics/views/';   
+    $viewPath = '@vendor/open20/amos-news/src/widgets/graphics/views/';   
     $viewToRender = $viewPath . 'ultime_news';
 
     $newsLimit = AmosNews::MAX_LAST_NEWS_ON_DASHBOARD;

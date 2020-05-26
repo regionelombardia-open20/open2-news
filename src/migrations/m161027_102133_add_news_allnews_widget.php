@@ -1,16 +1,16 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\news
+ * @package    open20\amos\news
  * @category   CategoryName
  */
 
-use lispa\amos\core\migration\AmosMigrationWidgets;
-use lispa\amos\dashboard\models\AmosWidgets;
+use open20\amos\core\migration\AmosMigrationWidgets;
+use open20\amos\dashboard\models\AmosWidgets;
 
 class m161027_102133_add_news_allnews_widget extends AmosMigrationWidgets
 {
@@ -23,11 +23,11 @@ class m161027_102133_add_news_allnews_widget extends AmosMigrationWidgets
     {
         $this->widgets = [
             [
-                'classname' => \lispa\amos\news\widgets\icons\WidgetIconAllNews::className(),
+                'classname' => \open20\amos\news\widgets\icons\WidgetIconAllNews::className(),
                 'type' => AmosWidgets::TYPE_ICON,
                 'module' => self::MODULE_NAME,
                 'status' => AmosWidgets::STATUS_ENABLED,
-                'child_of' => \lispa\amos\news\widgets\icons\WidgetIconNewsDashboard::className()
+                'child_of' => \open20\amos\news\widgets\icons\WidgetIconNewsDashboard::className()
             ]
         ];
     }

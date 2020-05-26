@@ -1,22 +1,22 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\news\views\news-wizard
+ * @package    open20\amos\news\views\news-wizard
  * @category   CategoryName
  */
 
-use lispa\amos\core\forms\ActiveForm;
-use lispa\amos\core\forms\WizardPrevAndContinueButtonWidget;
-use lispa\amos\news\AmosNews;
+use open20\amos\core\forms\ActiveForm;
+use open20\amos\core\forms\WizardPrevAndContinueButtonWidget;
+use open20\amos\news\AmosNews;
 use yii\base\Widget;
 
 /**
  * @var yii\web\View $this
- * @var lispa\amos\news\models\News $model
+ * @var open20\amos\news\models\News $model
  * @var yii\widgets\ActiveForm $form
  */
 
@@ -39,8 +39,8 @@ $this->title = AmosNews::t('amosnews', '#news_wizard_page_title');
             <div class="col-xs-12">
                 <?php $moduleCwh = Yii::$app->getModule('cwh'); ?>
                 <?php if (isset($moduleCwh) && in_array(get_class($model), $moduleCwh->modelsEnabled) && $moduleCwh->behaviors): ?>
-                    <?php /**@var \lispa\amos\cwh\AmosCwh $moduleCwh */ ?>
-                    <?= Yii::$app->controller->renderFile('@vendor/lispa/amos-cwh/src/views/pubblicazione/cwh.php', [
+                    <?php /**@var \open20\amos\cwh\AmosCwh $moduleCwh */ ?>
+                    <?= Yii::$app->controller->renderFile('@vendor/open20/amos-cwh/src/views/pubblicazione/cwh.php', [
                         'model' => $model,
                         'form' => Widget::$stack[0]
                     ]); ?>
@@ -51,8 +51,8 @@ $this->title = AmosNews::t('amosnews', '#news_wizard_page_title');
             <div class="col-xs-12">
                 <?php $moduleTag = Yii::$app->getModule('tag'); ?>
                 <?php if (isset($moduleTag) && in_array(get_class($model), $moduleTag->modelsEnabled) && $moduleTag->behaviors): ?>
-                    <?php /**@var \lispa\amos\tag\AmosTag $moduleTag */ ?>
-                    <?= \lispa\amos\tag\widgets\TagWidget::widget([
+                    <?php /**@var \open20\amos\tag\AmosTag $moduleTag */ ?>
+                    <?= \open20\amos\tag\widgets\TagWidget::widget([
                         'model' => $model,
                         'attribute' => 'tagValues',
                         'form' => Widget::$stack[0]

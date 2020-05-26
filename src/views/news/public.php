@@ -1,39 +1,39 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\news
+ * @package    open20\amos\news
  * @category   CategoryName
  */
 
-use lispa\amos\attachments\components\AttachmentsTableWithPreview;
-use lispa\amos\core\forms\ContextMenuWidget;
-use lispa\amos\core\forms\ItemAndCardHeaderWidget;
-use lispa\amos\core\forms\PublishedByWidget;
-use lispa\amos\core\forms\ShowUserTagsWidget;
-use lispa\amos\core\helpers\Html;
-use lispa\amos\core\icons\AmosIcons;
-use lispa\amos\core\views\toolbars\StatsToolbar;
-use lispa\amos\news\AmosNews;
-use lispa\amos\core\forms\CreatedUpdatedWidget;
-use lispa\amos\attachments\components\AttachmentsList;
-use lispa\amos\core\forms\InteractionMenuWidget;
-use lispa\amos\news\assets\ModuleNewsAsset;
-use \lispa\amos\news\models\News;
+use open20\amos\attachments\components\AttachmentsTableWithPreview;
+use open20\amos\core\forms\ContextMenuWidget;
+use open20\amos\core\forms\ItemAndCardHeaderWidget;
+use open20\amos\core\forms\PublishedByWidget;
+use open20\amos\core\forms\ShowUserTagsWidget;
+use open20\amos\core\helpers\Html;
+use open20\amos\core\icons\AmosIcons;
+use open20\amos\core\views\toolbars\StatsToolbar;
+use open20\amos\news\AmosNews;
+use open20\amos\core\forms\CreatedUpdatedWidget;
+use open20\amos\attachments\components\AttachmentsList;
+use open20\amos\core\forms\InteractionMenuWidget;
+use open20\amos\news\assets\ModuleNewsAsset;
+use \open20\amos\news\models\News;
 ModuleNewsAsset::register($this);
 
 /**
  * @var yii\web\View $this
- * @var lispa\amos\news\models\News $model
+ * @var open20\amos\news\models\News $model
  */
 
 $this->title = $model->titolo;
 
 
-/** @var \lispa\amos\news\controllers\NewsController $controller */
+/** @var \open20\amos\news\controllers\NewsController $controller */
 $url = '/img/img_default.jpg';
 if (!is_null($model->newsImage)) {
     $url = $model->newsImage->getWebUrl('square_large', false, true);

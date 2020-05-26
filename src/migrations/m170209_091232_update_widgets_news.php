@@ -1,16 +1,16 @@
 <?php
 
 /**
- * Lombardia Informatica S.p.A.
+ * Aria S.p.A.
  * OPEN 2.0
  *
  *
- * @package    lispa\amos\news
+ * @package    open20\amos\news
  * @category   CategoryName
  */
 
-use lispa\amos\core\migration\AmosMigrationWidgets;
-use lispa\amos\dashboard\models\AmosWidgets;
+use open20\amos\core\migration\AmosMigrationWidgets;
+use open20\amos\dashboard\models\AmosWidgets;
 
 /**
  * Class m170209_091232_update_widgets_news
@@ -38,7 +38,7 @@ class m170209_091232_update_widgets_news extends AmosMigrationWidgets
     {
         return [
             [
-                'classname' => lispa\amos\news\widgets\icons\WidgetIconNewsDashboard::className(),
+                'classname' => open20\amos\news\widgets\icons\WidgetIconNewsDashboard::className(),
                 'type' => AmosWidgets::TYPE_ICON,
                 'module' => self::MODULE_NAME,
                 'status' => AmosWidgets::STATUS_ENABLED,
@@ -46,47 +46,47 @@ class m170209_091232_update_widgets_news extends AmosMigrationWidgets
                 'update' => true
             ],
             [
-                'classname' => \lispa\amos\news\widgets\icons\WidgetIconNews::className(),
+                'classname' => \open20\amos\news\widgets\icons\WidgetIconNews::className(),
                 'type' => AmosWidgets::TYPE_ICON,
                 'module' => self::MODULE_NAME,
                 'status' => AmosWidgets::STATUS_ENABLED,
-                'child_of' => \lispa\amos\news\widgets\icons\WidgetIconNewsDashboard::className(),
+                'child_of' => \open20\amos\news\widgets\icons\WidgetIconNewsDashboard::className(),
                 'default_order' => 10,
                 'update' => true
             ],
             [
-                'classname' => lispa\amos\news\widgets\icons\WidgetIconNewsCreatedBy::className(),
+                'classname' => open20\amos\news\widgets\icons\WidgetIconNewsCreatedBy::className(),
                 'type' => AmosWidgets::TYPE_ICON,
                 'module' => self::MODULE_NAME,
                 'status' => AmosWidgets::STATUS_ENABLED,
-                'child_of' => \lispa\amos\news\widgets\icons\WidgetIconNewsDashboard::className(),
+                'child_of' => \open20\amos\news\widgets\icons\WidgetIconNewsDashboard::className(),
                 'default_order' => 30,
                 'update' => true
             ],
             [
-                'classname' => \lispa\amos\news\widgets\icons\WidgetIconAllNews::className(),
+                'classname' => \open20\amos\news\widgets\icons\WidgetIconAllNews::className(),
                 'type' => AmosWidgets::TYPE_ICON,
                 'module' => self::MODULE_NAME,
                 'status' => AmosWidgets::STATUS_ENABLED,
-                'child_of' => \lispa\amos\news\widgets\icons\WidgetIconNewsDashboard::className(),
+                'child_of' => \open20\amos\news\widgets\icons\WidgetIconNewsDashboard::className(),
                 'default_order' => 40,
                 'update' => true
             ],
             [
-                'classname' => lispa\amos\news\widgets\icons\WidgetIconNewsDaValidare::className(),
+                'classname' => open20\amos\news\widgets\icons\WidgetIconNewsDaValidare::className(),
                 'type' => AmosWidgets::TYPE_ICON,
                 'module' => self::MODULE_NAME,
                 'status' => AmosWidgets::STATUS_ENABLED,
-                'child_of' => \lispa\amos\news\widgets\icons\WidgetIconNewsDashboard::className(),
+                'child_of' => \open20\amos\news\widgets\icons\WidgetIconNewsDashboard::className(),
                 'default_order' => 50,
                 'update' => true
             ],
             [
-                'classname' => lispa\amos\news\widgets\icons\WidgetIconNewsCategorie::className(),
+                'classname' => open20\amos\news\widgets\icons\WidgetIconNewsCategorie::className(),
                 'type' => AmosWidgets::TYPE_ICON,
                 'module' => self::MODULE_NAME,
                 'status' => AmosWidgets::STATUS_ENABLED,
-                'child_of' => \lispa\amos\news\widgets\icons\WidgetIconNewsDashboard::className(),
+                'child_of' => \open20\amos\news\widgets\icons\WidgetIconNewsDashboard::className(),
                 'default_order' => 60,
                 'update' => true
             ]
@@ -101,11 +101,11 @@ class m170209_091232_update_widgets_news extends AmosMigrationWidgets
     {
         return [
             [
-                'classname' => \lispa\amos\news\widgets\graphics\WidgetGraphicsUltimeNews::className(),
+                'classname' => \open20\amos\news\widgets\graphics\WidgetGraphicsUltimeNews::className(),
                 'type' => AmosWidgets::TYPE_GRAPHIC,
                 'module' => self::MODULE_NAME,
                 'status' => AmosWidgets::STATUS_ENABLED,
-                'child_of' => \lispa\amos\news\widgets\icons\WidgetIconNewsDashboard::className(),
+                'child_of' => \open20\amos\news\widgets\icons\WidgetIconNewsDashboard::className(),
                 'default_order' => 1,
                 'update' => true
             ]
