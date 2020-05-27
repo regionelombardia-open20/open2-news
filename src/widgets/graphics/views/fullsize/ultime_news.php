@@ -8,7 +8,6 @@
  * @package    open20\amos\news\widgets\graphics\views
  * @category   CategoryName
  */
-
 use open20\amos\core\forms\WidgetGraphicsActions;
 use open20\amos\core\helpers\Html;
 use open20\amos\core\icons\AmosIcons;
@@ -28,10 +27,8 @@ ModuleNewsAsset::register($this);
  * @var WidgetGraphicsUltimeNews $widget
  * @var string $toRefreshSectionId
  */
-
-$moduleNews = \Yii::$app->getModule(AmosNews::getModuleName());
+$moduleNews  = \Yii::$app->getModule(AmosNews::getModuleName());
 $listaModels = $listaNews->getModels();
-
 ?>
 <div class="box-widget-header">
     <?php
@@ -42,7 +39,8 @@ $listaModels = $listaNews->getModels();
             'actionRoute' => '/news/news/create',
             'toRefreshSectionId' => $toRefreshSectionId
         ]);
-    } ?>
+    }
+    ?>
 
     <div class="box-widget-wrapper">
         <h2 class="box-widget-title">
@@ -54,12 +52,12 @@ $listaModels = $listaNews->getModels();
 
     <?php
     if (count($listaModels) == 0) {
-        $textReadAll = AmosNews::t('amosnews', '#addNews');
-        $linkReadAll = '/news/news/create';
+        $textReadAll  = AmosNews::t('amosnews', '#addNews');
+        $linkReadAll  = '/news/news/create';
         $checkPermNew = true;
     } else {
-        $textReadAll = AmosNews::t('amosnews', '#showAll') . AmosIcons::show('chevron-right');
-        $linkReadAll = ['/news/news/all-news'];
+        $textReadAll  = AmosNews::t('amosnews', '#showAll').AmosIcons::show('chevron-right');
+        $linkReadAll  = ['/news/news/all-news'];
         $checkPermNew = false;
     }
     ?>
@@ -67,11 +65,12 @@ $listaModels = $listaNews->getModels();
 </div>
 
 <div class="box-widget latest-news">
-    <section class="<?=(count($listaNews->getModels()) == 0) ? '' : 'list-news-full'?>">
+    <section class="<?= (count($listaNews->getModels()) == 0) ? '' : 'list-news-full' ?>">
         <?php Pjax::begin(['id' => $toRefreshSectionId]); ?>
         <?php if (count($listaModels) == 0): ?>
             <div class="list-items list-empty"><h3><?= AmosNews::t('amosnews', 'Nessuna notizia') ?> </h3></div>
-        <?php else:
+            <?php
+        else:
             $configuration = [
                 'containerOptions' => [
                     'id' => 'newsOwlCarousel'
@@ -79,35 +78,39 @@ $listaModels = $listaNews->getModels();
                 'pluginOptions' => [
                     'autoplay' => false,
                     'items' => 1,
-                    'loop' => true,
+                    'loop' => false,
+                    'rewind' => true,
                     'nav' => true,
                     'dots' => true
                 ]
             ];
 
-            OwlCarouselWidget::begin($configuration); ?>
+            OwlCarouselWidget::begin($configuration);
+            ?>
 
             <?php
-            $news = $listaModels;
+            $news       = $listaModels;
             $lenghtNews = count($news);
-            $moduleOf3 = $lenghtNews < 3 ? $lenghtNews + 1 : 3 * floor($lenghtNews / 3);
+            $moduleOf2 = $lenghtNews < 2 ? $lenghtNews + 1 : 2 * floor($lenghtNews / 2);
 
-            for ($i = 1; $i < $moduleOf3; $i += 3) :
+            for ($i = 1; $i < $moduleOf2; $i += 2) :
                 ?>
                 <div class="wrap-slide-carousel-box">
                     <?php
-                    for ($a = 0; $a < 3; $a++) :
+                    for ($a = 0; $a < 2; $a++) :
                         if (isset($news[($i + $a - 1)])) :
                             $newsSingola = $news[($i + $a - 1)];
                             ?>
                             <div class="wrap-item-carousel-box" data-index="<?= ($i + $a - 1) ?>">
                                 <?php
-                                $url = '/img/img_default.jpg';
+                                $url         = '/img/img_default.jpg';
                                 if (!is_null($newsSingola->newsImage)) {
                                     $url = $newsSingola->newsImage->getUrl('dashboard_news', false, true);
                                 }
 
-                                echo Html::img($url, ['class' => 'img-responsive', 'alt' => AmosNews::t('amosnews', 'Immagine della notizia')]);
+                                echo Html::img($url,
+                                    ['class' => 'img-responsive', 'alt' => AmosNews::t('amosnews',
+                                        'Immagine della notizia')]);
                                 ?>
                                 <div class="abstract">
                                     <div class="box-widget-info-top">
@@ -117,14 +120,16 @@ $listaModels = $listaNews->getModels();
                                         <?php endif; ?>
                                     </div>
 
-                                    <?= Html::a('<h2 class="box-widget-subtitle">' . $newsSingola->titolo . '</h2>',
-                                        ['../news/news/view', 'id' => $newsSingola->id]); ?>
+                                    <?=
+                                    Html::a('<h2 class="box-widget-subtitle">'.$newsSingola->titolo.'</h2>',
+                                        ['../news/news/view', 'id' => $newsSingola->id]);
+                                    ?>
 
                                     <p class="box-widget-text">
                                         <?php
                                         if (strlen($newsSingola->descrizione_breve) > 200) {
                                             $stringCut = substr($newsSingola->descrizione_breve, 0, 200);
-                                            echo substr($stringCut, 0, strrpos($stringCut, ' ')) . '... ';
+                                            echo substr($stringCut, 0, strrpos($stringCut, ' ')).'... ';
                                         } else {
                                             echo $newsSingola->descrizione_breve;
                                         }
@@ -132,51 +137,58 @@ $listaModels = $listaNews->getModels();
                                     </p>
                                 </div>
                             </div>
-                        <?php
+                            <?php
                         endif;
                     endfor;
                     ?>
                 </div>
-            <?php endfor;
+                <?php
+            endfor;
 
             OwlCarouselWidget::end();
 
 
-            $configuration['containerOptions']['id'] = 'newsOwlCarouselTouch';
-            $configuration['pluginOptions']['nav'] = false;
-            $configuration['pluginOptions']['items'] = 2;
+            $configuration['containerOptions']['id']    = 'newsOwlCarouselTouch';
+            $configuration['pluginOptions']['nav']      = false;
+            $configuration['pluginOptions']['items']    = 2;
             $configuration['pluginOptions']['dotsEach'] = 1;
-            $configuration['pluginOptions']['margin'] = 10;
+            $configuration['pluginOptions']['margin']   = 10;
             OwlCarouselWidget::begin($configuration);
 
-            for ($i = 0; $i < $lenghtNews; $i++) : ?>
+            for ($i = 0; $i < $lenghtNews; $i++) :
+                ?>
                 <div class="wrap-slide-carousel-box touch">
-                    <?php $newsSingola = $news[$i]; ?>
+                        <?php $newsSingola = $news[$i]; ?>
                     <div class="wrap-item-carousel-box" data-index="<?= ($i) ?>">
                         <?php
-                        $url = '/img/img_default.jpg';
+                        $url         = '/img/img_default.jpg';
                         if (!is_null($newsSingola->newsImage)) {
                             $url = $newsSingola->newsImage->getUrl('dashboard_news', false, true);
                         }
                         ?>
-                        <?= Html::img($url, ['class' => 'img-responsive', 'alt' => AmosNews::t('amosnews', 'Immagine della notizia')]); ?>
+                        <?=
+                        Html::img($url,
+                            ['class' => 'img-responsive', 'alt' => AmosNews::t('amosnews', 'Immagine della notizia')]);
+                        ?>
 
                         <div class="abstract">
                             <div class="box-widget-info-top">
                                 <div class="listbox-label"><?= $newsSingola->category->titolo; ?></div>
                                 <?php if (isset($moduleNews) && !$moduleNews->hidePubblicationDate): ?>
                                     <p><?= Yii::$app->getFormatter()->asDate($newsSingola->data_pubblicazione); ?></p>
-                                <?php endif; ?>
+                            <?php endif; ?>
                             </div>
 
-                            <?= Html::a('<h2 class="box-widget-subtitle">' . $newsSingola->titolo . '</h2>',
-                                ['../news/news/view', 'id' => $newsSingola->id]); ?>
+                            <?=
+                            Html::a('<h2 class="box-widget-subtitle">'.$newsSingola->titolo.'</h2>',
+                                ['../news/news/view', 'id' => $newsSingola->id]);
+                            ?>
 
                             <p class="box-widget-text">
                                 <?php
                                 if (strlen($newsSingola->descrizione_breve) > 200) {
                                     $stringCut = substr($newsSingola->descrizione_breve, 0, 200);
-                                    echo substr($stringCut, 0, strrpos($stringCut, ' ')) . '... ';
+                                    echo substr($stringCut, 0, strrpos($stringCut, ' ')).'... ';
                                 } else {
                                     echo $newsSingola->descrizione_breve;
                                 }
@@ -186,8 +198,8 @@ $listaModels = $listaNews->getModels();
                     </div>
                 </div>
             <?php endfor; ?>
-            <?php OwlCarouselWidget::end(); ?>
-        <?php endif; ?>
-        <?php Pjax::end(); ?>
+    <?php OwlCarouselWidget::end(); ?>
+<?php endif; ?>
+<?php Pjax::end(); ?>
     </section>
 </div>

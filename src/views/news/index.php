@@ -86,7 +86,7 @@ $queryParamCurrentView = Yii::$app->request->getQueryParam('currentView');
             'attribute' => 'data_pubblicazione',
             'value' => function ($model) {
               /** @var News $model */
-              return (is_null($model->data_pubblicazione)) ? 'Subito' : Yii::$app->formatter->asDate($model->data_pubblicazione);
+              return (is_null($model->data_pubblicazione)) ? AmosNews::t('amosnews', 'Subito') : Yii::$app->formatter->asDate($model->data_pubblicazione);
             }
           ],
           'data_rimozione' => [
@@ -94,7 +94,7 @@ $queryParamCurrentView = Yii::$app->request->getQueryParam('currentView');
             'attribute' => 'data_rimozione',
             'value' => function ($model) {
               /** @var News $model */
-              return (is_null($model->data_rimozione)) ? 'Mai' : Yii::$app->formatter->asDate($model->data_rimozione);
+              return (is_null($model->data_rimozione)) ? AmosNews::t('amosnews', 'Mai') : Yii::$app->formatter->asDate($model->data_rimozione);
             }
           ],
           'status' => [

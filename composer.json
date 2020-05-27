@@ -15,7 +15,7 @@
         "php": ">=5.4.0",
         "2amigos/yii2-ckeditor-widget": "~1.0",
         "cornernote/yii2-workflow-manager": "*",
-        "open20/amos-admin":"^2.0",
+        "open20/amos-admin":"^2.2.0",
         "open20/amos-attachments": "^1.1.11",
         "open20/amos-comments":"^1.1",
         "open20/amos-core":"^1.9.60",

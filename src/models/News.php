@@ -238,7 +238,7 @@ class News extends \open20\amos\news\models\base\News implements ContentModelInt
         if (empty($this->attachments)) {
             $query = $this->hasMultipleFiles('attachments');
             $query->multiple = false;
-            $this->attachments = $query->one();
+            $this->attachments = $query->all();
         }
         return $this->attachments;
     }

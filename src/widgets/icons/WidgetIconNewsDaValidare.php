@@ -64,14 +64,16 @@ class WidgetIconNewsDaValidare extends WidgetIcon
             )
         );
 
-        $search = new NewsSearch();
-        $this->setBulletCount(
-            $this->makeBulletCounter(
-                Yii::$app->getUser()->getId(),
-                News::class,
-                $search->buildQuery([], 'to-validate')
-            )
-        );
+//        if ($this->disableBulletCounters == false) {
+//            $search = new NewsSearch();
+//            $this->setBulletCount(
+//                $this->makeBulletCounter(
+//                    Yii::$app->getUser()->getId(),
+//                    News::class,
+//                    $search->buildQuery([], 'to-validate')
+//                )
+//            );
+//        }
     }
 
     /**

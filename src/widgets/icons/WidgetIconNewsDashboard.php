@@ -62,11 +62,13 @@ class WidgetIconNewsDashboard extends WidgetIcon
             )
         );
 
-        $this->setBulletCount(
-            $this->makeBulletCounter(
-                Yii::$app->user->getId()
-            )
-        );
+        if ($this->disableBulletCounters == false) {
+            $this->setBulletCount(
+                $this->makeBulletCounter(
+                    Yii::$app->user->getId()
+                )
+            );
+        }
     }
 
     /**
@@ -100,9 +102,7 @@ class WidgetIconNewsDashboard extends WidgetIcon
             }
 
             $widgetAllnews = \Yii::createObject(WidgetIconAllNews::className());
-            $widgetCreatedBy = \Yii::createObject(WidgetIconNewsCreatedBy::className());
-
-            $count = $widgetAllnews->getBulletCount() + $widgetCreatedBy->getBulletCount();
+            $count = $widgetAllnews->getBulletCount();
         } catch (Exception $ex) {
             Yii::getLogger()->log($ex->getMessage(), \yii\log\Logger::LEVEL_ERROR);
         }

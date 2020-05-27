@@ -66,14 +66,16 @@ class WidgetIconNews extends WidgetIcon
             )
         );
 
-        $search = new NewsSearch();
-        $this->setBulletCount(
-            $this->makeBulletCounter(
-                Yii::$app->getUser()->getId(),
-                News::className(),
-                $search->buildQuery([], 'own-interest')
-            )
-        );
+        if ($this->disableBulletCounters == false) {
+            $search = new NewsSearch();
+            $this->setBulletCount(
+                $this->makeBulletCounter(
+                    Yii::$app->getUser()->getId(),
+                    News::className(),
+                    $search->buildQuery([], 'own-interest')
+                )
+            );
+        }
     }
 
     /**

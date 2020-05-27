@@ -73,7 +73,6 @@ abstract class News extends ContentModel
             [['slug', 'data_pubblicazione', 'data_rimozione', 'created_at', 'updated_at', 'deleted_at', 'status', 'comments_enabled'], 'safe'],
             [['titolo', 'sottotitolo'], 'string', 'max' => 100],
             [['descrizione_breve'], 'string', 'max' => 250],
-            [['descrizione_breve'], 'required'],
         ]);
 
     }
