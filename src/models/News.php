@@ -485,7 +485,7 @@ class News extends \open20\amos\news\models\base\News implements ContentModelInt
      */
     public function getViewUrl()
     {
-        if (!empty($this->usePrettyUrl) && ($this->usePrettyUrl == true)) {
+        if (!empty($this->usePrettyUrl) && ($this->usePrettyUrl == true) && $this->hasMethod('getPrettyUrl')) {
             return 'news/news';
         } else {
             return 'news/news/view';
@@ -654,10 +654,9 @@ class News extends \open20\amos\news\models\base\News implements ContentModelInt
      */
     public function getFullViewUrl()
     {
-        if (!empty($this->usePrettyUrl) && ($this->usePrettyUrl == true)) {
+        if (!empty($this->usePrettyUrl) && ($this->usePrettyUrl == true) && $this->hasMethod('getPrettyUrl')) {
             return Url::toRoute(["/".$this->getViewUrl()."/".$this->id."/".$this->getPrettyUrl()]);
-        } else if (!empty($this->useFrontendView) && ($this->useFrontendView == true) && method_exists($this,
-                'getBackendobjectsUrl')) {
+        } else if (!empty($this->useFrontendView) && ($this->useFrontendView == true) && $this->hasMethod('getBackendobjectsUrl')) {
             return $this->getBackendobjectsUrl();
         } else {
             return Url::toRoute(["/".$this->getViewUrl(), "id" => $this->id]);
@@ -776,6 +775,11 @@ class News extends \open20\amos\news\models\base\News implements ContentModelInt
         if ($this->primo_piano) {
             return \Yii::$app->params['platform']['frontendUrl'].$this->getFullFrontendViewUrl();
         } else return \Yii::$app->params['platform']['backendUrl'].$this->getFullViewUrl();
+    }
+
+    public function getFieldVisibleByGuest()
+    {
+        return $this->tableName().'.primo_piano';
     }
 
 
@@ -1026,14 +1030,5 @@ class News extends \open20\amos\news\models\base\News implements ContentModelInt
             $value->delete();
         }
     }
-
-    /**
-     * @return bool
-     */
-    public function sendNotification()
-    {
-        return AmosNews::instance()->newsModelsendNotification;
-    }
-
 
 }

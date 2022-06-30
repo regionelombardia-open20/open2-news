@@ -97,6 +97,7 @@ return [
     'il periodo di rilevazione' => 'the period of detection',
     '#image_field_hint' => 'Represents the main image of the news',
     '#image_field' => 'Image',
+    '#image_field_required' => "Image (mandatory)",
     'Immagine della notizia' => 'Image of the news',
     'immagine' => 'imagine',
     'Immagine' => 'Picture',
@@ -245,4 +246,9 @@ return [
     "#title" => "Title",
     '#image_field_required' => "Image <span class='required-field'>*(required)</span>",
     "#tag" => "Taxonomy topics",
+    "#beforeActionSubtitleSectionGuest" => "To participate in the creation of new news, {ctaLoginRegister}",
+    "#beforeActionCtaLoginRegister" => "log in or register on the platform",
+    "#beforeActionSubtitleSectionLogged" => "",
+    "Vuoi rendere visibile la notizia anche ad utenti non registrati (guest)" => "Do you want to show the news to all users (not registered included) ?",
+    "Crea una nuova notizia" => "create a news",
 ];

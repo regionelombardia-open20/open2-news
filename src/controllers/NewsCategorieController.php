@@ -21,6 +21,7 @@ use open20\amos\news\models\NewsCategoryCommunityMm;
 use open20\amos\news\models\NewsCategoryRolesMm;
 use open20\amos\news\models\search\NewsCategorieSearch;
 use Yii;
+use open20\amos\admin\AmosAdmin;
 use yii\helpers\Url;
 use open20\amos\core\widget\WidgetAbstract;
 
@@ -43,6 +44,106 @@ class NewsCategorieController extends CrudController
      * @var string $layout
      */
     public $layout = 'list';
+
+
+    public function beforeAction($action)
+    {
+        if (\Yii::$app->user->isGuest) {
+            $titleSection = AmosNews::t('amosnews', 'Categorie news');
+            $urlLinkAll   = '';
+
+            $ctaLoginRegister = Html::a(
+                    AmosNews::t('amosnews', 'accedi o registrati alla piattaforma'),
+                    isset(\Yii::$app->params['linkConfigurations']['loginLinkCommon']) ? \Yii::$app->params['linkConfigurations']['loginLinkCommon']
+                        : \Yii::$app->params['platform']['backendUrl'].'/'.AmosAdmin::getModuleName().'/security/login',
+                    [
+                    'title' => AmosNews::t('amosnews',
+                        'Clicca per accedere o registrarti alla piattaforma {platformName}',
+                        ['platformName' => \Yii::$app->name])
+                    ]
+            );
+            $subTitleSection  = Html::tag('p',
+                    AmosNews::t('amosnews', 'Per partecipare alla creazione di nuove notizie, {ctaLoginRegister}',
+                        ['ctaLoginRegister' => $ctaLoginRegister]));
+        } else {
+            $titleSection = AmosNews::t('amosnews', 'Categorie news');
+            $labelLinkAll = AmosNews::t('amosnews', 'Tutte le notizie');
+            $urlLinkAll   = '/news/news/all-news';
+            $titleLinkAll = AmosNews::t('amosnews', 'Visualizza la lista delle notizie');
+
+            $subTitleSection = Html::tag('p', AmosNews::t('amosnews', ''));
+        }
+
+        $labelCreate = AmosNews::t('amosnews', 'Nuova');
+        $titleCreate = AmosNews::t('amosnews', 'Crea una nuova notizia');
+        $labelManage = AmosNews::t('amosnews', 'Gestisci');
+        $titleManage = AmosNews::t('amosnews', 'Gestisci le notizie');
+        $urlCreate   = '/news/news-categorie/create';
+        $urlManage   = AmosNews::t('amosnews', '#');
+
+        $this->view->params = [
+            'isGuest' => \Yii::$app->user->isGuest,
+            'modelLabel' => 'news',
+            'titleSection' => $titleSection,
+            'subTitleSection' => $subTitleSection,
+            'urlLinkAll' => $urlLinkAll,
+            'labelLinkAll' => $labelLinkAll,
+            'titleLinkAll' => $titleLinkAll,
+            'labelCreate' => $labelCreate,
+            'titleCreate' => $titleCreate,
+            'labelManage' => $labelManage,
+            'titleManage' => $titleManage,
+            'urlCreate' => $urlCreate,
+            'urlManage' => $urlManage,
+        ];
+
+        if (!parent::beforeAction($action)) {
+            return false;
+        }
+
+        // other custom code here
+
+        return true;
+    }
+
+
+    /**
+     *
+     * @return array
+     */
+    public static function getManageLinks()
+    {
+        $links[] = [
+            'title' => AmosNews::t('amosnews', 'Visualizza le news create da me'),
+            'label' => AmosNews::t('amosnews', 'Create da me'),
+            'url' => '/news/news/own-news'
+        ];
+
+        if (\Yii::$app->user->can(\open20\amos\news\widgets\icons\WidgetIconNewsCategorie::class)) {
+            $links[] = [
+                'title' => AmosNews::t('amosnews', 'Visualizza le categorie delle news'),
+                'label' => AmosNews::t('amosnews', 'Categorie'),
+                'url' => '/news/news-categorie/index',
+            ];
+        }
+
+        if (\Yii::$app->user->can(\open20\amos\news\widgets\icons\WidgetIconNewsDaValidare::class)) {
+            $links[] = [
+            'title' => AmosNews::t('amosnews', 'Visualizza le news da validare'),
+            'label' => AmosNews::t('amosnews', 'Da validare'),
+            'url' => '/news/news/to-validate-news'
+            ];
+        }
+
+        if (\Yii::$app->user->can(\open20\amos\news\widgets\icons\WidgetIconAdminAllNews::class)) {
+            $links[] = [
+            'title' => AmosNews::t('amosnews', 'Amministra tutte le news'),
+            'label' => AmosNews::t('amosnews', 'Amministra'),
+            'url' => '/news/news/admin-all-news'
+            ];
+        }
+        return $links;
+    }
 
     /**
      * @inheritdoc
@@ -86,6 +187,10 @@ class NewsCategorieController extends CrudController
         Yii::$app->view->params['textHelp']['filename'] = 'news_dashboard_description';
         $this->view->params['currentDashboard'] = $this->getCurrentDashboard();
 
+        if (!\Yii::$app->user->isGuest) {
+            $this->view->params['titleSection'] = AmosNews::t('amosnews', 'Categorie news');
+        }
+
 
         $this->setDataProvider($this->getModelSearch()->search(Yii::$app->request->getQueryParams()));
         return parent::actionIndex($this->layout);
@@ -126,6 +231,7 @@ class NewsCategorieController extends CrudController
         Yii::$app->view->params['textHelp']['filename'] = 'create_news_dashboard_description';
         if ($this->model->load(Yii::$app->request->post())) {
             if ($this->model->validate()) {
+                $this->model->color_text = $this->model->colorText();
                 if ($this->model->save()) {
                     $this->model->saveNewsCategorieCommunityMm();
                     $this->model->saveNewsCategorieRolesMm();
@@ -161,6 +267,7 @@ class NewsCategorieController extends CrudController
 
         if ($this->model->load(Yii::$app->request->post())) {
             if ($this->model->validate()) {
+                $this->model->color_text = $this->model->colorText();
                 if ($this->model->save()) {
                     $this->model->saveNewsCategorieCommunityMm();
                     $this->model->saveNewsCategorieRolesMm();

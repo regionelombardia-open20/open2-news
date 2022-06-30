@@ -60,7 +60,8 @@ class NewsCategorie extends Record
             [['descrizione'], 'string'],
             [['created_by', 'updated_by', 'deleted_by', 'version','notify_category'], 'integer'],
             [['created_at', 'updated_at', 'deleted_at'], 'safe'],
-            [['titolo', 'sottotitolo', 'descrizione_breve'], 'string', 'max' => 255]
+            [['titolo', 'sottotitolo', 'descrizione_breve'], 'string', 'max' => 255],
+            [['color_background', 'color_text'], 'string', 'max' => 128],
         ];
     }
 
@@ -118,4 +119,26 @@ class NewsCategorie extends Record
     {
         return $this->hasMany(\open20\amos\news\models\NewsCategoryCommunityMm::className(), ['news_category_id' => 'id']);
     }
+
+
+    public function colorText(){
+        if(empty($this->color_background)){
+            return null;
+        }
+        $color=$this->color_background;
+        $white="#FFFFFF";
+        $black="#000000";
+        list($r, $g, $b) = sscanf($color, "#%02x%02x%02x");
+        list($rw, $gw, $bw) = sscanf($white, "#%02x%02x%02x");
+        list($rb, $gb, $bb) = sscanf($black, "#%02x%02x%02x");
+
+        $difWhite=  max($r,$rw) - min($r,$rw) +
+            max($g,$gw) - min($g,$gw) +
+            max($b,$bw) - min($b,$bw);
+        $difBlack=  max($r,$rb) - min($r,$rb) +
+            max($g,$gb) - min($g,$gb) +
+            max($b,$bb) - min($b,$bb);
+        return $difWhite>$difBlack?$white:$black;
+    }
+
 }

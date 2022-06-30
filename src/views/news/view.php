@@ -9,24 +9,23 @@
  * @category   CategoryName
  */
 
-use open20\amos\attachments\components\AttachmentsTableWithPreview;
 use open20\amos\core\forms\ContextMenuWidget;
 use open20\amos\core\forms\ItemAndCardHeaderWidget;
-use open20\amos\core\forms\PublishedByWidget;
-use open20\amos\core\forms\ShowUserTagsWidget;
+use open20\amos\news\utility\NewsUtility;
 use open20\amos\core\helpers\Html;
 use open20\amos\core\icons\AmosIcons;
-use open20\amos\core\views\toolbars\StatsToolbar;
 use open20\amos\news\AmosNews;
 use open20\amos\core\forms\CreatedUpdatedWidget;
 use open20\amos\attachments\components\AttachmentsList;
-use open20\amos\core\forms\InteractionMenuWidget;
 use open20\amos\news\assets\ModuleNewsAsset;
 use \open20\amos\news\models\News;
 use open20\amos\core\utilities\CurrentUser;
 
 
 ModuleNewsAsset::register($this);
+
+// ENABLE AGID FIELDS
+$enableAgid = AmosNews::instance()->enableAgid;
 
 /**
  * @var yii\web\View $this
@@ -46,6 +45,7 @@ $controller->setNetworkDashboardBreadcrumb();
 $this->params['breadcrumbs'][] = ['label' => Yii::$app->session->get('previousTitle'), 'url' => Yii::$app->session->get('previousUrl')];
 $this->params['breadcrumbs'][] = $this->title;
 
+
 $hidePubblicationDate = Yii::$app->controller->newsModule->hidePubblicationDate;
 $numberListTag = Yii::$app->controller->newsModule->numberListTag;
 
@@ -63,123 +63,200 @@ if ($model->status != News::NEWS_WORKFLOW_STATUS_VALIDATO) {
     ]);
 }
 
+$hideCategory   = false;
+$newsCategories = NewsUtility::getAllNewsCategories();
+if ($newsCategories->count() == 1) {
+    $hideCategory = true;
+} else {
+    $category = $model->newsCategorie->titolo;
+    $customCategoryClass = 'mb-1 px-1 ' . 'custom-category-bg-' . str_replace(' ', '-', strtolower($category));
+    $colorBgCategory = $model->newsCategorie->color_background;
+    $colorTextCategory = $model->newsCategorie->color_text;
+}
+
 ?>
 
-<div class="news-view col-xs-12 nop">
-    <div class="col-md-8 col-xs-12">
-        <div class="col-xs-12 header-widget nop">
-            <?= ItemAndCardHeaderWidget::widget(
-                [
-                    'model' => $model,
-                    'publicationDateField' => 'data_pubblicazione',
-                    'showPrevalentPartnershipAndTargets' => true,
-                    'enableLink' => !(CurrentUser::isPlatformGuest())
-                ]
-            ) ?>
-            <?= ContextMenuWidget::widget([
-                'model' => $model,
-                'actionModify' => "/news/news/update?id=" . $model->id,
-                'actionDelete' => "/news/news/delete?id=" . $model->id,
-                'labelDeleteConfirm' => AmosNews::t('amosnews', 'Sei sicuro di voler cancellare questa notizia?'),
-                'modelValidatePermission' => 'NewsValidate'
-            ]) ?>
-            <?= CreatedUpdatedWidget::widget(['model' => $model, 'isTooltip' => true]) ?>
-            <?php
-            $reportModule = \Yii::$app->getModule('report');
-            if (isset($reportModule) && in_array($model->className(), $reportModule->modelsEnabled)) {
-                echo \open20\amos\report\widgets\ReportFlagWidget::widget([
-                    'model' => $model,
-                ]);
-            }
-            ?>
-        </div>
-    </div>
-    <div class="clearfix"></div>
-    <div class="col-md-8 col-xs-12">
-        <div class="header col-xs-12 nop">
-            <img class="img-responsive" src="<?= $url ?>" alt="<?= $model->titolo ?>">
-            <div class="title col-xs-12">
-                <h2 class="title-text"><?= $model->titolo ?></h2>
-                <h3 class="subtitle-text"><?= $model->sottotitolo ?></h3>
+<div class="detail-news-hero-wrapper it-hero-wrapper it-dark it-overlay">
+    <!-- - img-->
+    <div class="img-responsive-wrapper">
+        <div class="img-responsive">
+            <div class="img-wrapper">
+                <img src="<?= $url ?>" alt="<?= AmosNews::t('amosnews', 'Immagine della notizia') ?>">
             </div>
         </div>
-        <div class="text-content col-xs-12 nop">
-            <?= $model->descrizione; ?>
-        </div>
-        <div class="widget-body-content col-xs-12 nop">
-            <?php
-
-            echo \open20\amos\core\forms\editors\likeWidget\LikeWidget::widget([
-                'model' => $model,
-            ]);
-            ?>
-            <?php
-            $reportModule = \Yii::$app->getModule('report');
-            if (isset($reportModule) && in_array($model->className(), $reportModule->modelsEnabled)) {
-                echo \open20\amos\report\widgets\ReportDropdownWidget::widget([
-                    'model' => $model,
-                ]);
-            }
-            ?>
-            <?php
-            $url = !empty(\Yii::$app->params['platform']['backendUrl']) ? \Yii::$app->params['platform']['backendUrl'] : "";
-            echo \open20\amos\core\forms\editors\socialShareWidget\SocialShareWidget::widget([
-                'mode' => \open20\amos\core\forms\editors\socialShareWidget\SocialShareWidget::MODE_DROPDOWN,
-                'configuratorId'  => 'socialShare',
-                'model' => $model,
-                'url'           => \yii\helpers\Url::to($url . '/news/news/public?id=' . $model->id, true),
-                'title'         => $model->title,
-                'description'   => $model->descrizione_breve,
-                'imageUrl'      => !empty($model->getNewsImage()) ? $model->getNewsImage()->getWebUrl('square_small') : '',
-            ]);
-            ?>
-        </div>
-        <?php if (\Yii::$app->getModule('correlations')) { ?>
-            <?=
-                open2\amos\correlations\widget\ListCorrelationsWidget::widget([
-                    'model' => $model
-                ]);
-            ?>
-        <?php } ?>
-        <div class="clearfix"></div>
     </div>
-    <div class="col-md-4 col-xs-12">
-        <div class="col-xs-12 attachment-section-sidebar nop" id="section-attachments">
-            <?= Html::tag('h2', AmosIcons::show('paperclip', [], 'dash') . AmosNews::t('amosnews', '#attachments_title')) ?>
-            <div class="col-xs-12">
-                <?= AttachmentsList::widget([
+    <!-- - texts-->
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="it-hero-text-wrapper bg-dark">
+                    <span class="it-category  <?= $customCategoryClass ?>" <?php if ((!empty($colorBgCategory))) : ?> style="background-color: <?= $colorBgCategory ?> !important; padding: 0 4px; " <?php endif; ?>><strong <?php if ((!empty($colorTextCategory))) : ?> style="color: <?= $colorTextCategory ?>" <?php endif; ?>><?= $category ?></strong></span>
+
+                    <p class="date"><?= Yii::$app->getFormatter()->asDate($model->data_pubblicazione) ?></p>
+                    <h1 class="no_toc"><?= $model->titolo ?></h1>
+                    <p class="d-none d-lg-block"><?= $model->sottotitolo ?></p>
+                    <?php if (!empty(\open20\amos\core\utilities\CwhUtility::getTargetsString($model))) : ?>
+                    <p><span class="mdi mdi-account-supervisor-circle mdi-24px"></span> <em><?=  \open20\amos\core\utilities\CwhUtility::getTargetsString($model) ?></em></p>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="news-view">
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-12 header-widget">
+                <?= ItemAndCardHeaderWidget::widget(
+                    [
+                        'model' => $model,
+                        'publicationDateNotPresent' => true,
+                        'showPrevalentPartnership' => true,
+                        'enableLink' => !(CurrentUser::isPlatformGuest())
+                    ]
+                ) ?>
+
+                <div class="more-info-content">
+                    <?php
+                    $reportModule = \Yii::$app->getModule('report');
+                    if (isset($reportModule) && in_array($model->className(), $reportModule->modelsEnabled)) {
+                        echo \open20\amos\report\widgets\ReportDropdownWidget::widget([
+                            'model' => $model,
+                        ]);
+                    }
+                    ?>
+                    <?php /*echo CreatedUpdatedWidget::widget(['model' => $model, 'isTooltip' => true])*/ ?>
+                    <!-- < ?php
+                    $reportModule = \Yii::$app->getModule('report');
+                    if (isset($reportModule) && in_array($model->className(), $reportModule->modelsEnabled)) {
+                        echo \open20\amos\report\widgets\ReportFlagWidget::widget([
+                            'model' => $model,
+                        ]);
+                    }
+                    ?> -->
+
+                    <div class="m-l-10">
+                        <?= ContextMenuWidget::widget([
+                            'model' => $model,
+                            'actionModify' => "/news/news/update?id=" . $model->id,
+                            'actionDelete' => "/news/news/delete?id=" . $model->id,
+                            'labelDeleteConfirm' => AmosNews::t('amosnews', 'Sei sicuro di voler cancellare questa notizia?'),
+                            'modelValidatePermission' => 'NewsValidate'
+                        ]) ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="text-content">
+                    <?= $model->descrizione; ?>
+                </div>
+
+                <?php
+                $attachmentsWidget = '';
+                $attachmentsWidget = AttachmentsList::widget([
                     'model' => $model,
                     'attribute' => 'attachments',
                     'viewDeleteBtn' => false,
                     'viewDownloadBtn' => true,
                     'viewFilesCounter' => true,
-                ]) ?>
-            </div>
-        </div>
-        <div class="tags-section-sidebar col-xs-12 nop" id="section-tags">
-            <?= Html::tag('h2', AmosIcons::show('tag', [], 'dash') . AmosNews::t('amosnews', '#tags_title')) ?>
-            <div class="col-xs-12">
-                <?= \open20\amos\core\forms\ListTagsWidget::widget([
+                ]);
+                ?>
+                <?php
+                $tagsWidget = '';
+                $tagsWidget = \open20\amos\core\forms\ListTagsWidget::widget([
                     'userProfile' => $model->id,
                     'className' => $model->className(),
                     'viewFilesCounter' => true,
-                    'pageSize' => $numberListTag,
                 ]);
                 ?>
+
+                <?= $attachmentsWidget ?>
+
+                <div class="clearfix"></div>
+
+                <div class="tag-container">
+                    <?= $tagsWidget ?>
+                </div>
+
+                <div class="clearfix"></div>
+                <div class="footer-content">
+                    <div class="social-share-wrapper">
+                        <?php
+                        $url = !empty(\Yii::$app->params['platform']['frontendUrl']) ? \Yii::$app->params['platform']['frontendUrl'] : "";
+                        echo \open20\amos\core\forms\editors\socialShareWidget\SocialShareWidget::widget([
+                            'mode' => \open20\amos\core\forms\editors\socialShareWidget\SocialShareWidget::MODE_NORMAL,
+                            'configuratorId'  => 'socialShare',
+                            'model' => $model,
+                            'url'           => $url . $model->getFullViewUrl(),
+                            'title'         => $model->title,
+                            'description'   => $model->descrizione_breve,
+                            'imageUrl'      => !empty($model->getNewsImage()) ? $model->getNewsImage()->getWebUrl('square_small') : '',
+                            'isRedationalContent' => $model->primo_piano,
+                        ]);
+                        ?>
+                    </div>
+                    <div class="widget-body-content">
+
+
+                        <?php
+
+                        echo \open20\amos\core\forms\editors\likeWidget\LikeWidget::widget([
+                            'model' => $model,
+                        ]);
+                        ?>
+                    </div>
+                </div>
+                <?php if (\Yii::$app->getModule('correlations')) { ?>
+                    <?=
+                    open2\amos\correlations\widget\ListCorrelationsWidget::widget([
+                        'model' => $model
+                    ]);
+                    ?>
+                <?php } ?>
+                <div class="clearfix"></div>
             </div>
+            <!-- <div class="col-md-3 col-xs-12">
+
+                < ?php
+
+                $attachmentsWidget = '';
+                $tagsWidget = '';
+
+                $attachmentsWidget = AttachmentsList::widget([
+                    'model' => $model,
+                    'attribute' => 'attachments',
+                    'viewDeleteBtn' => false,
+                    'viewDownloadBtn' => true,
+                    'viewFilesCounter' => true,
+                ]);
+
+                $tagsWidget = \open20\amos\core\forms\ListTagsWidget::widget([
+                    'userProfile' => $model->id,
+                    'className' => $model->className(),
+                    'viewFilesCounter' => true,
+                ]);
+
+                ?>
+                < ?=
+                    $this->render(
+                        '@vendor/open20/amos-layout/src/views/layouts/fullsize/parts/bi-view-detail-sidebar',
+                        [
+                            'attachments' => $attachmentsWidget,
+                            'tags' => $tagsWidget,
+                        ]
+                    );
+                ?>
+            </div> -->
+
         </div>
     </div>
-    <div class="col-xs-12 m-t-10 nop">
-        <?= Html::a(AmosNews::t('amosnews', '#go_back'), (\Yii::$app->request->referrer ?: \Yii::$app->session->get('previousUrl')), [
-                                'class' => 'btn btn-secondary pull-left m-b-10'
-         ]) ?>
-    </div>
 
-                
-    <?php if (!is_null(\Yii::$app->getModule('sitemanagement'))): ?>
+
+    <?php if (!is_null(\Yii::$app->getModule('sitemanagement')) && ($enableAgid)) : ?>
         <?= \amos\sitemanagement\widgets\SMSliderWidget::widget(['sliderId' => $model->image_site_management_slider_id]); ?>
         <?= \amos\sitemanagement\widgets\SMSliderWidget::widget(['sliderId' => $model->video_site_management_slider_id]); ?>
     <?php endif; ?>
 
 </div>
-

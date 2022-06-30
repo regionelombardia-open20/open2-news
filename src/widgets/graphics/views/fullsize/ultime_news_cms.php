@@ -33,68 +33,71 @@ $userModule = CurrentUser::getUserProfile();
 ?>
 
 <?php
+
 $modelLabel = 'news';
 
-if(!\Yii::$app->user->isGuest && \Yii::$app->user->id != Yii::$app->params['platformConfigurations']['guestUserId']){
-    $titleSection = 'Notizie';
-    $labelCta = 'Visualizza tutte';
-    $titleCta = 'Visualizza la lista delle notizie';
-    $linkCta = '/news/news/all-news';
-    $labelCreate = 'Nuova';
-    $titleCreate = 'Crea una nuova notizia';
-    $linkCreate = '/news/news/create';
-    $labelManage = 'Gestisci';
-    $titleManage = 'Gestisci le news';
-    $linkManage = '#';
-} else {
-    $titleSection = 'Ultime notizie';
+$titleSection = AmosNews::t('amosnews', 'Notizie');
+$urlLinkAll = AmosNews::t('amosnews', '/news/news/all-news');
+$labelLinkAll = AmosNews::t('amosnews', 'Tutte le notizie');
+$titleLinkAll = AmosNews::t('amosnews', 'Visualizza la lista delle notizie');
+
+$labelCreate = AmosNews::t('amosnews', 'Nuova');
+$titleCreate = AmosNews::t('amosnews', 'Crea una nuova notizia');
+$labelManage = AmosNews::t('amosnews', 'Gestisci');
+$titleManage = AmosNews::t('amosnews', 'Gestisci le notizie');
+$urlCreate = AmosNews::t('amosnews', '/news/news/create');
+
+$manageLinks = [];
+$controller = \open20\amos\news\controllers\NewsController::class;
+if (method_exists($controller, 'getManageLinks')) {
+    $manageLinks = $controller::getManageLinks();
+}
+
+
+$moduleCwh = \Yii::$app->getModule('cwh');
+if (isset($moduleCwh) && !empty($moduleCwh->getCwhScope())) {
+    $scope = $moduleCwh->getCwhScope();
+    $isSetScope = (!empty($scope)) ? true : false;
 }
 
 ?>
+
 <div class="widget-graphic-cms-bi-less card-<?= $modelLabel ?> container">
     <div class="page-header">
         <?= $this->render(
-            "@vendor/open20/amos-layout/src/views/layouts/fullsize/parts/bi-plugin-header",
+            "@vendor/open20/amos-layout/src/views/layouts/fullsize/parts/bi-less-plugin-header",
             [
+                'isGuest' => \Yii::$app->user->isGuest,
+                'isSetScope' => $isSetScope,
+                'modelLabel' => 'news',
                 'titleSection' => $titleSection,
+                'subTitleSection' => $subTitleSection,
+                'urlLinkAll' => $urlLinkAll,
+                'labelLinkAll' => $labelLinkAll,
+                'titleLinkAll' => $titleLinkAll,
+                'labelCreate' => $labelCreate,
+                'titleCreate' => $titleCreate,
+                'labelManage' => $labelManage,
+                'titleManage' => $titleManage,
+                'urlCreate' => $urlCreate,
+                'manageLinks' => $manageLinks,
             ]
         );
         ?>
     </div>
 
-<?php if($listaModels){ ?>
-    <div class="list-view">
-        <div>
-            <div class="" role="listbox" data-role="list-view">
-                <?php foreach ($listaModels as $singolaNews) : ?>
-                    <div>
-                        <?= $this->render("@vendor/open20/amos-news/src/views/news/_item", ['model' => $singolaNews]); ?>
-                    </div>
-                <?php endforeach ?>
+    <?php if ($listaModels) { ?>
+        <div class="list-view">
+            <div>
+                <div class="" role="listbox" data-role="list-view">
+                    <?php foreach ($listaModels as $singolaNews) : ?>
+                        <div>
+                            <?= $this->render("@vendor/open20/amos-news/src/views/news/_item", ['model' => $singolaNews]); ?>
+                        </div>
+                    <?php endforeach ?>
+                </div>
             </div>
         </div>
-    </div>
 
-<?php }
-
-/* else{ ?>
-    <div class="no-result-message mx-auto">
-                
-        <div class="flexbox flexbox-column">
-            <p class="h4">Non ci sono contenuti che corrispondono ai tuoi interessi. </p>
-                <div>
-                    <?php if (CurrentUser::isPlatformGuest()){ ?><!--guest va all'accedi e secondo non si vede -->
-                                <a class="btn btn-primary" href="/site/login">sii il primo a scrivere un contenuto</a>
-                    <?php }else{ ?><!--loggato: vede entrambe: crea/update-->
-                                
-                        <a href="/news/news/create" class="btn btn-primary">sii il primo a scrivere un contenuto</a>
-                        <a href="/amosadmin/user-profile/update?id=<?=$userModule->id ?>" class="btn btn-secondary"> aggiorna i tuoi interessi </a>
-                                
-                    <?php } ?>
-                </div>
-        </div>
-    </div>
-<?php } 
-
-*/?>
+    <?php } ?>
 </div>

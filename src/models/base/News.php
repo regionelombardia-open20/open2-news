@@ -103,18 +103,6 @@ abstract class News extends ContentModel
             [['slug', 'data_pubblicazione', 'data_rimozione', 'created_at', 'updated_at', 'deleted_at', 'status', 'comments_enabled'], 'safe'],
             [['titolo', 'sottotitolo'], 'string', 'max' => 100],
             [['descrizione_breve'], 'string', 'max' => 250],
-//            [['news_content_type_id'], 'exist', 'skipOnError' => true, 'targetClass' => NewsContentType::className(), 'targetAttribute' => ['news_content_type_id' => 'id']],
-//            [['edited_by_agid_organizational_unit_id'], 'exist', 'skipOnError' => true, 'targetClass' => AgidOrganizationalUnit::className(), 'targetAttribute' => ['edited_by_agid_organizational_unit_id' => 'id']],
-//            [['news_documento_id'], 'exist', 'skipOnError' => true, 'targetClass' => Documenti::className(), 'targetAttribute' => ['news_documento_id' => 'id']],
-//            [['news_content_type_id','date_news', 'descrizione_breve'], 'required'],
-//            [['newsImage'], 'file', 'extensions' => 'jpeg, jpg, png, gif', 'maxFiles' => 1],
-//            /**
-//             * SiteManagementSlider
-//             * image slider
-//             * video slider
-//             */
-//            [['image_site_management_slider_id'], 'exist', 'skipOnError' => true, 'targetClass' => SiteManagementSlider::className(), 'targetAttribute' => ['image_site_management_slider_id' => 'id']],
-//            [['video_site_management_slider_id'], 'exist', 'skipOnError' => true, 'targetClass' => SiteManagementSlider::className(), 'targetAttribute' => ['video_site_management_slider_id' => 'id']],
         ]);
     
         if ($this->newsModule->enableAgid) {
@@ -154,7 +142,7 @@ abstract class News extends ContentModel
                 // controllo se il model ha gia l'immagine
                 $news_image = (new \yii\db\Query())
                     ->from('attach_file')
-                    ->where(['LIKE', 'model', 'open20\amos\news\models\News'])
+                    ->where(['LIKE', 'model', $this->newsModule->model('News')])
                     ->andWhere([
                         'itemId' => $this->id
                     ])
@@ -165,7 +153,7 @@ abstract class News extends ContentModel
             
                     // non esiste in post
                     if (null == \Yii::$app->request->post('newsImage_data', '')) {
-                        $this->addError("newsImage");
+                        $this->addError("newsImage", AmosNews::t('amosnews',"Il campo immagine è obbligatorio."));
                 
                         return false;
                     }
@@ -200,7 +188,7 @@ abstract class News extends ContentModel
                 'descrizione' => AmosNews::t('amosnews', '#description_field'),
                 'metakey' => AmosNews::t('amosnews', 'Meta key'),
                 'metadesc' => AmosNews::t('amosnews', 'Meta descrizione'),
-                'primo_piano' => AmosNews::t('amosnews', 'Pubblica sul sito'),
+                'primo_piano' => AmosNews::t('amosnews', 'Vuoi rendere visibile la notizia anche ad utenti non registrati (guest)?'),
                 'in_evidenza' => AmosNews::t('amosnews', 'In evidenza'),
                 'hits' => AmosNews::t('amosnews', 'Visualizzazioni'),
                 'abilita_pubblicazione' => AmosNews::t('amosnews', 'Abilita pubblicazione'),
@@ -429,7 +417,7 @@ abstract class News extends ContentModel
 
                     function ($element) {
                         $array['status'] = $element['workflow_id'] . "/" . $element['id'];
-                        $array['label'] = $element['label'];
+                        $array['label'] = AmosNews::t('amosnews', $element['label']);
                         return $array;
                     }
                 ),

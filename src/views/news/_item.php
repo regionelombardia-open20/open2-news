@@ -20,13 +20,19 @@ use open20\amos\core\utilities\CurrentUser;
 
 
 $hideCategory = false;
-$newsCategories = NewsUtility::getNewsCategories();
-if (count($newsCategories) == 1) {
-  $hideCategory = true;
+
+$newsCategories = NewsUtility::getAllNewsCategories();
+if ($newsCategories->count() == 1) {
+    $hideCategory = true;
 } else {
-  $category = $model->newsCategorie->titolo;
+    $category = $model->newsCategorie->titolo;
+    $customCategoryClass = 'custom-category-bg-' . str_replace(' ','-',strtolower($category));
+    $colorBgCategory = $model->newsCategorie->color_background;
+    $colorTextCategory = $model->newsCategorie->color_text;
 }
 
+if (strlen($model->descrizione) > 150)
+$model->descrizione = strip_tags($model->descrizione, 0, 147) . '...';
 /**
  * @var \open20\amos\news\models\News $model
  */
@@ -69,19 +75,31 @@ if (count($newsCategories) == 1) {
                         ItemAndCardHeaderWidget::widget([
                                 'model' => $model,
                                 'publicationDateNotPresent' => true,
-                                'showPrevalentPartnershipAndTargets' => true,
-                                'enableLink' => !(CurrentUser::isPlatformGuest())
+                                'enableLink' => !(CurrentUser::isPlatformGuest()),
+                                
                             ]
                         ) 
                     ?>
                     <hr class="w-75 my-2 ml-0">
                     <?php if (!$hideCategory) : ?>
-                    <p class="card-category font-weight-normal mb-3"><?= $model->newsCategorie->titolo ?></p>
+                    <span class="card-category text-uppercase font-weight-normal <?= $customCategoryClass ?>  mb-3" <?php if ((!empty($colorBgCategory))) : ?> style="background-color: <?= $colorBgCategory ?> !important; padding:3px; " <?php endif; ?> ><strong <?php if ((!empty($colorTextCategory))) : ?> style="color: <?= $colorTextCategory ?>" <?php endif; ?>><?= $category ?></strong></span>
                     <?php endif ?>
+                    <div>
+
                     <?= Html::a(Html::tag('h3', $model->titolo,['class' => 'card-title font-weight-bold']), $model->getFullViewUrl(), ['class' => 'link-list-title', 'title' => 'Vai alla notizia ' .  $model->titolo]) ?>
+                    <?php if (!empty(\open20\amos\core\utilities\CwhUtility::getTargetsString($model))) : ?>
+                        <a href="javascript:void(0)" data-toggle="tooltip" title="<?= \open20\amos\core\utilities\CwhUtility::getTargetsString($model) ?>">
+                        
+                        <span class="mdi mdi-account-supervisor-circle text-muted"></span>
+                            
+                            <span class="sr-only"><?= \open20\amos\core\utilities\CwhUtility::getTargetsString($model) ?></span>
+                        </a>
+                    <?php endif; ?>
+                    </div>
                     <p class="card-description font-weight-light"><?= $model->descrizione_breve ?></p>
-                    <a class="read-more" href="<?= $model->getFullViewUrl() ?>" title="Vai alla news <?= $model->titolo ?>">
+                    <a class="read-more small" href="<?= $model->getFullViewUrl() ?>" title="Vai alla news <?= $model->titolo ?>">
                         <?= Html::tag('span', AmosNews::t('amosnews', 'Leggi'), ['class' => 'text']) ?>
+                        <!-- <span class="mdi mdi-arrow-right"></span> -->
                     </a>
                 </div>
             </div>

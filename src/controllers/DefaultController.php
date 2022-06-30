@@ -36,7 +36,7 @@ class DefaultController extends DashboardController
      */
     public function actionIndex()
     {
-        $url = '/news/news/own-interest-news';
+        $url = '/news/news/all-news';
         $module = \Yii::$app->getModule('news');
         if($module){
             $url =  $module->defaultWidgetIndexUrl;

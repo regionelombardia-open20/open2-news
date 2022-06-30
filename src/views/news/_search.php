@@ -27,16 +27,17 @@ use yii\helpers\ArrayHelper;
 
 $moduleTag = Yii::$app->getModule('tag');
 
-
+/** @var AmosNews $newsModule */
 $newsModule = AmosNews::instance();
 
 // enable open search section
-$enableAutoOpenSearchPanel = !isset(\Yii::$app->params['enableAutoOpenSearchPanel']) || \Yii::$app->params['enableAutoOpenSearchPanel'] === true;
-
+$enableAutoOpenSearchPanel = isset(\Yii::$app->params['enableAutoOpenSearchPanel'])
+    ? \Yii::$app->params['enableAutoOpenSearchPanel']
+    : false;
 ?>
 
 <div class="news-search element-to-toggle" data-toggle-element="form-search">
-    <div class="col-xs-12"><h2><?= AmosNews::t('amosnews', 'Cerca per') ?>:</h2></div>
+    <div class="col-xs-12"><p class="h3"><?= AmosNews::t('amosnews', 'Cerca per') ?>:</p></div>
 
     <?php $form = ActiveForm::begin([
         'action' => Yii::$app->controller->action->id,
@@ -50,7 +51,6 @@ $enableAutoOpenSearchPanel = !isset(\Yii::$app->params['enableAutoOpenSearchPane
 
     echo Html::hiddenInput("enableSearch", $enableAutoOpenSearchPanel);
     echo Html::hiddenInput("currentView", Yii::$app->request->getQueryParam('currentView'));
-
 
     ?>
 
@@ -74,34 +74,36 @@ $enableAutoOpenSearchPanel = !isset(\Yii::$app->params['enableAutoOpenSearchPane
         ]) ?>
     </div>
 
-    <div class="col-sm-6 col-lg-4">
-        <?php
-        $creator = '';
-        $userProfileCreator = \open20\amos\admin\models\UserProfile::find()->andWhere(['user_id' => $model->created_by])->one();
-        if(!empty($userProfileCreator)) {
-            $creator = $userProfileCreator->getNomeCognome();
-        }
-        echo $form->field($model, 'created_by')->widget(Select2::className(), [
-                'data' => (!empty($model->created_by) ? [$model->created_by => $creator] : []),
-                'options' => ['placeholder' => AmosNews::t('amosnews', 'Cerca ...')],
-                'pluginOptions' => [
-                    'allowClear' => true,
-                    'minimumInputLength' => 3,
-                    'ajax' => [
-                        'url' => \yii\helpers\Url::to(['/'.AmosAdmin::getModuleName().'/user-profile-ajax/ajax-user-list']),
-                        'dataType' => 'json',
-                        'data' => new \yii\web\JsExpression('function(params) { return {q:params.term}; }')
+    <?php if (!\Yii::$app->user->isGuest) { ?>
+        <div class="col-sm-6 col-lg-4">
+            <?php
+            $creator = '';
+            $userProfileCreator = $model->createdUserProfile;
+            if (!empty($userProfileCreator)) {
+                $creator = $userProfileCreator->getNomeCognome();
+            }
+            echo $form->field($model, 'created_by')->widget(Select2::className(), [
+                    'data' => (!empty($model->created_by) ? [$model->created_by => $creator] : []),
+                    'options' => ['placeholder' => AmosNews::t('amosnews', 'Cerca ...')],
+                    'pluginOptions' => [
+                        'allowClear' => true,
+                        'minimumInputLength' => 3,
+                        'ajax' => [
+                            'url' => \yii\helpers\Url::to(['/' . AmosAdmin::getModuleName() . '/user-profile-ajax/ajax-user-list']),
+                            'dataType' => 'json',
+                            'data' => new \yii\web\JsExpression('function(params) { return {q:params.term}; }')
+                        ],
                     ],
-                ],
-            ]
-        );
-        ?>
-    </div>
+                ]
+            );
+            ?>
+        </div>
+    <?php } ?>
 
     <?php  if ($newsModule->enableAgid) : ?>
 
         <div class="col-sm-6 col-lg-4">
-            <?= 
+            <?=
                 $form->field($model, 'updated_by')->widget(Select::className(), [
                 'data' => ArrayHelper::map(\open20\amos\admin\models\UserProfile::find()->andWhere(['deleted_at' => NULL])->all(), 'user_id', function($model) {
                     return $model->nome . " " . $model->cognome;
@@ -114,12 +116,12 @@ $enableAutoOpenSearchPanel = !isset(\Yii::$app->params['enableAutoOpenSearchPane
                     'pluginOptions' => [
                         'allowClear' => true
                     ],
-                ])->label(AmosNews::t('amosnews', '#updated_by')); 
+                ])->label(AmosNews::t('amosnews', '#updated_by'));
             ?>
         </div>
 
         <div class="col-sm-6 col-lg-4">
-            <?= 
+            <?=
                 $form->field($model, 'status')->widget(Select::className(), [
                     'data' => $model->getAllWorkflowStatus(),
 
@@ -132,12 +134,12 @@ $enableAutoOpenSearchPanel = !isset(\Yii::$app->params['enableAutoOpenSearchPane
                     'pluginOptions' => [
                         'allowClear' => true
                     ],
-                ]); 
+                ]);
             ?>
         </div>
 
         <div class="col-sm-6 col-lg-4">
-            <?= 
+            <?=
                 $form->field($model, 'news_categorie_id')->widget(Select::className(), [
                     'data' => ArrayHelper::map(\open20\amos\news\models\NewsCategorie::find()
                         ->andWhere(['deleted_at' => NULL])->all(), 'id', 'titolo') ,
@@ -151,7 +153,7 @@ $enableAutoOpenSearchPanel = !isset(\Yii::$app->params['enableAutoOpenSearchPane
                     'pluginOptions' => [
                         'allowClear' => true
                     ],
-                ]); 
+                ]);
             ?>
         </div>
 
@@ -169,18 +171,18 @@ $enableAutoOpenSearchPanel = !isset(\Yii::$app->params['enableAutoOpenSearchPane
         ]) ?>
     </div-->
     <?php if (isset($moduleTag) && in_array(News::className(), $moduleTag->modelsEnabled) && $moduleTag->behaviors): ?>
-    <div class="col-xs-12">
-        <?php
-        $params = \Yii::$app->request->getQueryParams();
-        /*echo \open20\amos\tag\widgets\TagWidget::widget([
-            'model' => $model,
-            'attribute' => 'tagValues',
-            'form' => $form,
-            'isSearch' => true,
-            'form_values' => isset($params[$model->formName()]['tagValues']) ? $params[$model->formName()]['tagValues'] : []
-        ]);*/
-        ?>
-    </div>
+        <div class="col-xs-12">
+            <?php
+            $params = \Yii::$app->request->getQueryParams();
+            /*echo \open20\amos\tag\widgets\TagWidget::widget([
+                'model' => $model,
+                'attribute' => 'tagValues',
+                'form' => $form,
+                'isSearch' => true,
+                'form_values' => isset($params[$model->formName()]['tagValues']) ? $params[$model->formName()]['tagValues'] : []
+            ]);*/
+            ?>
+        </div>
     <?php endif; ?>
 
 

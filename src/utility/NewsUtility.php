@@ -10,7 +10,6 @@
 
 namespace open20\amos\news\utility;
 
-
 use open20\amos\news\models\NewsCategorie;
 use open20\amos\news\models\NewsCategoryRolesMm;
 use yii\base\BaseObject;
@@ -27,46 +26,47 @@ class NewsUtility extends BaseObject
     {
         /** @var ActiveQuery $query */
         $query = NewsCategorie::find();
-        if(\Yii::$app->getModule('news')->filterCategoriesByRole){
+        if (\Yii::$app->getModule('news')->filterCategoriesByRole) {
             //check enabled role for category active - user can publish under a category if there's at least one match betwwn category and user roles
-            $query->joinWith('newsCategoryRolesMms')->innerJoin('auth_assignment', 'item_name='. NewsCategoryRolesMm::tableName().'.role and user_id ='. \Yii::$app->user->id);
+            $query->joinWith('newsCategoryRolesMms')->innerJoin('auth_assignment',
+                'item_name='.NewsCategoryRolesMm::tableName().'.role and user_id ='.\Yii::$app->user->id);
         }
-          if(\Yii::$app->getModule('news')->enableCategoriesForCommunity){
-            $moduleCwh = \Yii::$app->getModule('cwh');
+        if (\Yii::$app->getModule('news')->enableCategoriesForCommunity) {
+            $moduleCwh       = \Yii::$app->getModule('cwh');
             $moduleCommunity = \Yii::$app->getModule('community');
 
-              if($moduleCwh && $moduleCommunity) {
+            if ($moduleCwh && $moduleCommunity) {
                 $scope = $moduleCwh->getCwhScope();
                 //INSIDE A COMMUNITY
                 if (!empty($scope) && isset($scope['community'])) {
                     $isCommunityManager = NewsUtility::isCommunityManager($scope['community']);
-                 //SHOWALLCATEGORIES = TRUE
-                    if(\Yii::$app->getModule('news')->showAllCategoriesForCommunity) {
+                    //SHOWALLCATEGORIES = TRUE
+                    if (\Yii::$app->getModule('news')->showAllCategoriesForCommunity) {
                         $query->joinWith('newsCategoryCommunityMms')->andWhere([
                             'OR',
                             ['community_id' => null],
                             ['community_id' => $scope['community']]
                         ]);
                         // filter for  particiapants
-                        if(!$isCommunityManager){
+                        if (!$isCommunityManager) {
                             $query->andWhere(
                                 ['OR',
-                                ['community_id' => null],
-                                ['visible_to_participant' => true]
+                                    ['community_id' => null],
+                                    ['visible_to_participant' => true]
                             ]);
                         }
-                 //SHOWALLCATEGORIES = FALSE - show only categories that belongs to the community
+                        //SHOWALLCATEGORIES = FALSE - show only categories that belongs to the community
                     } else {
                         $query2 = clone $query;
-                        $count = $query2->joinWith('newsCategoryCommunityMms')
-                            ->andWhere(['community_id' => $scope['community']])->count();
+                        $count  = $query2->joinWith('newsCategoryCommunityMms')
+                                ->andWhere(['community_id' => $scope['community']])->count();
 
                         // if you have at least a category for this community show only them
-                        if($count > 0) {
+                        if ($count > 0) {
                             $query->joinWith('newsCategoryCommunityMms')
                                 ->andWhere(['community_id' => $scope['community']]);
                             // filter for  participants
-                            if(!$isCommunityManager){
+                            if (!$isCommunityManager) {
                                 $query->andWhere(['visible_to_participant' => true]);
                             }
                         } else {
@@ -85,19 +85,28 @@ class NewsUtility extends BaseObject
         return $query;
     }
 
-
-
     /**
      * @param $community_id
      * @return bool
      * @throws \yii\base\InvalidConfigException
      */
-    public static function isCommunityManager($community_id){
+    public static function isCommunityManager($community_id)
+    {
         $count = \open20\amos\community\models\CommunityUserMm::find()
-            ->andWhere(['community_id' => $community_id])
-            ->andWhere(['user_id' => \Yii::$app->user->id])
-            ->andWhere(['role' => \open20\amos\community\models\Community::ROLE_COMMUNITY_MANAGER])->count();
+                ->andWhere(['community_id' => $community_id])
+                ->andWhere(['user_id' => \Yii::$app->user->id])
+                ->andWhere(['role' => \open20\amos\community\models\Community::ROLE_COMMUNITY_MANAGER])->count();
         return ($count > 0);
+    }
 
+    /**
+     *
+     * @return ActiveQuery
+     */
+    public static function getAllNewsCategories()
+    {
+        /** @var ActiveQuery $query */
+        $query = NewsCategorie::find();
+        return $query;
     }
 }

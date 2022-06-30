@@ -19,7 +19,7 @@ use open20\amos\news\AmosNews;
 //use open20\amos\news\models\search\NewsSearch;
 //use open20\amos\news\models\News;
 
-use open20\amos\utility\models\BulletCounters;
+use open20\amos\core\record\Record;
 
 use Yii;
 use yii\helpers\ArrayHelper;
@@ -70,17 +70,8 @@ class WidgetIconAllNews extends WidgetIcon
 
         
         // Read and reset counter from bullet_counters table, bacthed calculated!
-        if ($this->disableBulletCounters == false) { 
-            $this->setBulletCount(
-                BulletCounters::getAmosWidgetIconCounter(
-                    Yii::$app->getUser()->getId(), 
-                    AmosNews::getModuleName(),
-                    $this->getNamespace(),
-                    $this->resetBulletCount(),
-                    null,
-                    WidgetIconNews::className(),
-                    $this->saveMicrotime
-            ));
+        if ($this->disableBulletCounters == false ) {
+            $this->setBulletCount(Record::getStaticBullet(Record::BULLET_TYPE_ALL, false, 'news', false, true));
         }
         
 //        // TDB era attivo il conteggio!

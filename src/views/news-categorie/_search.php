@@ -21,7 +21,7 @@ use yii\widgets\ActiveForm;
 ?>
 
 <div class="news-categorie-search">
-    <div class="col-xs-12"><h2><?= AmosNews::t('amosnews', 'Cerca per') ?>:</h2></div>
+    <div class="col-xs-12"><p class="h3"><?= AmosNews::t('amosnews', 'Cerca per') ?>:</p></div>
     <?php $form = ActiveForm::begin([
         'action' => ['index'],
         'method' => 'get',

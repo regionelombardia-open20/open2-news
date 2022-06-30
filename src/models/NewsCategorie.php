@@ -15,6 +15,7 @@ use open20\amos\attachments\behaviors\FileBehavior;
 use open20\amos\attachments\models\File;
 use open20\amos\news\AmosNews;
 use yii\helpers\ArrayHelper;
+use yii\helpers\Url;
 
 /**
  * Class NewsCategorie
@@ -156,7 +157,6 @@ class NewsCategorie extends \open20\amos\news\models\base\NewsCategorie
 
     }
 
-
     /**
      *
      */
@@ -179,6 +179,4 @@ class NewsCategorie extends \open20\amos\news\models\base\NewsCategorie
         };
         $this->newsCategoryRoles = $roles;
     }
-
-
 }

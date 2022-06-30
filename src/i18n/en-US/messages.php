@@ -97,6 +97,7 @@ return [
     'il periodo di rilevazione' => 'the period of detection',
     '#image_field_hint' => 'Represents the main image of the news',
     '#image_field' => 'Image',
+    '#image_field_required' => "Image (mandatory)",
     'Immagine della notizia' => 'Image of the news',
     'immagine' => 'imagine',
     'Immagine' => 'Picture',
@@ -227,4 +228,7 @@ return [
     '#menu_front_news' => 'News',
     'Nuova' => 'New',
     'Gestisci' => 'Manage',
+    "#beforeActionSubtitleSectionGuest" => "To participate in the creation of new news, {ctaLoginRegister}",
+    "#beforeActionCtaLoginRegister" => "log in or register on the platform",
+    "#beforeActionSubtitleSectionLogged" => ""
 ];

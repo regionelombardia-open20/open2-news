@@ -16,6 +16,9 @@ use open20\amos\core\forms\CreatedUpdatedWidget;
 use open20\amos\core\forms\RequiredFieldsTipWidget;
 use open20\amos\news\AmosNews;
 use yii\bootstrap\Tabs;
+use open20\amos\core\forms\TextEditorWidget;
+use kartik\color\ColorInput;
+
 
 /**
  * @var yii\web\View $this
@@ -40,13 +43,13 @@ $filterCategoriesByRole = $module->filterCategoriesByRole;
 
     <?php $this->beginBlock('dettagli'); ?>
     <div class="row">
-        <div class="col-lg-6 col-sm-6">
+        <div class="col-sm-6">
 
             <?= $form->field($model, 'titolo')->textInput(['maxlength' => true]) ?>
             <?= $form->field($model, 'sottotitolo')->textInput(['maxlength' => true]) ?>
         </div>
-        <div class="col-lg-6 col-sm-6">
-            <div class="col-lg-8 col-sm-8 pull-right">
+        <div class="col-sm-6">
+            <div>
                 <?= $form->field($model, 'categoryIcon')->widget(AttachmentsInput::classname(), [
                     'options' => [ // Options of the Kartik's FileInput widget
                         'multiple' => false, // If you want to allow multiple upload, default to false
@@ -54,7 +57,7 @@ $filterCategoriesByRole = $module->filterCategoriesByRole;
                     ],
                     'pluginOptions' => [ // Plugin options of the Kartik's FileInput widget
                         'maxFileCount' => 1,
-                        'showRemove' => false,// Client max files,
+                        'showRemove' => false, // Client max files,
                         'indicatorNew' => false,
                         'allowedPreviewTypes' => ['image'],
                         'previewFileIconSettings' => false,
@@ -63,6 +66,31 @@ $filterCategoriesByRole = $module->filterCategoriesByRole;
                     ]
                 ]) ?>
             </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <?= $form->field($model, 'color_background')->widget(ColorInput::classname(), [
+                        'options' => ['placeholder' => 'Select color ...', 'readonly' => true],
+                        'pluginOptions' => [
+                            'showInput' => false,
+                            'allowEmpty' => true,
+                        ]
+                    ]); ?>
+                </div>
+                <div class="col-md-6">
+                <div class="form form-group">
+                <label class="control-label m-b-15">Risultato: <small>(salva per vedere)</small></label><br>
+                <span class="card-category text-uppercase" style="padding:3px; background: <?= $model->color_background ?>">
+                <strong style="color:<?= $model->color_text ?>"><?= $model->color_text ?></strong>
+                </span>
+                
+                    
+                </div>
+                    
+                </div>
+
+
+            </div>
+
         </div>
     </div>
     <div class="row">
@@ -73,25 +101,30 @@ $filterCategoriesByRole = $module->filterCategoriesByRole;
     </div>
     <div class="row">
         <div class="col-lg-12 col-sm-12">
-            <?= $form->field($model, 'descrizione')->widget(\yii\redactor\widgets\Redactor::className(), [
-                'clientOptions' => [
-                    'buttonsHide' => [
-                        'image',
-                        'file'
+            <?= $form->field($model, 'descrizione')->widget(
+                TextEditorWidget::className(),
+                [
+                    'clientOptions' => [
+                        'lang' => substr(Yii::$app->language, 0, 2),
+                        'plugins' => [
+                            "paste link",
+                        ],
+                        'toolbar' => "undo redo | link",
                     ],
-                    'lang' => substr(Yii::$app->language, 0, 2)
                 ]
-            ]) ?>
+            ) ?>
         </div>
     </div>
 
-    <?php if($filterCategoriesByRole) {
+
+    <?php if ($filterCategoriesByRole) {
+
         $whiteRoles = $module->whiteListRolesCategories;
         $roles =  array_combine($whiteRoles, $whiteRoles);
-        ?>
+    ?>
         <div class="row">
             <div class="col-lg-12 col-sm-12">
-                <?= $form->field($model, 'newsCategoryRoles')->widget(\kartik\select2\Select2::className(),[
+                <?= $form->field($model, 'newsCategoryRoles')->widget(\kartik\select2\Select2::className(), [
                     'data' => $roles,
                     'pluginOptions' => [
                         'allowClear' => true
@@ -108,12 +141,12 @@ $filterCategoriesByRole = $module->filterCategoriesByRole;
             <?= $form->field($model, 'notify_category')->checkbox() ?>
         </div>
     </div>
-    <?php if($enableCategoriesForCommunity) {?>
+    <?php if ($enableCategoriesForCommunity) { ?>
         <hr>
-        <h3><?= AmosNews::t('amosnews', 'Configuration for community')?></h3>
+        <h3><?= AmosNews::t('amosnews', 'Configuration for community') ?></h3>
         <div class="row">
             <div class="col-lg-6 col-sm-12">
-                <?= $form->field($model, 'newsCategoryCommunities')->widget(\kartik\select2\Select2::className(),[
+                <?= $form->field($model, 'newsCategoryCommunities')->widget(\kartik\select2\Select2::className(), [
                     'data' => \yii\helpers\ArrayHelper::map(\open20\amos\community\models\Community::find()->all(), 'id', 'name'),
                     'pluginOptions' => [
                         'allowClear' => true
@@ -122,7 +155,7 @@ $filterCategoriesByRole = $module->filterCategoriesByRole;
                 ])->label(AmosNews::t('amosnews', 'Community')) ?>
             </div>
             <div class="col-lg-6 col-sm-12">
-                <?= $form->field($model, 'visibleToCommunityRole')->widget(\kartik\select2\Select2::className(),[
+                <?= $form->field($model, 'visibleToCommunityRole')->widget(\kartik\select2\Select2::className(), [
                     'data' => [
                         'COMMUNITY_MANAGER' => AmosNews::t('amosnews', 'Community manager'),
                         'PARTICIPANT' => AmosNews::t('amosnews', 'Participant'),
@@ -135,11 +168,12 @@ $filterCategoriesByRole = $module->filterCategoriesByRole;
                 ])->label(AmosNews::t('amosnews', 'Visible to Community roles')); ?>
             </div>
         </div>
-<!--        <div class="row">-->
-<!--            <div class="col-lg-12 col-sm-12">-->
-<!--                --><?php //echo $form->field($model, 'publish_only_on_community')->checkbox()->label(AmosNews::t('amosnews', 'Publish Only On Community')) ?>
-<!--            </div>-->
-<!--        </div>-->
+        <!--        <div class="row">-->
+        <!--            <div class="col-lg-12 col-sm-12">-->
+        <!--                --><?php //echo $form->field($model, 'publish_only_on_community')->checkbox()->label(AmosNews::t('amosnews', 'Publish Only On Community')) 
+                                ?>
+        <!--            </div>-->
+        <!--        </div>-->
     <?php } ?>
     <div class="clearfix"></div>
     <?php $this->endBlock(); ?>

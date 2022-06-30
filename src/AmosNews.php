@@ -12,6 +12,7 @@ namespace open20\amos\news;
 
 use open20\amos\core\interfaces\CmsModuleInterface;
 use open20\amos\core\interfaces\SearchModuleInterface;
+use open20\amos\core\interfaces\BreadcrumbInterface;
 use open20\amos\core\module\AmosModule;
 use open20\amos\core\module\ModuleInterface;
 use open20\amos\news\widgets\graphics\WidgetGraphicsUltimeNews;
@@ -28,7 +29,7 @@ use yii\helpers\ArrayHelper;
  * @package open20\amos\news
  */
 class AmosNews extends AmosModule implements ModuleInterface, SearchModuleInterface,
-    CmsModuleInterface
+    CmsModuleInterface, BreadcrumbInterface
 {
     const
         MAX_LAST_NEWS_ON_DASHBOARD = 3;
@@ -116,7 +117,7 @@ class AmosNews extends AmosModule implements ModuleInterface, SearchModuleInterf
      *
      * @var type
      */
-    public $defaultWidgetIndexUrl = '/news/news/own-interest-news';
+    public $defaultWidgetIndexUrl = '/news/news/all-news';
 
     /**
      * @var bool
@@ -140,7 +141,7 @@ class AmosNews extends AmosModule implements ModuleInterface, SearchModuleInterf
     /*
      * @var bool disableStandardWorkflow Disable standard worflow, direct publish
      */
-    public $disableStandardWorkflow     = false;
+    public $disableStandardWorkflow = false;
 
     /**
      * active agid fields
@@ -161,16 +162,22 @@ class AmosNews extends AmosModule implements ModuleInterface, SearchModuleInterf
      */
     public $enableAgidNewsRelatedAgidService = true;
     
-    /**
-     * Enable/Disable notification on News model
-     * @var bool $newsModelsendNotification
-     */
-    public $newsModelsendNotification = true;
-
     /*
      * @var int $numberListTag 10 default
      */
     public $numberListTag = 10;
+
+    /**
+     * Enable editor plugins
+     * @var array
+     */
+    public $rtePlugins = ["paste link"];
+
+    /**
+     * Enable the toolbar buttons
+     * @var string
+     */
+    public $rteToolbar = "undo redo | link";
 
     /**
      * @inheritdoc
@@ -211,11 +218,10 @@ class AmosNews extends AmosModule implements ModuleInterface, SearchModuleInterf
     {
         parent::init();
 
-        \Yii::setAlias('@open20/amos/'.static::getModuleName().'/controllers',
-            __DIR__.'/controllers');
+        \Yii::setAlias('@open20/amos/' . static::getModuleName() . '/controllers', __DIR__ . '/controllers');
 
         //Configuration: merge default module configurations loaded from config.php with module configurations set by the application
-        $config = require(__DIR__.DIRECTORY_SEPARATOR.self::$CONFIG_FOLDER.DIRECTORY_SEPARATOR.'config.php');
+        $config = require(__DIR__ . DIRECTORY_SEPARATOR . self::$CONFIG_FOLDER . DIRECTORY_SEPARATOR . 'config.php');
         \Yii::configure($this, ArrayHelper::merge($config, $this));
     }
 
@@ -250,9 +256,9 @@ class AmosNews extends AmosModule implements ModuleInterface, SearchModuleInterf
     protected function getDefaultModels()
     {
         return [
-            'News' => __NAMESPACE__.'\\'.'models\News',
-            'NewsCategorie' => __NAMESPACE__.'\\'.'models\NewsCategorie',
-            'NewsSearch' => __NAMESPACE__.'\\'.'models\search\NewsSearch',
+            'News' => __NAMESPACE__ . '\\' . 'models\News',
+            'NewsCategorie' => __NAMESPACE__ . '\\' . 'models\NewsCategorie',
+            'NewsSearch' => __NAMESPACE__ . '\\' . 'models\search\NewsSearch',
         ];
     }
 
@@ -263,7 +269,7 @@ class AmosNews extends AmosModule implements ModuleInterface, SearchModuleInterf
      */
     public static function beginCreateNewSessionKey()
     {
-        return 'beginCreateNewUrl_'.self::getModuleName();
+        return 'beginCreateNewUrl_' . self::getModuleName();
     }
 
     /**
@@ -279,4 +285,56 @@ class AmosNews extends AmosModule implements ModuleInterface, SearchModuleInterf
         }
         return $menu;
     }
+
+
+    /**
+     * @return array
+     */
+    public function getIndexActions()
+    {
+        return [
+            'news/index',
+            'news-categorie/index',
+            'news/all-news',
+            'news/own-news',
+            'news/admin-all-news',
+            'news/to-validate-news',
+            'news/own-interest-news'
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function defaultControllerIndexRoute()
+    {
+        return [
+            'news' => '/news/news/own-interest-news',
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function defaultControllerIndexRouteSlogged()
+    {
+        return [
+            'news' => '/news/news/all-news',
+        ];
+    }
+
+
+    /**
+     * @return array
+     */
+    public function getControllerNames()
+    {
+        $names = [
+            'news' => self::t('amosnews', "News"),
+            'news-categorie' => self::t('amosnews', "Categorie notizie"),
+        ];
+
+        return $names;
+    }
+
 }

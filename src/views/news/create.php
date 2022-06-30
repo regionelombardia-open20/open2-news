@@ -25,12 +25,12 @@ $this->params['breadcrumbs'][] = $this->title;
 
 ?>
 <div class="news-create">
-<?= $this->render(
-  '_form', [
-    'model' => $model,
-    'moduleCwh' => $moduleCwh,
-    'scope' => $scope,
-    'siteManagementModule' => (isset($siteManagementModule) ? $siteManagementModule : null)
-  ]) 
-?>
+    <?= $this->render(
+        '_form', [
+        'model' => $model,
+        'moduleCwh' => $moduleCwh,
+        'scope' => $scope,
+        'siteManagementModule' => (isset($siteManagementModule) ? $siteManagementModule : null)
+    ])
+    ?>
 </div>
