@@ -52,7 +52,13 @@ class WidgetGraphicsCmsUltimeNews extends WidgetGraphic
         }
         
         $listaNews = $search->ultimeNews($_GET, $newsLimit);
-        
+
+        if( isset(\Yii::$app->params['showWidgetEmptyContent']) && \Yii::$app->params['showWidgetEmptyContent'] == false ){
+            if($listaNews->getTotalCount() == 0 ){
+                return false;
+            }
+        }
+
         $moduleLayout = \Yii::$app->getModule('layout');
         if (is_null($moduleLayout)) {
             $viewToRender .= '_old';

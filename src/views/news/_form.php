@@ -241,7 +241,7 @@ JS;
             <h2 class="subtitle-form"><?= AmosNews::t('amosnews', 'Allegati') ?></h2>
             <div class="row">
                 <!-- AGID FIELD -->
-                <?php if ($enableAgid) : ?>
+                <?php if (($enableAgid) && ($enableAgidAllegati)): ?>
                     <div class="col-xs-12">
                         <?=
                         $form->field($model, 'news_documento_id')->widget(
@@ -293,7 +293,7 @@ JS;
         <!--referenti-->
 
         <!-- AGID FIELD -->
-        <?php if ($enableAgid) : ?>
+        <?php if (($enableAgid) && ($enableAgidReferenti)): ?>
             <div class="col-xs-12 section-form">
                 <h2 class="subtitle-form"><?= AmosNews::t('amosnews', 'Referenti') ?></h2>
                 <div class="row">
@@ -783,7 +783,6 @@ JS;
                                                             '1' => AmosNews::t('amosnews', 'Si')
                                                         ],
                                                         'options' => [
-                                                            'value' => (isset($enableAgid) && true == $enableAgid) ? 1 : null,
                                                             'prompt' => AmosNews::t('amosnews', 'Seleziona'),
                                                             'disabled' => false,
                                                             'onchange' => "
@@ -810,7 +809,6 @@ JS;
                                                             '1' => AmosNews::t('amosnews', 'Si')
                                                         ],
                                                         'options' => [
-                                                            'value' => (isset($enableAgid) && true == $enableAgid) ? 1 : null,
                                                             'prompt' => AmosNews::t('amosnews', 'Seleziona'),
                                                             // 'disabled' => ($model->primo_piano == 1 ? false : true)
                                                             'disabled' => (isset($enableAgid) && true == $enableAgid) ? false : ($model->primo_piano

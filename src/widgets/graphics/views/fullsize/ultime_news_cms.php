@@ -62,7 +62,7 @@ if (isset($moduleCwh) && !empty($moduleCwh->getCwhScope())) {
 
 ?>
 
-<div class="widget-graphic-cms-bi-less card-<?= $modelLabel ?> container">
+<div class="widget-graphic-cms-bi-less card-<?= $modelLabel ?> <?= $modelLabel ?>-index container">
     <div class="page-header">
         <?= $this->render(
             "@vendor/open20/amos-layout/src/views/layouts/fullsize/parts/bi-less-plugin-header",

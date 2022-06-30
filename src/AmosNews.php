@@ -84,6 +84,13 @@ class AmosNews extends AmosModule implements ModuleInterface, SearchModuleInterf
         'status',
         'descrizione',
     ];
+    
+    /**
+     * This param enables the search by tags
+     * @var bool $searchByTags
+     */
+    
+    public $searchByTags = false;
 
     /**
      * The ID of the default category pre-selected for the new News
@@ -105,7 +112,7 @@ class AmosNews extends AmosModule implements ModuleInterface, SearchModuleInterf
     /**
      * @var array $defaultListViews This set the default order for the views in lists
      */
-    public $defaultListViews = ['list', 'grid'];
+    public $defaultListViews = ['icon', 'grid'];
 
     /**
      * This set the auto update of the publication date on the save if the news is published
@@ -162,6 +169,24 @@ class AmosNews extends AmosModule implements ModuleInterface, SearchModuleInterf
      */
     public $enableAgidNewsRelatedAgidService = true;
     
+    /**
+     * Enable/Disable correspondent select on _form page
+     * @var type
+     */
+    public $enableAgidReferenti = true;
+    
+    /**
+     * 
+     * @var type
+     */
+    public $enableAgidAllegati = true;
+    
+    /**
+     * Enable/Disable notification on News model
+     * @var bool $newsModelsendNotification
+     */
+    public $newsModelsendNotification = true;
+
     /*
      * @var int $numberListTag 10 default
      */

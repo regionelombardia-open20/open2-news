@@ -170,17 +170,17 @@ $enableAutoOpenSearchPanel = isset(\Yii::$app->params['enableAutoOpenSearchPanel
             'type' => DateControl::FORMAT_DATE
         ]) ?>
     </div-->
-    <?php if (isset($moduleTag) && in_array(News::className(), $moduleTag->modelsEnabled) && $moduleTag->behaviors): ?>
+    <?php if (isset($moduleTag) && in_array(News::className(), $moduleTag->modelsEnabled) && $newsModule->searchByTags && $moduleTag->behaviors): ?>
         <div class="col-xs-12">
             <?php
             $params = \Yii::$app->request->getQueryParams();
-            /*echo \open20\amos\tag\widgets\TagWidget::widget([
+            echo \open20\amos\tag\widgets\TagWidget::widget([
                 'model' => $model,
                 'attribute' => 'tagValues',
                 'form' => $form,
                 'isSearch' => true,
                 'form_values' => isset($params[$model->formName()]['tagValues']) ? $params[$model->formName()]['tagValues'] : []
-            ]);*/
+            ]);
             ?>
         </div>
     <?php endif; ?>

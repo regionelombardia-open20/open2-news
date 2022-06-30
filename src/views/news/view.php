@@ -255,8 +255,13 @@ if ($newsCategories->count() == 1) {
 
 
     <?php if (!is_null(\Yii::$app->getModule('sitemanagement')) && ($enableAgid)) : ?>
-        <?= \amos\sitemanagement\widgets\SMSliderWidget::widget(['sliderId' => $model->image_site_management_slider_id]); ?>
-        <?= \amos\sitemanagement\widgets\SMSliderWidget::widget(['sliderId' => $model->video_site_management_slider_id]); ?>
+        <?php if(!empty($model->image_site_management_slider_id) ): ?>
+            <?= \amos\sitemanagement\widgets\SMSliderWidget::widget(['sliderId' => $model->image_site_management_slider_id]); ?>
+        <?php endif; ?>
+        <?php if(!empty($model->video_site_management_slider_id)): ?>
+            <?= \amos\sitemanagement\widgets\SMSliderWidget::widget(['sliderId' => $model->video_site_management_slider_id]); ?>
+        <?php endif; ?>
+    
     <?php endif; ?>
 
 </div>

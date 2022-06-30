@@ -66,7 +66,7 @@ $newsModule = AmosNews::instance();
                             $url = $model->newsImage->getUrl('table_small', false, true);
                         }
                         $contentImage = Html::img($url, ['class' => 'gridview-image', 'alt' => AmosNews::t('amosnews', 'Immagine della notizia')]);
-                        
+
                         return Html::a($contentImage, $model->getFullViewUrl());
                     }
                 ],
@@ -103,7 +103,8 @@ $newsModule = AmosNews::instance();
                     'attribute' => 'updated_by',
                     'value' => function ($model) {
                         if ($user_profile = $model->getUserProfileByUserId($model->updated_by)) {
-                            return Html::a($user_profile->nome . " " . $user_profile->cognome,
+                            return Html::a(
+                                $user_profile->nome . " " . $user_profile->cognome,
                                 ['/' . AmosAdmin::getModuleName() . '/user-profile/view', 'id' => $user_profile->id],
                                 ['title' => AmosNews::t('amosnews', 'Apri il profilo di {nome_profilo}', ['nome_profilo' => $user_profile->nome . " " . $user_profile->cognome])]
                             );
@@ -161,7 +162,7 @@ $newsModule = AmosNews::instance();
                                     'btnOptions' => ['title' => AmosNews::t('amosnews', 'Publish'), 'class' => 'btn btn-tools-secondary']
                                 ]);
                             }
-                            
+
                             return $btn;
                         },
                         'reject' => function ($url, $model) {
@@ -176,7 +177,7 @@ $newsModule = AmosNews::instance();
                                     'btnOptions' => ['title' => AmosNews::t('amosnews', 'Reject'), 'class' => 'btn btn-tools-secondary']
                                 ]);
                             }
-                            
+
                             return $btn;
                         },
                         'update' => function ($url, $model) {
@@ -184,11 +185,15 @@ $newsModule = AmosNews::instance();
                             $btn = '';
                             if (Yii::$app->user->can('NEWS_UPDATE', ['model' => $model])) {
                                 $action = '/news/news/update?id=' . $model->id;
-                                $options = ModalUtility::getBackToEditPopup($model,
-                                    'NewsValidate', $action, ['class' => 'btn btn-tools-secondary', 'title' => Yii::t('amoscore', 'Modifica'), 'data-pjax' => '0']);
+                                $options = ModalUtility::getBackToEditPopup(
+                                    $model,
+                                    'NewsValidate',
+                                    $action,
+                                    ['class' => 'btn btn-tools-secondary', 'title' => Yii::t('amoscore', 'Modifica'), 'data-pjax' => '0']
+                                );
                                 $btn = Html::a(AmosIcons::show('edit'), $action, $options);
                             }
-                            
+
                             return $btn;
                         }
                     ]
@@ -198,16 +203,20 @@ $newsModule = AmosNews::instance();
         ],
         'listView' => [
             'itemView' => '_item',
-            'masonry' => false,
-            'masonrySelector' => '.grid',
-            'masonryOptions' => [
-                'itemSelector' => '.grid-item',
-                'columnWidth' => '.grid-sizer',
-                'percentPosition' => 'true',
-                'gutter' => 30
-            ],
-            'showItemToolbar' => false,
-        ]
+            // 'masonry' => false,
+            // 'masonrySelector' => '.grid',
+            // 'masonryOptions' => [
+            //     'itemSelector' => '.grid-item',
+            //     'columnWidth' => '.grid-sizer',
+            //     'percentPosition' => 'true',
+            //     'gutter' => 30
+            // ],
+            // 'showItemToolbar' => false,
+        ],
+        'iconView' => [
+            'itemView' => '_icon',
+        ],
+
     ]);
     ?>
 </div>

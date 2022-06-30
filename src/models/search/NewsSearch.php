@@ -15,6 +15,7 @@ use open20\amos\core\interfaces\ContentModelSearchInterface;
 use open20\amos\core\interfaces\SearchModelInterface;
 use open20\amos\core\record\CmsField;
 use open20\amos\news\models\News;
+use open20\amos\news\AmosNews;
 use open20\amos\tag\models\EntitysTagsMm;
 use Yii;
 use yii\data\ActiveDataProvider;
@@ -41,7 +42,8 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
         $this->isSearch = true;
         parent::__construct($config);
 
-        $this->modelClassName = News::className();
+        $this->newsModule = AmosNews::getInstance();
+        $this->modelClassName = $this->newsModule->model('News');
     }
 
     /**

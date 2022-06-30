@@ -107,10 +107,8 @@ IMPORT AMOS-LAYOUT VARIABLES
                     .card-calendar {
                         top: 0;
                         left: 20px;
-                        //height: 85px;
-                        //width: 60px;
-                        height: 65px;
-                        width: 45px;
+                        height: 85px;
+                        width: 60px;
                         max-height: 80px;
                         background-color: @white-color;
                         box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.1), 0 4px 8px 0 rgba(0, 0, 0, 0.1);
@@ -133,15 +131,25 @@ IMPORT AMOS-LAYOUT VARIABLES
 
                         .card-day {
                             margin: 0;
+                            font-size: 22.5px;
+                        }
+
+                        .card-month{
+                            font-size: 16px;
+                        }
+
+                        .card-year{
+                            font-size: 16px;
                         }
                     }
                 }
 
                 .post-header {
                     display: flex;
+                    align-items: flex-start;
                     align-items: center;
                     margin-bottom: 0;
-
+                    
                     .creator {
                         max-width: 100% !important;
                         font-size: 14px;

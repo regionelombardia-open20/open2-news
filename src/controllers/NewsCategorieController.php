@@ -52,19 +52,43 @@ class NewsCategorieController extends CrudController
             $titleSection = AmosNews::t('amosnews', 'Categorie news');
             $urlLinkAll   = '';
 
-            $ctaLoginRegister = Html::a(
-                    AmosNews::t('amosnews', 'accedi o registrati alla piattaforma'),
-                    isset(\Yii::$app->params['linkConfigurations']['loginLinkCommon']) ? \Yii::$app->params['linkConfigurations']['loginLinkCommon']
-                        : \Yii::$app->params['platform']['backendUrl'].'/'.AmosAdmin::getModuleName().'/security/login',
-                    [
-                    'title' => AmosNews::t('amosnews',
-                        'Clicca per accedere o registrarti alla piattaforma {platformName}',
-                        ['platformName' => \Yii::$app->name])
-                    ]
+            $labelSigninOrSignup = AmosNews::t('amosnews', '#beforeActionCtaLoginRegister');
+            $titleSigninOrSignup = AAmosNews::t(
+                'amosnews',
+                '#beforeActionCtaLoginRegisterTitle',
+                ['platformName' => \Yii::$app->name]
             );
-            $subTitleSection  = Html::tag('p',
-                    AmosNews::t('amosnews', 'Per partecipare alla creazione di nuove notizie, {ctaLoginRegister}',
-                        ['ctaLoginRegister' => $ctaLoginRegister]));
+            $labelSignin = AmosNews::t('amosnews', '#beforeActionCtaLogin');
+            $titleSignin = AmosNews::t(
+                'amosnews',
+                '#beforeActionCtaLoginTitle',
+                ['platformName' => \Yii::$app->name]
+            );
+
+            $labelLink = $labelSigninOrSignup;
+            $titleLink = $titleSigninOrSignup;
+            $socialAuthModule = Yii::$app->getModule('socialauth');
+            if ($socialAuthModule && ($socialAuthModule->enableRegister == false)) {
+                $labelLink = $labelSignin;
+                $titleLink = $titleSignin;
+            }
+
+            $ctaLoginRegister = Html::a(
+                $labelLink,
+                isset(\Yii::$app->params['linkConfigurations']['loginLinkCommon']) ? \Yii::$app->params['linkConfigurations']['loginLinkCommon']
+                    : \Yii::$app->params['platform']['backendUrl'] . '/' . AmosAdmin::getModuleName() . '/security/login',
+                [
+                    'title' => $titleLink
+                ]
+            );
+            $subTitleSection  = Html::tag(
+                'p',
+                AmosNews::t(
+                    'amosnews',
+                    '#beforeActionSubtitleSectionGuest',
+                    ['platformName' => \Yii::$app->name, 'ctaLoginRegister' => $ctaLoginRegister]
+                )
+            );
         } else {
             $titleSection = AmosNews::t('amosnews', 'Categorie news');
             $labelLinkAll = AmosNews::t('amosnews', 'Tutte le notizie');

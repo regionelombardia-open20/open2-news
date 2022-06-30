@@ -135,7 +135,7 @@ abstract class News extends ContentModel
      */
     public function afterValidate()
     {
-        if ($this->newsModule->enableAgid) {
+        if ($this->newsModule->enableAgid && \Yii::$app->request->isPost) {
             // caso update del model news
             if (null != $this->id) {
         
@@ -144,7 +144,7 @@ abstract class News extends ContentModel
                     ->from('attach_file')
                     ->where(['LIKE', 'model', $this->newsModule->model('News')])
                     ->andWhere([
-                        'itemId' => $this->id
+                        'item_id' => $this->id
                     ])
                     ->one();
         
