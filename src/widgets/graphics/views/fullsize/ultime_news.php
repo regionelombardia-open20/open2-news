@@ -102,40 +102,42 @@ $listaModels = $listaNews->getModels();
                             $newsSingola = $news[($i + $a - 1)];
                             ?>
                             <div class="wrap-item-carousel-box" data-index="<?= ($i + $a - 1) ?>">
-                                <?php
-                                $url         = '/img/img_default.jpg';
-                                if (!is_null($newsSingola->newsImage)) {
-                                    $url = $newsSingola->newsImage->getUrl('dashboard_news', false, true);
-                                }
-
-                                echo Html::img($url,
-                                    ['class' => 'img-responsive', 'alt' => AmosNews::t('amosnews',
-                                        'Immagine della notizia')]);
-                                ?>
-                                <div class="abstract">
-                                    <div class="box-widget-info-top">
-                                        <div class="listbox-label"><?= $newsSingola->category->titolo; ?></div>
-                                        <?php if (isset($moduleNews) && !$moduleNews->hidePubblicationDate): ?>
-                                            <p><?= Yii::$app->getFormatter()->asDate($newsSingola->data_pubblicazione); ?></p>
-                                        <?php endif; ?>
-                                    </div>
-
-                                    <?=
-                                    Html::a('<h2 class="box-widget-subtitle">'.$newsSingola->titolo.'</h2>',
-                                        ['../news/news/view', 'id' => $newsSingola->id]);
+                                <a href="<?= $newsSingola->getFullViewUrl() ?>" title="<?= AmosNews::t('amosnews', 'Immagine della notizia') ?>">
+                                    <?php
+                                    $url         = '/img/img_default.jpg';
+                                    if (!is_null($newsSingola->newsImage)) {
+                                        $url = $newsSingola->newsImage->getUrl('dashboard_news', false, true);
+                                    }
+    
+                                    echo Html::img($url,
+                                        ['class' => 'img-responsive', 'alt' => AmosNews::t('amosnews',
+                                            'Immagine della notizia')]);
                                     ?>
-
-                                    <p class="box-widget-text">
-                                        <?php
-                                        if (strlen($newsSingola->descrizione_breve) > 200) {
-                                            $stringCut = substr($newsSingola->descrizione_breve, 0, 200);
-                                            echo substr($stringCut, 0, strrpos($stringCut, ' ')).'... ';
-                                        } else {
-                                            echo $newsSingola->descrizione_breve;
-                                        }
+                                    <div class="abstract">
+                                        <div class="box-widget-info-top">
+                                            <div class="listbox-label"><?= $newsSingola->category->titolo; ?></div>
+                                            <?php if (isset($moduleNews) && !$moduleNews->hidePubblicationDate): ?>
+                                                <p><?= Yii::$app->getFormatter()->asDate($newsSingola->data_pubblicazione); ?></p>
+                                            <?php endif; ?>
+                                        </div>
+    
+                                        <?=
+                                        Html::a('<h2 class="box-widget-subtitle">'.$newsSingola->titolo.'</h2>',
+                                            ['../news/news/view', 'id' => $newsSingola->id]);
                                         ?>
-                                    </p>
-                                </div>
+    
+                                        <p class="box-widget-text">
+                                            <?php
+                                            if (strlen($newsSingola->descrizione_breve) > 200) {
+                                                $stringCut = substr($newsSingola->descrizione_breve, 0, 200);
+                                                echo substr($stringCut, 0, strrpos($stringCut, ' ')).'... ';
+                                            } else {
+                                                echo $newsSingola->descrizione_breve;
+                                            }
+                                            ?>
+                                        </p>
+                                    </div>
+                                </a>
                             </div>
                             <?php
                         endif;
