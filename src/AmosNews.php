@@ -253,6 +253,18 @@ class AmosNews extends AmosModule implements ModuleInterface, SearchModuleInterf
     public $enableOtherNewsCategories = false;
 
     /**
+     * limit of news show in WidgetGraphicsCmsUltimeNews on dashboardEngine case
+     *
+     * @var integer
+     */
+    public $wgCmsUltimeNewsDashboardEngineNewLimit = 12;
+    
+    /**
+     * @var bool $disableBefeControllerRules Enable this property to disable the BEFE rules in controller behaviors.
+     */
+    public $disableBefeControllerRules = false;
+
+    /**
      * @inheritdoc
      */
     public static function getModuleName()

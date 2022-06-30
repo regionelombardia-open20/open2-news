@@ -42,10 +42,11 @@ class WidgetGraphicsCmsUltimeNews extends WidgetGraphic
     {
         $search = new NewsSearch();
         $search->setNotifier(new NotifyWidgetDoNothing());
-        
+
+        $moduleNews  = \Yii::$app->getModule(AmosNews::getModuleName());
         $newsLimit = AmosNews::MAX_LAST_NEWS_ON_DASHBOARD;
         if (!empty(\Yii::$app->params['dashboardEngine']) && \Yii::$app->params['dashboardEngine'] == WidgetAbstract::ENGINE_ROWS) {
-            $newsLimit = 12;
+            $newsLimit = !empty($moduleNews)? $moduleNews->wgCmsUltimeNewsDashboardEngineNewLimit: 12;
         }
         
         $listaNews = $search->ultimeNews($_GET, $newsLimit);

@@ -158,92 +158,95 @@ class NewsController extends CrudController
      */
     public function behaviors()
     {
+        $rules = [
+            [
+                'allow' => true,
+                'actions' => [
+                    'own-news',
+                    'to-validate-news',
+                    'all-news',
+                    'admin-all-news',
+                    'own-interest-news'
+                ],
+                'roles' => ['AMMINISTRATORE_NEWS']
+            ],
+            [
+                'allow' => true,
+                'actions' => [
+                    'validate-news',
+                    'reject-news',
+                ],
+                'roles' => ['AMMINISTRATORE_NEWS', 'FACILITATORE_NEWS', 'FACILITATOR']
+            ],
+            [
+                'allow' => true,
+                'actions' => [
+                    'own-news',
+                    'all-news',
+                    'own-interest-news'
+                ],
+                'roles' => ['LETTORE_NEWS']
+            ],
+            [
+                'allow' => true,
+                'actions' => [
+                    'to-validate-news',
+                    'all-news',
+                    'validate-news',
+                    'own-interest-news',
+                    'reject-news',
+                ],
+                'roles' => ['VALIDATORE_NEWS']
+            ],
+            [
+                'allow' => true,
+                'actions' => [
+                    'own-news',
+                    'to-validate-news',
+                    'all-news',
+                    'own-interest-news'
+                ],
+                'roles' => ['FACILITATORE_NEWS']
+            ],
+            [
+                'allow' => true,
+                'actions' => [
+                    'to-validate-news',
+                    'validate-news',
+                    'reject-news',
+                ],
+                'roles' => ['NewsValidateOnDomain']
+            ],
+        ];
+        if (!$this->newsModule->disableBefeControllerRules) {
+            $rules[] = [
+                'allow' => true,
+                'actions' => [
+                    ((!empty(\Yii::$app->params['befe']) && \Yii::$app->params['befe'] == true) ? 'all-news' : 'nothing'),
+                    ((!empty(\Yii::$app->params['befe']) && \Yii::$app->params['befe'] == true) ? 'index' : 'nothingindex'),
+                    ((!empty(\Yii::$app->params['befe']) && \Yii::$app->params['befe'] == true) ? 'view' : 'nothingread')
+                ],
+                'matchCallback' => function ($rule, $action) {
+                    if (in_array($action->id, ['all-news', 'index'])) return true;
+                    if ($action->id != 'view') return false;
+                    $id = (!empty(\Yii::$app->request->get()['id']) ? Yii::$app->request->get()['id'] : null);
+                    if (!empty($id)) {
+                        $model = News::findOne($id);
+            
+                        if (!empty($model) && $model->primo_piano == 1) {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+            ];
+        }
         $behaviors = ArrayHelper::merge(
             parent::behaviors(),
             [
                 'access' => [
                     'class' => AccessControl::class,
-                    'rules' => [
-                        [
-                            'allow' => true,
-                            'actions' => [
-                                'own-news',
-                                'to-validate-news',
-                                'all-news',
-                                'admin-all-news',
-                                'own-interest-news'
-                            ],
-                            'roles' => ['AMMINISTRATORE_NEWS']
-                        ],
-                        [
-                            'allow' => true,
-                            'actions' => [
-                                'validate-news',
-                                'reject-news',
-                            ],
-                            'roles' => ['AMMINISTRATORE_NEWS', 'FACILITATORE_NEWS', 'FACILITATOR']
-                        ],
-                        [
-                            'allow' => true,
-                            'actions' => [
-                                'own-news',
-                                'all-news',
-                                'own-interest-news'
-                            ],
-                            'roles' => ['LETTORE_NEWS']
-                        ],
-                        [
-                            'allow' => true,
-                            'actions' => [
-                                'to-validate-news',
-                                'all-news',
-                                'validate-news',
-                                'own-interest-news',
-                                'reject-news',
-                            ],
-                            'roles' => ['VALIDATORE_NEWS']
-                        ],
-                        [
-                            'allow' => true,
-                            'actions' => [
-                                'own-news',
-                                'to-validate-news',
-                                'all-news',
-                                'own-interest-news'
-                            ],
-                            'roles' => ['FACILITATORE_NEWS']
-                        ],
-                        [
-                            'allow' => true,
-                            'actions' => [
-                                'to-validate-news',
-                                'validate-news',
-                                'reject-news',
-                            ],
-                            'roles' => ['NewsValidateOnDomain']
-                        ],
-                        [
-                            'allow' => true,
-                            'actions' => [
-                                ((!empty(\Yii::$app->params['befe']) && \Yii::$app->params['befe'] == true) ? 'all-news' : 'nothing'),
-                                ((!empty(\Yii::$app->params['befe']) && \Yii::$app->params['befe'] == true) ? 'index' : 'nothingindex'),
-                                ((!empty(\Yii::$app->params['befe']) && \Yii::$app->params['befe'] == true) ? 'view' : 'nothingread')
-                            ],
-                            'matchCallback' => function ($rule, $action) {
-                                if (in_array($action->id, ['all-news', 'index'])) return true;
-                                if ($action->id != 'view') return false;
-                                $id = (!empty(\Yii::$app->request->get()['id']) ? Yii::$app->request->get()['id'] : null);
-                                if (!empty($id)) {
-                                    $model = News::findOne($id);
-
-                                    if (!empty($model) && $model->primo_piano == 1) {
-                                        return true;
-                                    }
-                                }
-                                return false;
-                            }
-                        ],
-                    ]
+                    'rules' => $rules
                 ],
                 'verbs' => [
                     'class' => VerbFilter::class,
@@ -363,13 +366,11 @@ class NewsController extends CrudController
             'urlCreate' => $urlCreate,
             'urlManage' => $urlManage,
         ];
-
+        
+        // Lasciare qui questo if e return perché se no va in loop...
         if (!parent::beforeAction($action)) {
             return false;
         }
-
-        // other custom code here
-
         return true;
     }
 
