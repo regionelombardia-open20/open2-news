@@ -99,7 +99,7 @@ abstract class News extends ContentModel
     {
         $rules = ArrayHelper::merge(parent::rules(), [
             [['descrizione', 'metakey', 'metadesc'], 'string'],
-            [['primo_piano', 'immagine', 'hits', 'abilita_pubblicazione', 'in_evidenza', 'news_categorie_id', 'created_by', 'updated_by', 'deleted_by', 'version', 'comments_enabled'], 'integer'],
+            [['primo_piano', 'immagine', 'hits', 'abilita_pubblicazione', 'in_evidenza', 'news_categorie_id', 'created_by', 'updated_by', 'deleted_by', 'version', 'comments_enabled', 'news_groups_id'], 'integer'],
             [['slug', 'data_pubblicazione', 'data_rimozione', 'created_at', 'updated_at', 'deleted_at', 'status', 'comments_enabled'], 'safe'],
             [['titolo', 'sottotitolo'], 'string', 'max' => 100],
             [['descrizione_breve'], 'string', 'max' => 250],
@@ -119,7 +119,7 @@ abstract class News extends ContentModel
     
         if ($this->newsModule->enableAgid) {
             $rules[] = [['body_news'], 'string'];
-            $rules[] = [['news_documento_id', 'edited_by_agid_organizational_unit_id', 'news_content_type_id', 'news_groups_id'], 'integer'];
+            $rules[] = [['news_documento_id', 'edited_by_agid_organizational_unit_id', 'news_content_type_id'], 'integer'];
             $rules[] = [['date_news', 'news_expiration_date'], 'safe'];
             $rules[] = [['news_content_type_id'], 'exist', 'skipOnError' => true, 'targetClass' => NewsContentType::className(), 'targetAttribute' => ['news_content_type_id' => 'id']];
             $rules[] = [['edited_by_agid_organizational_unit_id'], 'exist', 'skipOnError' => true, 'targetClass' => AgidOrganizationalUnit::className(), 'targetAttribute' => ['edited_by_agid_organizational_unit_id' => 'id']];
