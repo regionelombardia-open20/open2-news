@@ -16,8 +16,8 @@ use open20\amos\news\AmosNews;
 use open20\amos\notificationmanager\forms\NewsWidget;
 use open20\amos\news\utility\NewsUtility;
 use open20\amos\core\utilities\CurrentUser;
-
-
+use open20\design\assets\ShimmerDesignAsset;
+ShimmerDesignAsset::register($this);
 
 $hideCategory = false;
 
@@ -50,11 +50,22 @@ if (strlen($model->descrizione) > 150)
                             $url = $model->newsImage->getWebUrl('item_news', false, true);
                         }
                         $contentImage = Html::img($url, [
-                            // 'class' => 'full-width',
-                            'alt' => AmosNews::t('amosnews', 'Vai alla notizia ' .  $model->titolo)
+                            'class' => 'news-image shimmer-image',
+                            
+                            'alt' => AmosNews::t('amosnews', 'Vai alla notizia ' .  $model->titolo),
+                            
                         ]);
                         ?>
-                        <?= Html::a($contentImage, $model->getFullViewUrl(), ['title' => 'Vai alla notizia ' .  $model->titolo]) ?>
+                        <?= Html::a(
+                            $contentImage,
+                            $model->getFullViewUrl(),
+                            [
+                                'title' => 'Vai alla notizia ' .  $model->titolo,
+                                'class' => 'img-shimmer'
+                            ]
+                        )
+
+                        ?>
                         <?= ContextMenuWidget::widget([
                             'model' => $model,
                             'actionModify' => "/news/news/update?id=" . $model->id,
@@ -111,5 +122,4 @@ if (strlen($model->descrizione) > 150)
         </div>
     </div>
 </div>
-
 <div class="clearfix"></div>

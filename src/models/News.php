@@ -1202,16 +1202,20 @@ class News
         }
     }
 
+
     /**
      * Show if the content is visible
      * used in particular to know if attachments file are visible
      * @return boolean
      */
     public function isContentPublic(){
-        if($this->primo_piano){
+        // isContentPublished si trova nel contentModel
+        $ok = $this->isContentPublished();
+        if($this->primo_piano && $ok){
             return true;
         }
         return false;
     }
+
 
 }
