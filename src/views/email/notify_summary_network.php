@@ -1,5 +1,9 @@
 <?php
+use open20\amos\notificationmanager\AmosNotify;
 $colors =  \open20\amos\notificationmanager\utility\NotifyUtility::getColorNetwork($color);
+
+
+$notifyModule = AmosNotify::instance();
 ?>
 <?php foreach ($arrayModels as $model) { ?>
     <?php
@@ -39,7 +43,13 @@ $colors =  \open20\amos\notificationmanager\utility\NotifyUtility::getColorNetwo
                                         </tr>
                                     </table>
                                 </td>
-                                <td align="right" width="85" valign="bottom" style="text-align: center; padding-left: 10px;"><a href="<?=  Yii::$app->urlManager->createAbsoluteUrl($model->getFullViewUrl())?>" style="background: <?= $colors[1]?>; border:3px solid <?= $colors[1]?>; color: #ffffff; font-family: sans-serif; font-size: 11px; line-height: 22px; text-align: center; text-decoration: none; display: block; font-weight: bold; text-transform: uppercase; height: 20px;" class="button-a">
+                                <td align="right" width="85" valign="bottom" style="text-align: center; padding-left: 10px;">
+                                <a href="<?=  Yii::$app->urlManager->createAbsoluteUrl($model->getFullViewUrl())?>"
+                                    style="background:<?= ($notifyModule->mailThemeColor['bgPrimary']) ? $notifyModule->mailThemeColor['bgPrimary'] : '#297A38' ?>;
+                                    border:3px solid <?= ($notifyModule->mailThemeColor['bgPrimary']) ? $notifyModule->mailThemeColor['bgPrimary'] : '#297A38' ?>;
+                                    color:<?= ($notifyModule->mailThemeColor['textContrastBgPrimary']) ? $notifyModule->mailThemeColor['textContrastBgPrimary'] : '#ffffff' ?>;
+                                    font-family:sans-serif; font-size: 11px; line-height: 22px; text-align: center; text-decoration: none; display: block;
+                                    font-weight: bold; text-transform: uppercase; height: 20px;" class="button-a">
                                         <!--[if mso]>&nbsp;&nbsp;&nbsp;&nbsp;<![endif]-->Leggi<!--[if mso]>&nbsp;&nbsp;&nbsp;&nbsp;<![endif]-->
                                     </a></td>
                             </tr>
