@@ -110,8 +110,12 @@ $listaModels = $listaNews->getModels();
                                     }
     
                                     echo Html::img($url,
-                                        ['class' => 'img-responsive', 'alt' => AmosNews::t('amosnews',
-                                            'Immagine della notizia')]);
+                                        [
+                                            'class' => 'img-responsive',
+                                            'aria-hidden' => 'true',
+                                            'alt' => false
+                                            // 'alt' => AmosNews::t('amosnews','Immagine della notizia')
+                                        ]);
                                     ?>
                                     <div class="abstract">
                                         <div class="box-widget-info-top">

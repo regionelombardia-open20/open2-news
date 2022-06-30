@@ -72,7 +72,7 @@ use open20\amos\notificationmanager\forms\NewsWidget;
         <?php endif; ?>
 
         <div class="<?= ($visible) ? 'col-xs-9 nop' : 'col-xs-12' ?> text-column">
-            <?= Html::a(Html::tag('h3', $model->titolo), $model->getFullViewUrl(), ['class' => 'title']) ?>
+            <?= Html::a(Html::tag('h3', $model->titolo), $model->getFullViewUrl(), ['class' => 'title', 'title' => $model->titolo]) ?>
             <?= Html::tag('p', $model->descrizione_breve . Html::a(AmosNews::t('amosnews', 'Leggi tutto'), $model->getFullViewUrl(), ['class' => 'read-all']), ['class' => 'text']) ?>
         </div>
     </div>
