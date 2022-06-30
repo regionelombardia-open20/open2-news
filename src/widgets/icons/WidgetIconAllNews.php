@@ -16,8 +16,10 @@ use open20\amos\core\widget\WidgetAbstract;
 use open20\amos\core\icons\AmosIcons;
 
 use open20\amos\news\AmosNews;
-use open20\amos\news\models\search\NewsSearch;
-use open20\amos\news\models\News;
+//use open20\amos\news\models\search\NewsSearch;
+//use open20\amos\news\models\News;
+
+use open20\amos\utility\models\BulletCounters;
 
 use Yii;
 use yii\helpers\ArrayHelper;
@@ -34,6 +36,7 @@ class WidgetIconAllNews extends WidgetIcon
      */
     public function init()
     {
+
         parent::init();
 
         $paramsClassSpan = [
@@ -65,17 +68,44 @@ class WidgetIconAllNews extends WidgetIcon
             )
         );
 
-        if ($this->disableBulletCounters == false) {
-            $search = new NewsSearch();
+        
+        // Read and reset counter from bullet_counters table, bacthed calculated!
+        if ($this->disableBulletCounters == false) { 
             $this->setBulletCount(
-                $this->makeBulletCounter(
-                    Yii::$app->getUser()->getId(),
-                    News::className(),
-                    $search->buildQuery([], 'all')
-                )
-            );
+                BulletCounters::getAmosWidgetIconCounter(
+                    Yii::$app->getUser()->getId(), 
+                    AmosNews::getModuleName(),
+                    $this->getNamespace(),
+                    $this->resetBulletCount(),
+                    null,
+                    WidgetIconNews::className(),
+                    $this->saveMicrotime
+            ));
         }
+        
+//        // TDB era attivo il conteggio!
+//        
+//        
+//        if ($this->disableBulletCounters == false) {
+//            $search = new NewsSearch();
+//            $search->setEventAfterCounter();
+//
+//            $query = $search->buildQuery([], 'all');
+//
+//            $this->setBulletCount(
+//                $this->makeBulletCounter(
+//                    Yii::$app->getUser()->getId(),
+//                    News::className(),
+//                    $query
+//                )
+//            );
+//
+//            \Yii::$app->session->set('_offQuery', $query);
+//            $this->trigger(self::EVENT_AFTER_COUNT);
+//        }
     }
+    
+    
 
     /**
      * Aggiunge all'oggetto container tutti i widgets recuperati dal controller del modulo
@@ -85,8 +115,8 @@ class WidgetIconAllNews extends WidgetIcon
     public function getOptions()
     {
         return ArrayHelper::merge(
-            parent::getOptions(),
-            ['children' => []]
+                parent::getOptions(),
+                ['children' => []]
         );
     }
 

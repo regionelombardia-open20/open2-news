@@ -1,13 +1,4 @@
 <?php
-
-/**
- * Aria S.p.A.
- * OPEN 2.0
- *
- *
- * @package    Open20Package
- * @category   CategoryName
- */
 use open20\amos\core\helpers\Html;
 use open20\amos\news\AmosNews;
 ?>

@@ -18,8 +18,10 @@ use open20\amos\core\icons\AmosIcons;
 use open20\amos\dashboard\models\AmosWidgets;
 
 use open20\amos\news\AmosNews;
-use open20\amos\news\models\search\NewsSearch;
-use open20\amos\news\models\News;
+//use open20\amos\news\models\search\NewsSearch;
+//use open20\amos\news\models\News;
+
+use open20\amos\utility\models\BulletCounters;
 
 use Yii;
 use yii\helpers\ArrayHelper;
@@ -30,7 +32,7 @@ use yii\helpers\ArrayHelper;
  */
 class WidgetIconNews extends WidgetIcon
 {
-
+    
     /**
      * @inheritdoc
      */
@@ -66,18 +68,20 @@ class WidgetIconNews extends WidgetIcon
             )
         );
 
+        // Read and reset counter from bullet_counters table, bacthed calculated!
         if ($this->disableBulletCounters == false) {
-            $search = new NewsSearch();
             $this->setBulletCount(
-                $this->makeBulletCounter(
-                    Yii::$app->getUser()->getId(),
-                    News::className(),
-                    $search->buildQuery([], 'own-interest')
+                BulletCounters::getAmosWidgetIconCounter(
+                    Yii::$app->getUser()->getId(), 
+                    AmosNews::getModuleName(),
+                    $this->getNamespace(),
+                    $this->resetBulletCount(),
+                    WidgetIconAllNews::className()
                 )
             );
         }
     }
-
+    
     /**
      * Aggiunge all'oggetto container tutti i widgets recuperati dal controller del modulo
      * 

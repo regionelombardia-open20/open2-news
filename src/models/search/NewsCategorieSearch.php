@@ -21,7 +21,6 @@ use yii\data\ActiveDataProvider;
 class NewsCategorieSearch extends NewsCategorie
 {
     /**
-     * @see    \yii\base\Model::rules()    for more info.
      */
     public function rules()
     {
@@ -32,7 +31,6 @@ class NewsCategorieSearch extends NewsCategorie
     }
 
     /**
-     * @see    \yii\base\Model::scenarios()    for more info.
      */
     public function scenarios()
     {

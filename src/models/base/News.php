@@ -54,7 +54,6 @@ use yii\helpers\ArrayHelper;
 abstract class News extends ContentModel
 {
     /**
-     * @see    \yii\db\ActiveRecord::tableName()    for more info.
      */
     public static function tableName()
     {
@@ -62,7 +61,6 @@ abstract class News extends ContentModel
     }
 
     /**
-     * @see    \yii\base\Model::rules()    for more info.
      */
     public function rules()
     {
@@ -78,7 +76,6 @@ abstract class News extends ContentModel
     }
 
     /**
-     * @see    \open20\amos\core\record\Record::attributeLabels()    for more info.
      */
     public function attributeLabels()
     {

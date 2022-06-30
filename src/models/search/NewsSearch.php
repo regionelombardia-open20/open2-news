@@ -45,7 +45,6 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
     }
 
     /**
-     * @see    \yii\base\Model::rules()    for more info.
      */
     public function rules()
     {
@@ -208,6 +207,7 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
             'sort' => [
                 'defaultOrder' => [
                     'data_pubblicazione' => SORT_DESC,
+                    'created_at' => SORT_DESC,
                 ],
             ],
         ]);
@@ -236,6 +236,7 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
             'sort' => [
                 'defaultOrder' => [
                     'data_pubblicazione' => SORT_DESC,
+                    'created_at' => SORT_DESC,
                 ],
             ],
         ]);
@@ -319,6 +320,7 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
             'sort' => [
                 'defaultOrder' => [
                     'data_pubblicazione' => SORT_DESC,
+                    'created_at' => SORT_DESC,
                 ],
             ],
         ]);
@@ -718,6 +720,7 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
             'sort' => [
                 'defaultOrder' => [
                     'data_pubblicazione' => SORT_DESC,
+                    'created_at' => SORT_DESC,
                 ],
             ],
         ]);
@@ -753,6 +756,7 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
             'sort' => [
                 'defaultOrder' => [
                     'data_pubblicazione' => SORT_DESC,
+                    'created_at' => SORT_DESC,
                 ],
             ],
         ]);
@@ -930,6 +934,7 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
             'sort' => [
                 'defaultOrder' => [
                     'data_pubblicazione' => SORT_DESC,
+                    'created_at' => SORT_DESC,
                 ],
             ],
         ]);
@@ -1012,7 +1017,8 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
             // For widget graphic last news, order is incorrect without this else
             $dataProvider->setSort([
                 'defaultOrder' => [
-                    'data_pubblicazione' => SORT_DESC
+                    'data_pubblicazione' => SORT_DESC,
+                    'created_at' => SORT_DESC,
                 ]
             ]);
         }

@@ -35,7 +35,6 @@ use yii\helpers\ArrayHelper;
 class NewsCategoryRolesMm extends \open20\amos\core\record\Record
 {
     /**
-     * @see    \yii\db\ActiveRecord::tableName()    for more info.
      */
     public static function tableName()
     {
@@ -43,7 +42,6 @@ class NewsCategoryRolesMm extends \open20\amos\core\record\Record
     }
 
     /**
-     * @see    \yii\base\Model::rules()    for more info.
      */
     public function rules()
     {
@@ -57,7 +55,6 @@ class NewsCategoryRolesMm extends \open20\amos\core\record\Record
     }
 
     /**
-     * @see    \open20\amos\core\record\Record::attributeLabels()    for more info.
      */
     public function attributeLabels()
     {

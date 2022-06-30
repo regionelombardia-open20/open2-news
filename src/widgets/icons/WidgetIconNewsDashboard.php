@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Aria S.p.A.
  * OPEN 2.0
@@ -14,12 +13,12 @@ namespace open20\amos\news\widgets\icons;
 use open20\amos\core\widget\WidgetIcon;
 use open20\amos\core\widget\WidgetAbstract;
 use open20\amos\core\icons\AmosIcons;
-
 use open20\amos\dashboard\models\AmosUserDashboards;
-
 use open20\amos\news\widgets\icons\WidgetIconAllNews;
 use open20\amos\news\AmosNews;
-
+//use open20\amos\news\models\search\NewsSearch;
+//use open20\amos\news\models\News;
+use open20\amos\utility\models\BulletCounters;
 use Yii;
 use yii\base\Exception;
 use yii\helpers\ArrayHelper;
@@ -32,6 +31,7 @@ class WidgetIconNewsDashboard extends WidgetIcon
      */
     public function init()
     {
+
         parent::init();
 
         $paramsClassSpan = [
@@ -57,57 +57,17 @@ class WidgetIconNewsDashboard extends WidgetIcon
 
         $this->setClassSpan(
             ArrayHelper::merge(
-                $this->getClassSpan(),
-                $paramsClassSpan
+                $this->getClassSpan(), $paramsClassSpan
             )
         );
 
+        // Read and reset counter from bullet_counters table, bacthed calculated!
         if ($this->disableBulletCounters == false) {
+            $widgetAllnews = \Yii::createObject(['class' => WidgetIconAllNews::className(), 'saveMicrotime' => false]);
             $this->setBulletCount(
-                $this->makeBulletCounter(
-                    Yii::$app->user->getId()
-                )
+                $widgetAllnews->getBulletCount()
             );
         }
-    }
-
-    /**
-     * 
-     * @param type $userId
-     * @return type
-     */
-    public function makeBulletCounter($userId = null, $className = null, $externalQuery = null)
-    {
-        return $this->getBulletCountChildWidgets($userId);
-    }
-
-    /**
-     * 
-     * @param type $userId
-     * @return int - the sum of bulletCount internal widget
-     */
-    private function getBulletCountChildWidgets($userId = null)
-    {
-        $count = 0;
-
-        try {
-            /** @var AmosUserDashboards $userModuleDashboard */
-            $userModuleDashboard = AmosUserDashboards::findOne([
-                'user_id' => $userId,
-                'module' => AmosNews::getModuleName()
-            ]);
-
-            if (is_null($userModuleDashboard)) {
-                return 0;
-            }
-
-            $widgetAllnews = \Yii::createObject(WidgetIconAllNews::className());
-            $count = $widgetAllnews->getBulletCount();
-        } catch (Exception $ex) {
-            Yii::getLogger()->log($ex->getMessage(), \yii\log\Logger::LEVEL_ERROR);
-        }
-
-        return $count;
     }
 
     /**
@@ -118,8 +78,7 @@ class WidgetIconNewsDashboard extends WidgetIcon
     public function getOptions()
     {
         return ArrayHelper::merge(
-            parent::getOptions(),
-            ['children' => $this->getWidgetsIcon()]
+                parent::getOptions(), ['children' => $this->getWidgetsIcon()]
         );
     }
 
@@ -144,5 +103,4 @@ class WidgetIconNewsDashboard extends WidgetIcon
 
         return $widgets;
     }
-
 }

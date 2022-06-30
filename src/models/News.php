@@ -112,7 +112,6 @@ class News extends \open20\amos\news\models\base\News implements ContentModelInt
     private $attachmentsForItemView;
 
     /**
-     * @see \yii\db\BaseActiveRecord::init() for more info.
      */
     public function init()
     {
@@ -132,7 +131,6 @@ class News extends \open20\amos\news\models\base\News implements ContentModelInt
     }
 
     /**
-     * @see \open20\amos\core\interfaces\FacilitatorInterface for more info
      */
     // TODO Abilitare per inserire questo ruolo nella select2 gestione ruolo facilitator nel form user profile
 //    public function getFacilitatorRole()

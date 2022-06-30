@@ -133,7 +133,7 @@ if ($model->status != News::NEWS_WORKFLOW_STATUS_VALIDATO) {
         </div>
         <?php if (\Yii::$app->getModule('correlations')) { ?>
             <?=
-                open20\amos\correlations\widget\ListCorrelationsWidget::widget([
+                open2\amos\correlations\widget\ListCorrelationsWidget::widget([
                     'model' => $model
                 ]);
             ?>

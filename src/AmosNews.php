@@ -156,19 +156,21 @@ class AmosNews extends AmosModule implements ModuleInterface, SearchModuleInterf
     return "news";
   }
 
-  /**
-   * @inheritdoc
-   */
-  public static function getModelSearchClassName() {
-    return models\search\NewsSearch::className();
-  }
+   /**
+     * @inheritdoc
+     */
+    public static function getModelSearchClassName()
+    {
+        return AmosNews::instance()->model('NewsSearch');
+    }
 
-  /**
-   * @inheritdoc
-   */
-  public static function getModelClassName() {
-    return models\News::className();
-  }
+    /**
+     * @inheritdoc
+     */
+    public static function getModelClassName()
+    {
+        return AmosNews::instance()->model('News');
+    }
 
   /**
    * @inheritdoc

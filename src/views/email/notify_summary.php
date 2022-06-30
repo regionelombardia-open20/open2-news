@@ -1,14 +1,5 @@
 
-<?php
-
-/**
- * Aria S.p.A.
- * OPEN 2.0
- *
- *
- * @package    Open20Package
- * @category   CategoryName
- */ foreach ($arrayModels as $model) { ?>
+<?php foreach ($arrayModels as $model) { ?>
 <tr>
     <td colspan="2" style="padding-bottom:10px;">
         <table cellspacing="0" cellpadding="0" border="0" align="center"   class="email-container" width="100%">

@@ -165,10 +165,10 @@ $queryParamCurrentView = Yii::$app->request->getQueryParam('currentView');
         'masonry' => true,
         'masonrySelector' => '.grid',
         'masonryOptions' => [
-          'itemSelector' => '.grid-item',
+          'itemSelector' => '.grid-item', 
           'columnWidth' => '.grid-sizer',
           'percentPosition' => 'true',
-          'gutter' => 10
+          'gutter' => 30
         ],
         'showItemToolbar' => false,
       ]

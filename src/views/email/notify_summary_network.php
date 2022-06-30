@@ -1,13 +1,4 @@
 <?php
-
-/**
- * Aria S.p.A.
- * OPEN 2.0
- *
- *
- * @package    Open20Package
- * @category   CategoryName
- */
 $colors =  \open20\amos\notificationmanager\utility\NotifyUtility::getColorNetwork($color);
 ?>
 <?php foreach ($arrayModels as $model) { ?>

@@ -180,9 +180,9 @@ $disableStandardWorkflow = $appController->newsModule->disableStandardWorkflow;
             <?php
             $showReceiverSection = false;
 
-            //    $moduleCwh = \Yii::$app->getModule('cwh');
-            //    isset($moduleCwh) ? $showReceiverSection = true : null;
-            //    isset($moduleCwh) ? $scope = $moduleCwh->getCwhScope() : null;
+                $moduleCwh = \Yii::$app->getModule('cwh');
+                isset($moduleCwh) ? $showReceiverSection = true : null;
+                isset($moduleCwh) ? $scope = $moduleCwh->getCwhScope() : null;
 
             $pubblicatedForCommunity = false;
             if (!$model->isNewRecord && isset($moduleCwh)) {
@@ -290,7 +290,7 @@ $disableStandardWorkflow = $appController->newsModule->disableStandardWorkflow;
 
             <?php if (\Yii::$app->getModule('correlations')) { ?>
                 <?=
-                open20\amos\correlations\widget\ManageCorrelationsButtonWidget::widget([
+                open2\amos\correlations\widget\ManageCorrelationsButtonWidget::widget([
                     'model' => $model
                 ]);
                 ?>
