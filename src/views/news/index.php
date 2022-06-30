@@ -63,7 +63,7 @@ $newsModule = AmosNews::instance();
                         /** @var News $model */
                         $url = '/img/img_default.jpg';
                         if (!is_null($model->newsImage)) {
-                            $url = $model->newsImage->getUrl('table_small', false, true);
+                            $url = $model->newsImage->getWebUrl('table_small', false, true);
                         }
                         $contentImage = Html::img($url, ['class' => 'gridview-image', 'alt' => AmosNews::t('amosnews', 'Immagine della notizia')]);
 

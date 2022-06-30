@@ -47,7 +47,7 @@ $model->descrizione = strip_tags($model->descrizione, 0, 147) . '...';
                         <?php
                             $url = '/img/img_default.jpg';
                             if (!is_null($model->newsImage)) {
-                                $url = $model->newsImage->getUrl('item_news', false, true);
+                                $url = $model->newsImage->getWebUrl('item_news', false, true);
                             }
                             $contentImage = Html::img($url, [
                                 // 'class' => 'full-width',

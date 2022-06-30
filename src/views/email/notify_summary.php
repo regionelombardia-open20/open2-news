@@ -21,7 +21,7 @@ $notifyModule = AmosNotify::instance();
                                 <?php
                                 $url = '/img/img_default.jpg';
                                 if (!is_null($model->newsImage)) {
-                                    $url = $model->newsImage->getUrl('square_large', false, true);
+                                    $url = $model->newsImage->getWebUrl('square_large', false, true);
                                 }
                                 $url =  Yii::$app->urlManager->createAbsoluteUrl($url);
                                 ?>

@@ -71,7 +71,7 @@ $enableAutoOpenSearchPanel = isset(\Yii::$app->params['enableAutoOpenSearchPanel
     <div class="col-sm-6 col-lg-4">
         <?= $form->field($model, 'data_pubblicazione')->widget(DateControl::className(), [
             'type' => DateControl::FORMAT_DATE
-        ]) ?>
+        ])->hint('') ?>
     </div>
 
     <?php if (!\Yii::$app->user->isGuest) { ?>

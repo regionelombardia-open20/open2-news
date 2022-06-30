@@ -51,7 +51,7 @@ $numberListTag = Yii::$app->controller->newsModule->numberListTag;
 
 $url = '/img/img_default.jpg';
 if (!is_null($model->newsImage)) {
-    $url = $model->newsImage->getUrl('square_large', false, true);
+    $url = $model->newsImage->getWebUrl('square_large', false, true);
 }
 
 if ($model->status != News::NEWS_WORKFLOW_STATUS_VALIDATO) {
@@ -112,7 +112,7 @@ if ($newsCategories->count() == 1) {
                         'model' => $model,
                         'publicationDateNotPresent' => true,
                         'showPrevalentPartnership' => true,
-                        'enableLink' => !(CurrentUser::isPlatformGuest())
+                        'enableLink' => !(CurrentUser::isPlatformGuest()),
                     ]
                 ) ?>
 
