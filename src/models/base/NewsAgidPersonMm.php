@@ -42,8 +42,8 @@ class NewsAgidPersonMm extends \open20\amos\core\record\Record
         return [
             [['news_id', 'agid_person_id', 'created_by', 'updated_by', 'deleted_by'], 'integer'],
             [['created_at', 'updated_at', 'deleted_at'], 'safe'],
-            [['agid_person_id'], 'exist', 'skipOnError' => true, 'targetClass' => AgidPerson::className(), 'targetAttribute' => ['agid_person_id' => 'id']],
-            [['news_id'], 'exist', 'skipOnError' => true, 'targetClass' => News::className(), 'targetAttribute' => ['news_id' => 'id']],
+            [['agid_person_id'], 'exist', 'skipOnError' => true, 'targetClass' => AgidPerson::class, 'targetAttribute' => ['agid_person_id' => 'id']],
+            [['news_id'], 'exist', 'skipOnError' => true, 'targetClass' => News::class, 'targetAttribute' => ['news_id' => 'id']],
         ];
     }
 
@@ -70,7 +70,7 @@ class NewsAgidPersonMm extends \open20\amos\core\record\Record
      */
     public function getAgidPerson()
     {
-        return $this->hasOne(\open20\agid\person\models\AgidPerson::className(), ['id' => 'agid_person_id']);
+        return $this->hasOne(\open20\agid\person\models\AgidPerson::class, ['id' => 'agid_person_id']);
     }
 
     /**
@@ -78,6 +78,6 @@ class NewsAgidPersonMm extends \open20\amos\core\record\Record
      */
     public function getNews()
     {
-        return $this->hasOne(\open20\amos\news\models\News::className(), ['id' => 'news_id']);
+        return $this->hasOne(\open20\amos\news\models\News::class, ['id' => 'news_id']);
     }
 }

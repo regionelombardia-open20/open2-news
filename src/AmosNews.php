@@ -34,6 +34,10 @@ class AmosNews extends AmosModule implements ModuleInterface, SearchModuleInterf
     const
         MAX_LAST_NEWS_ON_DASHBOARD = 3;
 
+    /**
+     * 
+     * @var type
+     */
     public static $CONFIG_FOLDER = 'config';
 
     /**
@@ -68,6 +72,12 @@ class AmosNews extends AmosModule implements ModuleInterface, SearchModuleInterf
      * @var bool|false $hidePubblicationDate
      */
     public $hidePubblicationDate = false;
+    
+    /**
+     * 
+     * @var bool|false
+     */
+    public $requirePubblicationDate = false;
 
     /**
      * Hide the Option wheel in the graphic widget
@@ -142,9 +152,15 @@ class AmosNews extends AmosModule implements ModuleInterface, SearchModuleInterf
     public $viewPathEmailSummary = [
         'open20\amos\news\models\News' => '@vendor/open20/amos-news/src/views/email/notify_summary'
     ];
+    
+    /**
+     * 
+     * @var type
+     */
     public $viewPathEmailSummaryNetwork = [
         'open20\amos\news\models\News' => '@vendor/open20/amos-news/src/views/email/notify_summary_network'
     ];
+
     /*
      * @var bool disableStandardWorkflow Disable standard worflow, direct publish
      */
@@ -157,6 +173,12 @@ class AmosNews extends AmosModule implements ModuleInterface, SearchModuleInterf
      */
     public $enableAgid = false;
     
+    /**
+     * Enable/Disable correspondent select on _form page
+     * @var bool $enableAgidNewsRelatedDocumenti
+     */
+    public $enableAgidNewsRelatedNews = true;
+
     /**
      * Enable/Disable correspondent select on _form page
      * @var bool $enableAgidNewsRelatedDocumenti
@@ -196,20 +218,37 @@ class AmosNews extends AmosModule implements ModuleInterface, SearchModuleInterf
      * Enable editor plugins
      * @var array
      */
-    public $rtePlugins = ["paste link"];
+    public $rtePlugins = ['paste link'];
 
     /**
      * Enable the toolbar buttons
      * @var string
      */
-    public $rteToolbar = "undo redo | link";
+    public $rteToolbar = 'undo redo | link';
+
+    /**
+     * 
+     * @var type
+     */
+    public $request_publish_on_hp = false;
+
+    /**
+     * hide block on _form relative to seo module even if it is present
+     * @var type
+     */
+    public $hideSeoModule = false;
+
+    /**
+     * @var bool
+     */
+    public $enableOtherNewsCategories = false;
 
     /**
      * @inheritdoc
      */
     public static function getModuleName()
     {
-        return "news";
+        return 'news';
     }
 
     /**
@@ -256,12 +295,12 @@ class AmosNews extends AmosModule implements ModuleInterface, SearchModuleInterf
     public function getWidgetIcons()
     {
         return [
-            WidgetIconNews::className(),
-            WidgetIconNewsCategorie::className(),
-            WidgetIconNewsCreatedBy::className(),
-            WidgetIconNewsDaValidare::className(),
-            WidgetIconNewsDashboard::className(),
-            WidgetIconAllNews::className(),
+            WidgetIconNews::class,
+            WidgetIconNewsCategorie::class,
+            WidgetIconNewsCreatedBy::class,
+            WidgetIconNewsDaValidare::class,
+            WidgetIconNewsDashboard::class,
+            WidgetIconAllNews::class,
         ];
     }
 
@@ -271,7 +310,7 @@ class AmosNews extends AmosModule implements ModuleInterface, SearchModuleInterf
     public function getWidgetGraphics()
     {
         return [
-            WidgetGraphicsUltimeNews::className(),
+            WidgetGraphicsUltimeNews::class,
         ];
     }
 
@@ -347,7 +386,6 @@ class AmosNews extends AmosModule implements ModuleInterface, SearchModuleInterf
             'news' => '/news/news/all-news',
         ];
     }
-
 
     /**
      * @return array

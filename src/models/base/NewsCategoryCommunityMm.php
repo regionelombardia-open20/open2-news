@@ -43,7 +43,7 @@ class  NewsCategoryCommunityMm extends \open20\amos\core\record\Record
             [['news_category_id', 'created_by', 'updated_by', 'deleted_by'], 'integer'],
             [['visible_to_cm', 'visible_to_participant', 'created_at', 'updated_at', 'deleted_at'], 'safe'],
             [['community_id'], 'string', 'max' => 255],
-            [['news_category_id'], 'exist', 'skipOnError' => true, 'targetClass' => \open20\amos\news\models\NewsCategorie::className(), 'targetAttribute' => ['news_category_id' => 'id']],
+            [['news_category_id'], 'exist', 'skipOnError' => true, 'targetClass' => \open20\amos\news\models\NewsCategorie::class, 'targetAttribute' => ['news_category_id' => 'id']],
         ];
     }
 
@@ -70,6 +70,6 @@ class  NewsCategoryCommunityMm extends \open20\amos\core\record\Record
      */
     public function getNewsCategory()
     {
-        return $this->hasOne(\open20\amos\news\models\NewsCategorie::className(), ['id' => 'news_category_id']);
+        return $this->hasOne(\open20\amos\news\models\NewsCategorie::class, ['id' => 'news_category_id']);
     }
 }

@@ -95,7 +95,7 @@ class NewsCategorie extends Record
      */
     public function getNews()
     {
-        return $this->hasMany(\open20\amos\news\models\News::className(), ['news_categorie_id' => 'id']);
+        return $this->hasMany(\open20\amos\news\models\News::class, ['news_categorie_id' => 'id']);
     }
 
     /**
@@ -106,7 +106,7 @@ class NewsCategorie extends Record
      */
     public function getNewsCategoryRolesMms()
     {
-        return $this->hasMany(\open20\amos\news\models\NewsCategoryRolesMm::className(), ['news_category_id' => 'id']);
+        return $this->hasMany(\open20\amos\news\models\NewsCategoryRolesMm::class, ['news_category_id' => 'id']);
     }
 
     /**
@@ -117,7 +117,7 @@ class NewsCategorie extends Record
      */
     public function getNewsCategoryCommunityMms()
     {
-        return $this->hasMany(\open20\amos\news\models\NewsCategoryCommunityMm::className(), ['news_category_id' => 'id']);
+        return $this->hasMany(\open20\amos\news\models\NewsCategoryCommunityMm::class, ['news_category_id' => 'id']);
     }
 
 

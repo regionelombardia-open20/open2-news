@@ -11,34 +11,37 @@
 
 namespace open20\amos\news\models;
 
+use open20\amos\attachments\models\File;
+use open20\amos\attachments\behaviors\FileBehavior;
+use open20\amos\comments\models\CommentInterface;
+use open20\amos\core\helpers\Html;
+use open20\amos\core\interfaces\CustomUrlModelInterface;
+use open20\amos\core\interfaces\ModelImageInterface;
+use open20\amos\core\interfaces\ContentModelInterface;
+use open20\amos\core\interfaces\ViewModelInterface;
+use open20\amos\core\views\toolbars\StatsToolbarPanels;
+use open20\amos\core\utilities\CmsUtility;
+use open20\amos\news\AmosNews;
+use open20\amos\news\i18n\grammar\NewsGrammar;
+use open20\amos\news\models\NewsRelatedNewsMm;
+use open20\amos\news\utility\NewsUtility;
+use open20\amos\news\models\NewsRelatedDocumentiMm;
+use open20\amos\news\models\NewsRelatedAgidServiceMm;
+use open20\amos\news\models\NewsAgidPersonMm;
+use open20\amos\news\widgets\icons\WidgetIconNewsDashboard;
+use open20\amos\notificationmanager\behaviors\NotifyBehavior;
+use open20\amos\report\utilities\ReportUtil;
+use open20\amos\seo\behaviors\SeoContentBehavior;
+use open20\amos\seo\interfaces\SeoModelInterface;
+use open20\amos\workflow\behaviors\WorkflowLogFunctionsBehavior;
+
+use raoul2000\workflow\base\SimpleWorkflowBehavior;
+
 use Yii;
 use yii\log\Logger;
 use yii\helpers\Url;
 use yii\helpers\ArrayHelper;
 use yii\behaviors\SluggableBehavior;
-use open20\amos\news\AmosNews;
-use open20\amos\core\helpers\Html;
-use open20\amos\report\utilities\ReportUtil;
-use raoul2000\workflow\base\SimpleWorkflowBehavior;
-use open20\amos\news\i18n\grammar\NewsGrammar;
-use open20\amos\news\models\NewsRelatedNewsMm;
-use open20\amos\attachments\behaviors\FileBehavior;
-use open20\amos\seo\behaviors\SeoContentBehavior;
-use open20\amos\seo\interfaces\SeoModelInterface;
-use open20\amos\news\models\NewsRelatedDocumentiMm;
-use open20\amos\core\interfaces\ModelImageInterface;
-use open20\amos\news\models\NewsRelatedAgidServiceMm;
-use open20\amos\core\interfaces\ContentModelInterface;
-use open20\amos\core\utilities\CmsUtility;
-use open20\amos\attachments\models\File;
-use open20\amos\news\models\NewsAgidPersonMm;
-use open20\amos\comments\models\CommentInterface;
-use open20\amos\core\interfaces\ViewModelInterface;
-use open20\amos\core\views\toolbars\StatsToolbarPanels;
-use open20\amos\news\widgets\icons\WidgetIconNewsDashboard;
-use open20\amos\notificationmanager\behaviors\NotifyBehavior;
-use open20\amos\workflow\behaviors\WorkflowLogFunctionsBehavior;
-use open20\amos\core\interfaces\CustomUrlModelInterface;
 
 /**
  * Class News
@@ -51,15 +54,19 @@ use open20\amos\core\interfaces\CustomUrlModelInterface;
  *
  * @package open20\amos\news\models
  */
-class News extends \open20\amos\news\models\base\News implements ContentModelInterface, CommentInterface, ViewModelInterface, ModelImageInterface, SeoModelInterface, CustomUrlModelInterface
+class News
+    extends
+        \open20\amos\news\models\base\News
+    implements
+        ContentModelInterface, CommentInterface, ViewModelInterface,
+        ModelImageInterface, SeoModelInterface, CustomUrlModelInterface
 {
     // Workflow ID
-    const NEWS_WORKFLOW                    = 'NewsWorkflow';
-    
+    const NEWS_WORKFLOW = 'NewsWorkflow';
     // Workflow states IDS
-    const NEWS_WORKFLOW_STATUS_BOZZA       = 'NewsWorkflow/BOZZA';
-    const NEWS_WORKFLOW_STATUS_DAVALIDARE  = 'NewsWorkflow/DAVALIDARE';
-    const NEWS_WORKFLOW_STATUS_VALIDATO    = 'NewsWorkflow/VALIDATO';
+    const NEWS_WORKFLOW_STATUS_BOZZA = 'NewsWorkflow/BOZZA';
+    const NEWS_WORKFLOW_STATUS_DAVALIDARE = 'NewsWorkflow/DAVALIDARE';
+    const NEWS_WORKFLOW_STATUS_VALIDATO = 'NewsWorkflow/VALIDATO';
     const NEWS_WORKFLOW_STATUS_NONVALIDATO = 'NewsWorkflow/NONVALIDATO';
 
     /**
@@ -70,30 +77,30 @@ class News extends \open20\amos\news\models\base\News implements ContentModelInt
     /**
      * All the scenarios listed below are for the wizard.
      */
-    const SCENARIO_INTRODUCTION                   = 'scenario_introduction';
-    const SCENARIO_DETAILS                        = 'scenario_details';
-    const SCENARIO_PUBLICATION                    = 'scenario_publication';
-    const SCENARIO_SUMMARY                        = 'scenario_summary';
+    const SCENARIO_INTRODUCTION = 'scenario_introduction';
+    const SCENARIO_DETAILS = 'scenario_details';
+    const SCENARIO_PUBLICATION = 'scenario_publication';
+    const SCENARIO_SUMMARY = 'scenario_summary';
     const SCENARIO_DETAILS_HIDE_PUBBLICATION_DATE = 'scenario_details_hide_pubblication_date';
-    const SCENARIO_CREATE_HIDE_PUBBLICATION_DATE  = 'scenario_create_hide_pubblication_date';
-    const SCENARIO_UPDATE_HIDE_PUBBLICATION_DATE  = 'scenario_update_hide_pubblication_date';
-    const NEWS_CLUSTERCAT_AGRIFOOD_ID             = '4';
-    const NEWS_CLUSTERCAT_AEROSPAZIO_ID           = '5';
-    const NEWS_CLUSTERCAT_CHIMICAVERDE_ID         = '6';
-    const NEWS_CLUSTERCAT_MOBILITA_ID             = '9';
-    const NEWS_CLUSTERCAT_FABBRICAINTELLGENTE_ID  = '8';
-    const NEWS_CLUSTERCAT_ENERGIA_ID              = '7';
-    const NEWS_CLUSTERCAT_SMARTCOMUNITIESTEC_ID   = '11';
-    const NEWS_CLUSTERCAT_SCIENZEVITA_ID          = '10';
-    const NEWS_CLUSTERCAT_AMBIENTIVITATEC_ID      = '12';
-    const NEWS_CLUSTERCAT_STORIEINNOVAZIONE_ID    = '13';
-    const NEWS_CLUSTERCAT_LABLOMBARDIA_ID         = '14';
-    const NEWS_CLUSTERCAT_CAMPUSPARTY_ID          = '15';
-    const NEWS_CLUSTERCAT_STATIGENERALI_ID        = '16';
-    const NEWS_CLUSTERCAT_PREMIO_ID               = '17';
-    const NEWS_CLUSTERCAT_FOROREGIONALE_ID        = '18';
-    const NEWS_CLUSTERCAT_LEGGEREGIONALE_ID       = '19';
-    const NEWS_CLUSTERCAT_REDAZIONE_ID            = '20';
+    const SCENARIO_CREATE_HIDE_PUBBLICATION_DATE = 'scenario_create_hide_pubblication_date';
+    const SCENARIO_UPDATE_HIDE_PUBBLICATION_DATE = 'scenario_update_hide_pubblication_date';
+    const NEWS_CLUSTERCAT_AGRIFOOD_ID = '4';
+    const NEWS_CLUSTERCAT_AEROSPAZIO_ID = '5';
+    const NEWS_CLUSTERCAT_CHIMICAVERDE_ID = '6';
+    const NEWS_CLUSTERCAT_MOBILITA_ID = '9';
+    const NEWS_CLUSTERCAT_FABBRICAINTELLGENTE_ID = '8';
+    const NEWS_CLUSTERCAT_ENERGIA_ID = '7';
+    const NEWS_CLUSTERCAT_SMARTCOMUNITIESTEC_ID = '11';
+    const NEWS_CLUSTERCAT_SCIENZEVITA_ID = '10';
+    const NEWS_CLUSTERCAT_AMBIENTIVITATEC_ID = '12';
+    const NEWS_CLUSTERCAT_STORIEINNOVAZIONE_ID = '13';
+    const NEWS_CLUSTERCAT_LABLOMBARDIA_ID = '14';
+    const NEWS_CLUSTERCAT_CAMPUSPARTY_ID = '15';
+    const NEWS_CLUSTERCAT_STATIGENERALI_ID = '16';
+    const NEWS_CLUSTERCAT_PREMIO_ID = '17';
+    const NEWS_CLUSTERCAT_FOROREGIONALE_ID = '18';
+    const NEWS_CLUSTERCAT_LEGGEREGIONALE_ID = '19';
+    const NEWS_CLUSTERCAT_REDAZIONE_ID = '20';
 
     /**
      * @var string $distance Distanza
@@ -116,6 +123,11 @@ class News extends \open20\amos\news\models\base\News implements ContentModelInt
     private $attachmentsForItemView;
 
     /**
+     * @var
+     */
+    public $otherCategories;
+
+    /**
      */
     public function init()
     {
@@ -129,17 +141,9 @@ class News extends \open20\amos\news\models\base\News implements ContentModelInt
                     // the news will be visible forever
                     $this->data_rimozione = '9999-12-31';
                 }
-                //$this->data_pubblicazione = date("Y-m-d");
             }
         }
     }
-    /**
-     */
-    // TODO Abilitare per inserire questo ruolo nella select2 gestione ruolo facilitator nel form user profile
-//    public function getFacilitatorRole()
-//    {
-//        return "FACILITATORE_NEWS";
-//    }
 
     /**
      * @inheritdoc
@@ -155,7 +159,10 @@ class News extends \open20\amos\news\models\base\News implements ContentModelInt
             if ($this->data_pubblicazione == '') {
                 $this->data_pubblicazione = date('Y-m-d');
             } else {
-                if ($moduleNews->autoUpdatePublicationDate === true && (strtotime($this->data_pubblicazione) < strtotime(date('Y-m-d')))) {
+                if (
+                    $moduleNews->autoUpdatePublicationDate === true
+                    && (strtotime($this->data_pubblicazione) < strtotime(date('Y-m-d')))
+                ) {
                     $this->data_pubblicazione = date('Y-m-d');
                 }
             }
@@ -172,6 +179,7 @@ class News extends \open20\amos\news\models\base\News implements ContentModelInt
         if (empty($this->newsImage)) {
             $this->newsImage = $this->hasOneFile('newsImage')->one();
         }
+
         return $this->newsImage;
     }
 
@@ -199,7 +207,13 @@ class News extends \open20\amos\news\models\base\News implements ContentModelInt
      * @param bool $canCache
      * @return string
      */
-    public function getNewsImageUrl($size = 'original', $protected = true, $url = '/img/img_default.jpg', $absolute = false, $canCache = false)
+    public function getNewsImageUrl(
+        $size = 'original',
+        $protected = true,
+        $url = '/img/img_default.jpg',
+        $absolute = false,
+        $canCache = false
+    )
     {
         $newsImage = $this->getNewsImage();
         if (!is_null($newsImage)) {
@@ -209,13 +223,20 @@ class News extends \open20\amos\news\models\base\News implements ContentModelInt
                 $url = $newsImage->getWebUrl($size, $absolute, $canCache);
             }
         }
+        
         return $url;
     }
 
     /**
      * @inheritdoc
      */
-    public function getModelImageUrl($size = 'original', $protected = true, $url = '/img/img_default.jpg', $absolute = false, $canCache = false)
+    public function getModelImageUrl(
+        $size = 'original',
+        $protected = true,
+        $url = '/img/img_default.jpg',
+        $absolute = false,
+        $canCache = false
+    )
     {
         return $this->getNewsImageUrl($size, $protected, $url, $absolute, $canCache);
     }
@@ -227,10 +248,11 @@ class News extends \open20\amos\news\models\base\News implements ContentModelInt
     public function getAttachments()
     {
         if (empty($this->attachments)) {
-            $query             = $this->hasMultipleFiles('attachments');
-            $query->multiple   = false;
+            $query = $this->hasMultipleFiles('attachments');
+            $query->multiple = false;
             $this->attachments = $query->all();
         }
+        
         return $this->attachments;
     }
 
@@ -247,12 +269,12 @@ class News extends \open20\amos\news\models\base\News implements ContentModelInt
      */
     public function getAttachmentsForItemView()
     {
-
         if (empty($this->attachmentsForItemView)) {
-            $query                        = $this->hasMultipleFiles('attachments');
-            $query->multiple              = false;
+            $query = $this->hasMultipleFiles('attachments');
+            $query->multiple = false;
             $this->attachmentsForItemView = $query->all();
         }
+     
         return $this->attachmentsForItemView;
     }
 
@@ -269,15 +291,15 @@ class News extends \open20\amos\news\models\base\News implements ContentModelInt
      */
     public function scenarios()
     {
-        $parentScenarios                        = parent::scenarios();
-        $scenarios                              = ArrayHelper::merge(
-                $parentScenarios,
-                [
+        $parentScenarios = parent::scenarios();
+        $scenarios = ArrayHelper::merge(
+            $parentScenarios,
+            [
                 self::SCENARIO_CREATE => $parentScenarios[self::SCENARIO_DEFAULT]
-                ]
+            ]
         );
         $scenarios[self::SCENARIO_INTRODUCTION] = [];
-        $scenarios[self::SCENARIO_DETAILS]      = [
+        $scenarios[self::SCENARIO_DETAILS] = [
             'titolo',
             'sottotitolo',
             'descrizione_breve',
@@ -287,15 +309,15 @@ class News extends \open20\amos\news\models\base\News implements ContentModelInt
             'comments_enabled',
             'status',
         ];
-        $scenarios[self::SCENARIO_PUBLICATION]  = [
+        $scenarios[self::SCENARIO_PUBLICATION] = [
             'destinatari_pubblicazione',
             'destinatari_notifiche'
         ];
-        $scenarios[self::SCENARIO_SUMMARY]      = [
+        $scenarios[self::SCENARIO_SUMMARY] = [
             'status'
         ];
         /** @var AmosNews $newsModule */
-        $newsModule                             = Yii::$app->getModule(AmosNews::getModuleName());
+        $newsModule = Yii::$app->getModule(AmosNews::getModuleName());
         if ($newsModule->params['site_publish_enabled']) {
             $scenarios[self::SCENARIO_DETAILS][] = 'primo_piano';
         }
@@ -303,7 +325,11 @@ class News extends \open20\amos\news\models\base\News implements ContentModelInt
             $scenarios[self::SCENARIO_DETAILS][] = 'in_evidenza';
         }
         $scenarios[self::SCENARIO_DETAILS_HIDE_PUBBLICATION_DATE] = $scenarios[self::SCENARIO_DETAILS];
-        $scenarios[self::SCENARIO_CREATE_HIDE_PUBBLICATION_DATE]  = $scenarios[self::SCENARIO_CREATE];
+        $scenarios[self::SCENARIO_CREATE_HIDE_PUBBLICATION_DATE] = $scenarios[self::SCENARIO_CREATE];
+
+        if ($this->newsModule->request_publish_on_hp) {
+            $scenarios[self::SCENARIO_CREATE][] = 'request_publish_on_hp';
+        }
 
         return $scenarios;
     }
@@ -313,38 +339,86 @@ class News extends \open20\amos\news\models\base\News implements ContentModelInt
      */
     public function rules()
     {
-        $modelNews     = \Yii::$app->getModule('news');
+        $modelNews = \Yii::$app->getModule('news');
         $requiredArray = [];
         if (!empty($modelNews)) {
             $requiredArray = $modelNews->newsRequiredFields;
         }
-        $rules = ArrayHelper::merge(parent::rules(),
-                [
+        $rules = ArrayHelper::merge(
+            parent::rules(),
+            [
                 [$requiredArray, 'required'],
-                [['slug', 'destinatari_pubblicazione', 'destinatari_notifiche'], 'safe'],
+                [['otherCategories', 'slug', 'destinatari_pubblicazione', 'destinatari_notifiche'], 'safe'],
                 [['attachments'], 'file', 'maxFiles' => 0],
                 [['newsImage'], 'file', 'extensions' => 'jpeg, jpg, png, gif', 'maxFiles' => 1],
-        ]);
+                ['newsImage', 'checkImageRequired','skipOnEmpty' => false]
+            ]
+        );
 
-        if ($this->scenario != self::SCENARIO_DETAILS_HIDE_PUBBLICATION_DATE && $this->scenario != self::SCENARIO_CREATE_HIDE_PUBBLICATION_DATE
-            && $this->scenario != self::SCENARIO_UPDATE_HIDE_PUBBLICATION_DATE) {
-            $enableScenario = false;
-//            if($this->data_pubblicazione){
-//                $enableScenario = true;
-//            }
-//            if($this->data_rimozione){
-//                $enableScenario = true;
-//            }
-            if ($enableScenario) {
-                $rules = ArrayHelper::merge($rules,
-                        [
+        if (
+            $this->scenario != self::SCENARIO_DETAILS_HIDE_PUBBLICATION_DATE
+            && $this->scenario != self::SCENARIO_CREATE_HIDE_PUBBLICATION_DATE
+            && $this->scenario != self::SCENARIO_UPDATE_HIDE_PUBBLICATION_DATE
+        ) {
+            if($this->newsModule->requirePubblicationDate)
+            {
+                $rules = ArrayHelper::merge(
+                    $rules,
+                    [
                         [['data_pubblicazione', 'data_rimozione'], 'required'],
-                        ['data_pubblicazione', 'compare', 'compareAttribute' => 'data_rimozione', 'operator' => '<='],
-                        ['data_rimozione', 'compare', 'compareAttribute' => 'data_pubblicazione', 'operator' => '>='],
-                        ['data_pubblicazione', 'checkDate'],
-                ]);
+                    ]);
             }
+            $rules = ArrayHelper::merge(
+                $rules,
+                [
+                    ['data_pubblicazione', 'compare', 'compareAttribute' => 'data_rimozione', 'operator' => '<=',
+                        'when' => function($model) {
+                            if(!empty($model->data_pubblicazione) && !empty($model->data_rimozione)){
+                                return true;
+                            }
+                            return false;
+                        },
+                        'whenClient' => "function (attribute, value) {
+                            return Boolean($('#news-data_pubblicazione').val() && $('#news-data_rimozione').val());
+
+                        }"],
+                    ['data_rimozione', 'compare', 'compareAttribute' => 'data_pubblicazione', 'operator' => '>=',
+                        'when' => function($model) {
+                            if(!empty($model->data_pubblicazione) && !empty($model->data_rimozione)){
+                                return true;
+                            }
+                            return false;
+                        },
+                        'whenClient' => "function (attribute, value) {
+                            return Boolean($('#news-data_pubblicazione').val() && $('#news-data_rimozione').val());
+
+                        }"],
+                    
+                    ['date_news', 'compare', 'compareAttribute' => 'news_expiration_date', 'operator' => '<=',
+                        'when' => function($model) {
+                            return !empty($model->news_expiration_date);
+                        },      
+                        'whenClient' => "function (attribute, value) {
+                            return Boolean($('news_expiration_date').val());
+
+                        }"
+                    ],
+
+                    ['news_expiration_date', 'compare', 'compareAttribute' => 'date_news', 'operator' => '>=',
+                        'when' => function($model) {
+                            return !empty($model->date_news);
+                        },      
+                        'whenClient' => "function (attribute, value) {
+                            return Boolean($('date_news').val());
+
+                        }"
+                    ],
+
+                    ['data_pubblicazione', 'checkDate'],
+                ]
+            );
         }
+
         return $rules;
     }
 
@@ -353,36 +427,37 @@ class News extends \open20\amos\news\models\base\News implements ContentModelInt
      */
     public function behaviors()
     {
-        return ArrayHelper::merge(parent::behaviors(),
-                [
+        return ArrayHelper::merge(
+            parent::behaviors(),
+            [
                 'slug' => [
-                    'class' => SluggableBehavior::className(),
+                    'class' => SluggableBehavior::class,
                     'attribute' => 'titolo',
                     'ensureUnique' => true
-                // 'slugAttribute' => 'slug',
                 ],
                 'workflow' => [
-                    'class' => SimpleWorkflowBehavior::className(),
+                    'class' => SimpleWorkflowBehavior::class,
                     'defaultWorkflowId' => self::NEWS_WORKFLOW,
                     'propagateErrorsToModel' => true
                 ],
                 'NotifyBehavior' => [
-                    'class' => NotifyBehavior::className(),
+                    'class' => NotifyBehavior::class,
                     'conditions' => [],
                 ],
                 'fileBehavior' => [
-                    'class' => FileBehavior::className()
+                    'class' => FileBehavior::class
                 ],
                 'WorkflowLogFunctionsBehavior' => [
-                    'class' => WorkflowLogFunctionsBehavior::className(),
+                    'class' => WorkflowLogFunctionsBehavior::class,
                 ],
                 'SeoContentBehavior' => [
-                    'class' => SeoContentBehavior::className(),
+                    'class' => SeoContentBehavior::class,
                     'imageAttribute' => 'newsImage',
                     'defaultOgType' => 'article',
                     'schema' => 'NewsArticle'
                 ]
-        ]);
+            ]
+        );
     }
 
     /**
@@ -390,10 +465,11 @@ class News extends \open20\amos\news\models\base\News implements ContentModelInt
      */
     public function attributeLabels()
     {
-        return ArrayHelper::merge(parent::attributeLabels(),
-                [
+        return ArrayHelper::merge(
+            parent::attributeLabels(),
+            [
                 'newsImage' => AmosNews::t('amosnews', 'News image')
-                ]
+            ]
         );
     }
 
@@ -420,6 +496,7 @@ class News extends \open20\amos\news\models\base\News implements ContentModelInt
                 $url = $mediafile->getThumbUrl($dimension);
             }
         }
+
         return $url;
     }
 
@@ -438,7 +515,7 @@ class News extends \open20\amos\news\models\base\News implements ContentModelInt
                         $url = $model->newsImage->getUrl('original');
                     }
                     return Html::img($url,
-                            [
+                        [
                             'class' => 'gridview-image'
                     ]);
                 },
@@ -487,11 +564,14 @@ class News extends \open20\amos\news\models\base\News implements ContentModelInt
     {
         if (!empty($this->usePrettyUrl) && ($this->usePrettyUrl == true) && $this->hasMethod('getPrettyUrl')) {
             return 'news/news';
-        } else {
-            return 'news/news/view';
         }
+
+        return 'news/news/view';
     }
 
+    /**
+     * @inheritdoc
+     */
     public function getFrontendViewUrl()
     {
         return \Yii::$app->params['urlFrontend']['NewsModel'];
@@ -529,9 +609,12 @@ class News extends \open20\amos\news\models\base\News implements ContentModelInt
         return 'VALIDATORE_NEWS';
     }
 
+    /**
+     * @inheritdoc
+     */
     public function getPluginWidgetClassname()
     {
-        return WidgetIconNewsDashboard::className();
+        return WidgetIconNewsDashboard::class;
     }
 
     /**
@@ -546,20 +629,19 @@ class News extends \open20\amos\news\models\base\News implements ContentModelInt
      * Verifica la presenza dell'immagine.
      *
      * @param   $url
-     *
      * @return  bool
      */
     protected function image_exists($url)
     {
         try {
-            if (getimagesize(Yii::$app->getBasePath().'/web'.$url)) {
+            if (getimagesize(Yii::$app->getBasePath() . '/web' . $url)) {
                 return true;
-            } else {
-                return false;
             }
         } catch (\Exception $e) {
-            return false;
+            ;
         }
+
+        return false;
     }
 
     /**
@@ -586,8 +668,12 @@ class News extends \open20\amos\news\models\base\News implements ContentModelInt
         $ret = $this->descrizione;
 
         if ($truncate) {
-            $ret = $this->__shortText($this->descrizione, 200);
+            $ret = \open20\amos\core\helpers\StringHelper::mb_str_split(
+                $this->descrizione,
+                200
+            );
         }
+
         return $ret;
     }
 
@@ -596,13 +682,13 @@ class News extends \open20\amos\news\models\base\News implements ContentModelInt
      */
     public function getStatsToolbar($disableLink = false)
     {
-        $panels         = [];
+        $panels = [];
         $count_comments = 0;
         return $panels;
         try {
-            $panels     = parent::getStatsToolbar($disableLink);
+            $panels = parent::getStatsToolbar($disableLink);
             $filescount = !is_null($this->newsImage) ? $this->getFileCount() - 1 : $this->getFileCount();
-            $panels     = ArrayHelper::merge($panels,
+            $panels = ArrayHelper::merge($panels,
                     StatsToolbarPanels::getDocumentsPanel($this, $filescount, $disableLink));
             if ($this->isCommentable()) {
                 $commentModule = \Yii::$app->getModule('comments');
@@ -614,7 +700,7 @@ class News extends \open20\amos\news\models\base\News implements ContentModelInt
                         StatsToolbarPanels::getCommentsPanel($this, $count_comments, $disableLink));
             }
             $reportCount = ReportUtil::retrieveReportsCount(get_class($this), $this->id);
-            $panels      = ArrayHelper::merge($panels,
+            $panels = ArrayHelper::merge($panels,
                     StatsToolbarPanels::getReportsPanel($this, $reportCount, $disableLink));
         } catch (\Exception $ex) {
             Yii::getLogger()->log($ex->getMessage(), Logger::LEVEL_ERROR);
@@ -646,7 +732,7 @@ class News extends \open20\amos\news\models\base\News implements ContentModelInt
      */
     public function getCategory()
     {
-        return $this->hasOne(\open20\amos\news\models\NewsCategorie::className(), ['id' => 'news_categorie_id']);
+        return $this->hasOne(\open20\amos\news\models\NewsCategorie::class, ['id' => 'news_categorie_id']);
     }
 
     /**
@@ -655,14 +741,17 @@ class News extends \open20\amos\news\models\base\News implements ContentModelInt
     public function getFullViewUrl()
     {
         if (!empty($this->usePrettyUrl) && ($this->usePrettyUrl == true) && $this->hasMethod('getPrettyUrl')) {
-            return Url::toRoute(["/".$this->getViewUrl()."/".$this->id."/".$this->getPrettyUrl()]);
+            return Url::toRoute(["/" . $this->getViewUrl() . "/" . $this->id . "/" . $this->getPrettyUrl()]);
         } else if (!empty($this->useFrontendView) && ($this->useFrontendView == true) && $this->hasMethod('getBackendobjectsUrl')) {
             return $this->getBackendobjectsUrl();
         } else {
-            return Url::toRoute(["/".$this->getViewUrl(), "id" => $this->id]);
+            return Url::toRoute(["/" . $this->getViewUrl(), "id" => $this->id]);
         }
     }
 
+    /**
+     * @inheritdoc
+     */
     public function getFullFrontendViewUrl()
     {
         $url = $this->getFrontendViewUrl();
@@ -672,7 +761,8 @@ class News extends \open20\amos\news\models\base\News implements ContentModelInt
         if (strpos($url, '{Slug}')) {
             $url = str_replace("{Slug}", $this->slug, $url);
         }
-        return Url::toRoute(["/".$url]);
+
+        return Url::toRoute(["/" . $url]);
     }
 
     /**
@@ -691,6 +781,9 @@ class News extends \open20\amos\news\models\base\News implements ContentModelInt
         return [$this->getValidatedStatus()];
     }
 
+    /**
+     * @inheritdoc
+     */
     public function setDetailScenario()
     {
         $moduleNews = \Yii::$app->getModule(AmosNews::getModuleName());
@@ -706,7 +799,7 @@ class News extends \open20\amos\news\models\base\News implements ContentModelInt
      */
     public function getStatusToRenderToHide()
     {
-        $statusToRender     = [
+        $statusToRender = [
             News::NEWS_WORKFLOW_STATUS_BOZZA => AmosNews::t('amosnews', 'Modifica in corso'),
         ];
         $isCommunityManager = false;
@@ -718,49 +811,58 @@ class News extends \open20\amos\news\models\base\News implements ContentModelInt
         }
         // if you are a community manager a validator/facilitator or ADMIN you Can publish directly
         if (Yii::$app->user->can('NewsValidate', ['model' => $this]) || Yii::$app->user->can('ADMIN') || $isCommunityManager) {
-            $statusToRender  = ArrayHelper::merge($statusToRender,
-                    [News::NEWS_WORKFLOW_STATUS_VALIDATO => AmosNews::t('amosnews', 'Pubblicata')]);
+            $statusToRender = ArrayHelper::merge(
+                $statusToRender,
+                [
+                    News::NEWS_WORKFLOW_STATUS_VALIDATO => AmosNews::t('amosnews', 'Pubblicata')
+                ]
+            );
             $hideDraftStatus = [];
         } else {
-            $statusToRender    = ArrayHelper::merge($statusToRender,
-                    [
+            $statusToRender = ArrayHelper::merge(
+                $statusToRender,
+                [
                     News::NEWS_WORKFLOW_STATUS_DAVALIDARE => AmosNews::t('amosnews', 'Richiedi pubblicazione'),
-            ]);
+                ]
+            );
             $hideDraftStatus[] = News::NEWS_WORKFLOW_STATUS_VALIDATO;
         }
-        return ['statusToRender' => $statusToRender, 'hideDraftStatus' => $hideDraftStatus];
+ 
+        return [
+            'statusToRender' => $statusToRender,
+            'hideDraftStatus' => $hideDraftStatus
+        ];
     }
 
     /**
-     *
      * @return type
      */
     public function getSchema()
     {
-        $news        = new \simialbi\yii2\schemaorg\models\NewsArticle();
-        $publisher   = new \simialbi\yii2\schemaorg\models\Organization();
-        $author      = new \simialbi\yii2\schemaorg\models\Person();
+        $news = new \simialbi\yii2\schemaorg\models\NewsArticle();
+        $publisher = new \simialbi\yii2\schemaorg\models\Organization();
+        $author = new \simialbi\yii2\schemaorg\models\Person();
         $userProfile = $this->createdUserProfile;
         if (!is_null($userProfile)) {
-            $logo            = new \simialbi\yii2\schemaorg\models\ImageObject();
+            $logo = new \simialbi\yii2\schemaorg\models\ImageObject();
             $publisher->name = $userProfile->nomeCognome;
-            $img             = $userProfile->userProfileImage;
+            $img = $userProfile->userProfileImage;
             if (!is_null($img)) {
                 $logo->url = $img->getWebUrl(false, true);
             }
             $publisher->logo = $logo;
-            $author->name    = $userProfile->nomeCognome;
+            $author->name = $userProfile->nomeCognome;
         }
-        $image     = new \simialbi\yii2\schemaorg\models\ImageObject();
+        $image = new \simialbi\yii2\schemaorg\models\ImageObject();
         $newsImage = $this->getNewsImage();
         if (!empty($newsImage)) {
             $image->url = $newsImage->getWebUrl(false, true);
         }
-        $news->author        = $author;
+        $news->author = $author;
         $news->datePublished = $this->data_pubblicazione;
-        $news->headline      = substr($this->getShortDescription(), 0, 110);
-        $news->image         = $image;
-        $news->publisher     = $publisher;
+        $news->headline = substr($this->getShortDescription(), 0, 110);
+        $news->image = $image;
+        $news->publisher = $publisher;
 
         \simialbi\yii2\schemaorg\helpers\JsonLDHelper::add($news);
 
@@ -773,260 +875,226 @@ class News extends \open20\amos\news\models\base\News implements ContentModelInt
     public function getModelUrl()
     {
         if ($this->primo_piano) {
-            return \Yii::$app->params['platform']['frontendUrl'].$this->getFullFrontendViewUrl();
-        } else return \Yii::$app->params['platform']['backendUrl'].$this->getFullViewUrl();
+            return \Yii::$app->params['platform']['frontendUrl'] . $this->getFullFrontendViewUrl();
+        }
+
+        return \Yii::$app->params['platform']['backendUrl'] . $this->getFullViewUrl();
     }
 
+    /**
+     * @inheritdoc
+     */
     public function getFieldVisibleByGuest()
     {
-        return $this->tableName().'.primo_piano';
+        return $this->tableName() . '.primo_piano';
     }
-
-
-
-
 
     /**
      * *** SiteManagementSlider
-     */
-
-    /**
      * @return string
      */
     public function getTitleSlider()
     {
-        return 'News '.$this->id;
+        return 'News ' . $this->id;
     }
-
-
 
     /**
      * Method to create relationship between News and related News
      *
      * @return void
      */
-    public function createNewsRelatedNewsMm(){
-
+    public function createNewsRelatedNewsMm()
+    {
         $post_request = \Yii::$app->request->post('News', '');
 
-        if( isset($post_request['news_related_news_mm']) ){
-
+        if (isset($post_request['news_related_news_mm'])) {
             foreach ($post_request['news_related_news_mm'] as $key => $value) {
-
                 $news_related_news_mm = new NewsRelatedNewsMm;
-
                 $news_related_news_mm->news_id = $this->id;
                 $news_related_news_mm->related_news_id = $value;
-
                 $news_related_news_mm->save();
             }
         }
     }
-
 
     /**
      * Method to update relationship between News and related News
      *
      * @return void
      */
-    public function updateNewsRelatedNewsMm(){
-
-        $post_request = \Yii::$app->request->post('News','');
-
-        if( isset($post_request['news_related_news_mm']) ){
-
+    public function updateNewsRelatedNewsMm()
+    {
+        $post_request = \Yii::$app->request->post('News', '');
+        if (isset($post_request['news_related_news_mm'])) {
             $this->deleteNewsRelatedNewsMm();
-
             $this->createNewsRelatedNewsMm();
         }
     }
-
 
     /**
      * Method to delete the relationship between News and related News
      *
      * @return void
      */
-    public function deleteNewsRelatedNewsMm(){
-
+    public function deleteNewsRelatedNewsMm()
+    {
         $news_related_news_mm = $this->newsRelatedNewsMm;
-
         foreach ($news_related_news_mm as $key => $value) {
-
             $value->delete();
         }
     }
-
 
     /**
      * Method to create the relationship between News and related Documenti
      *
      * @return void
      */
-    public function createNewsRelatedDocumentiMm(){
-
+    public function createNewsRelatedDocumentiMm()
+    {
         $post_request = \Yii::$app->request->post('News', '');
-
-        if( isset($post_request['news_related_documenti_mm']) ){
-
+        if (isset($post_request['news_related_documenti_mm'])) {
             foreach ($post_request['news_related_documenti_mm'] as $key => $value) {
-
                 $news_related_documenti_mm = new NewsRelatedDocumentiMm;
-
                 $news_related_documenti_mm->news_id = $this->id;
                 $news_related_documenti_mm->related_documenti_id = $value;
-
                 $news_related_documenti_mm->save();
             }
         }
     }
-
 
     /**
      * Method to update the relationship between News and related Documenti
      *
      * @return void
      */
-    public function updateNewsRelatedDocumentiMm(){
-
+    public function updateNewsRelatedDocumentiMm()
+    {
         $post_request = \Yii::$app->request->post('News', '');
-
-        if( isset($post_request['news_related_documenti_mm']) ){
-
+        if (isset($post_request['news_related_documenti_mm'])) {
             $this->deleteNewsRelatedDocumentiMm();
-
             $this->createNewsRelatedDocumentiMm();
         }
     }
-
 
     /**
      * Method to delete the relationship between News and related Documenti
      *
      * @return void
      */
-    public function deleteNewsRelatedDocumentiMm(){
-
+    public function deleteNewsRelatedDocumentiMm()
+    {
         $news_related_documenti_mm = $this->newsRelatedDocumentiMm;
-
         foreach ($news_related_documenti_mm as $key => $value) {
-
             $value->delete();
         }
     }
-
 
     /**
      * Method to create the realationship between News and Agid Service
      *
      * @return void
      */
-    public function createNewsRelatedAgidServiceMm(){
-
+    public function createNewsRelatedAgidServiceMm()
+    {
         $post_request = \Yii::$app->request->post('News', '');
-
-        if( isset($post_request['news_related_agid_service_mm']) ){
-
+        if (isset($post_request['news_related_agid_service_mm'])) {
             foreach ($post_request['news_related_agid_service_mm'] as $key => $value) {
-
                 $news_related_agid_service_mm = new NewsRelatedAgidServiceMm;
-
                 $news_related_agid_service_mm->news_id = $this->id;
                 $news_related_agid_service_mm->related_agid_service_id = $value;
-
                 $news_related_agid_service_mm->save();
             }
         }
     }
-
 
     /**
      * Method to update the retalionship between News and Agid Service
      *
      * @return void
      */
-    public function updateNewsRelatedAgidServiceMm(){
-
+    public function updateNewsRelatedAgidServiceMm()
+    {
         $post_request = \Yii::$app->request->post('News', '');
-
-        if( isset($post_request['news_related_agid_service_mm']) ){
-
+        if (isset($post_request['news_related_agid_service_mm'])) {
             $this->deleteNewsRelatedAgidServiceMm();
-
             $this->createNewsRelatedAgidServiceMm();
         }
     }
-
 
     /**
      * Method to delete the relationship between Newsand related Documenti
      *
      * @return void
      */
-    public function deleteNewsRelatedAgidServiceMm(){
-
+    public function deleteNewsRelatedAgidServiceMm()
+    {
         $news_related_agid_service_mm = $this->newsRelatedAgidServiceMm;
-
         foreach ($news_related_agid_service_mm as $key => $value) {
-
             $value->delete();
         }
     }
-
 
     /**
      * Method to crete relationship between News and Agid Person
      *
      * @return void
      */
-    public function createNewsAgidPersonMm(){
-
-        $post_request = \Yii::$app->request->post('News','');
-
-        if( isset($post_request['news_agid_person_mm']) ){
-
+    public function createNewsAgidPersonMm()
+    {
+        $post_request = \Yii::$app->request->post('News', '');
+        if (isset($post_request['news_agid_person_mm'])) {
             foreach ($post_request['news_agid_person_mm'] as $key => $value) {
-
                 $news_agid_person_mm = new NewsAgidPersonMm;
-
                 $news_agid_person_mm->news_id = $this->id;
                 $news_agid_person_mm->agid_person_id = $value;
-
                 $news_agid_person_mm->save();
             }
         }
     }
-
 
     /**
      * Method to update the relationship between News and Agid Person
      *
      * @return void
      */
-    public function updateNewsAgidPersonMm(){
-
-        $post_request = \Yii::$app->request->post('News','');
-
-        if( isset($post_request['news_agid_person_mm']) ){
-
+    public function updateNewsAgidPersonMm()
+    {
+        $post_request = \Yii::$app->request->post('News', '');
+        if (isset($post_request['news_agid_person_mm'])) {
             $this->deleteNewsAgidPersonMm();
-
             $this->createNewsAgidPersonMm();
         }
     }
 
+    public function saveOtherNewsCategories(){
+        $otherCategories = $this->otherCategories;
+        NewsCategorieMm::deleteAll(['news_id' => $this->id]);
+        foreach ($otherCategories as $category_id){
+            $categoryMm = new NewsCategorieMm();
+            $categoryMm->news_categorie_id = $category_id;
+            $categoryMm->news_id = $this->id;
+            $categoryMm->save(false);
+        }
+    }
+
+    /**
+     *
+     */
+    public function loadOtherNewsCategories(){
+        $otherCategories = $this->otherNewsCategories;
+        $this->otherCategories = $otherCategories;
+
+    }
 
     /**
      * Method to delete the relationship between News and Agid Person
      *
      * @return void
      */
-    public function deleteNewsAgidPersonMm(){
-
+    public function deleteNewsAgidPersonMm()
+    {
         $news_agid_person_mm = $this->newsAgidPersonMm;
-
         foreach ($news_agid_person_mm as $key => $value) {
-
             $value->delete();
         }
     }
@@ -1038,4 +1106,45 @@ class News extends \open20\amos\news\models\base\News implements ContentModelInt
     {
         return $this->newsModule->newsModelsendNotification;
     }
+
+    /**
+     * 
+     * @param type $insert
+     * @param type $changedAttributes
+     * @return type
+     */
+    public function afterSave($insert, $changedAttributes)
+    {
+        parent::afterSave($insert, $changedAttributes);
+
+        if (!empty($this->request_publish_on_hp) && $this->request_publish_on_hp == 1) {
+            $whoCanPublishIds = \yii\helpers\ArrayHelper::merge(
+                \Yii::$app->authManager->getUserIdsByRole('ADMIN'),
+                \Yii::$app->authManager->getUserIdsByRole('NewsPublishOnHomePage')
+            );
+
+            NewsUtility::sendEmailsForPublishOnHomePageRequest($whoCanPublishIds, $this);
+        }
+    }
+
+    /**
+     * @param $attribute
+     * @throws \ReflectionException
+     */
+    public function checkImageRequired($attribute){
+        if($this->newsModule->enableAgid) {
+            $reflectionClass = new \ReflectionClass($this);
+            $classname = $reflectionClass->getShortName();
+            foreach ((array)$_FILES[$classname]['name'] as $attributeName => $filename) {
+                if ($attribute == $attributeName) {
+                    if (empty($filename)) {
+                        if (empty($this->$attribute)) {
+                            $this->addError($attribute, AmosNews::t('amosnews', "Il campo immagine è obbligatorio."));
+                        }
+                    }
+                }
+            }
+        }
+    }
+
 }

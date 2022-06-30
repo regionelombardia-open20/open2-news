@@ -22,7 +22,9 @@ use open20\amos\news\AmosNews;
 use open20\amos\news\assets\ModuleNewsAsset;
 use open20\amos\news\models\News;
 use open20\amos\news\models\search\NewsSearch;
+use open20\amos\news\utility\NewsUtility;
 use open20\amos\news\widgets\icons\WidgetIconNewsCreatedBy;
+
 use raoul2000\workflow\base\WorkflowException;
 use Yii;
 use yii\data\ActiveDataProvider;
@@ -160,7 +162,7 @@ class NewsController extends CrudController
             parent::behaviors(),
             [
                 'access' => [
-                    'class' => AccessControl::className(),
+                    'class' => AccessControl::class,
                     'rules' => [
                         [
                             'allow' => true,
@@ -244,7 +246,7 @@ class NewsController extends CrudController
                     ]
                 ],
                 'verbs' => [
-                    'class' => VerbFilter::className(),
+                    'class' => VerbFilter::class,
                     'actions' => [
                         'delete' => ['post', 'get']
                     ],
@@ -259,7 +261,7 @@ class NewsController extends CrudController
      * Used for set page title and breadcrumbs.
      * @param string $newsPageTitle News page title (ie. Created by news, ...)
      */
-    private function setTitleAndBreadcrumbs($newsPageTitle)
+    protected function setTitleAndBreadcrumbs($newsPageTitle)
     {
         $this->setNetworkDashboardBreadcrumb();
         Yii::$app->session->set('previousTitle', $newsPageTitle);
@@ -374,7 +376,7 @@ class NewsController extends CrudController
     /**
      * Set a view param used in \open20\amos\core\forms\CreateNewButtonWidget
      */
-    private function setCreateNewBtnLabel()
+    protected function setCreateNewBtnLabel()
     {
         Yii::$app->view->params['createNewBtnParams'] = [
             'createNewBtnLabel' => AmosNews::t('amosnews', 'Nuova'),
@@ -426,7 +428,7 @@ class NewsController extends CrudController
 
         if (isset(Yii::$app->params['isPoi']) && Yii::$app->params['isPoi'] == true) {
             if ($id == 2579) {
-                $cwhActiveQuery = new CwhActiveQuery(News::className());
+                $cwhActiveQuery = new CwhActiveQuery(News::class);
                 $queryUsers     = $cwhActiveQuery->getRecipients(
                     $model->regola_pubblicazione,
                     $model->tagValues,
@@ -556,7 +558,7 @@ class NewsController extends CrudController
         }
 
         $model = $this->newsModule->createModel('News', ['scenario' => $scenario]);
-        if ($enableAgid) {
+        if (($enableAgid) && ($this->newsModule->request_publish_on_hp == false)) {
             $model->primo_piano = 1;
             $model->in_evidenza = 1;
         }
@@ -650,7 +652,7 @@ class NewsController extends CrudController
     /**
      * Il metodo registra, all'evento di READY, il javascript di conferma su ogni elemento su cui è necessario.
      */
-    private function registerConfirmJs()
+    protected function registerConfirmJs()
     {
         $btnIds = [
             'new-news-attachment'
@@ -667,7 +669,7 @@ class NewsController extends CrudController
      * @param array $elementIds
      * @return string
      */
-    private function createConfirmJsString($elementIds)
+    protected function createConfirmJsString($elementIds)
     {
         $confirmJsString = '';
         foreach ($elementIds as $elementId) {
@@ -686,7 +688,7 @@ class NewsController extends CrudController
      * @param $buttonId
      * @return string
      */
-    private function javascriptConfirm($elementId)
+    protected function javascriptConfirm($elementId)
     {
         return "
       $('#" . $elementId . "').click(function (e) {
@@ -709,11 +711,15 @@ class NewsController extends CrudController
 
         /** @var News $model */
         $model = $this->findModel($id);
+        $this->model = $model;
+        $model->loadOtherNewsCategories();
+
         $this->registerConfirmJs();
 
         Yii::$app->view->params['textHelp']['filename'] = 'create_news_dashboard_description';
 
         $enableAgid = $this->newsModule->enableAgid;
+        $enableOtherNewsCategories = $this->newsModule->enableOtherNewsCategories;
 
         $redirectToUpdatePage                           = false;
         if (Yii::$app->getUser()->can('NEWS_UPDATE', ['model' => $model])) {
@@ -739,6 +745,10 @@ class NewsController extends CrudController
                             $model->updateNewsRelatedAgidServiceMm();
                         }
 
+                        if($enableOtherNewsCategories){
+                            $model->saveOtherNewsCategories();
+                        }
+
                         if ($urlRedirect) {
                             return $this->redirect($urlRedirect);
                         }
@@ -756,8 +766,8 @@ class NewsController extends CrudController
                                 'success',
                                 AmosNews::t('amosnews', 'Notizia aggiornata con successo.')
                             );
+                            
                             if (strpos($model->status, 'VALIDATO')) {
-                                //return $this->redirect(BreadcrumbHelper::lastCrumbUrl());
                                 return $this->redirect(['/news/news/update', 'id' => $model->id]);
                             } elseif (strpos($model->status, 'BOZZA') && strpos($previousStatus, 'DAVALIDARE')) {
                                 return $this->redirect(BreadcrumbHelper::lastCrumbUrl());

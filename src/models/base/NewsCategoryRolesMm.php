@@ -73,7 +73,7 @@ class NewsCategoryRolesMm extends \open20\amos\core\record\Record
      */
     public function getNewsCategory()
     {
-        return $this->hasOne(\open20\amos\news\models\NewsCategorie::className(), ['id' => 'news_category_id']);
+        return $this->hasOne(\open20\amos\news\models\NewsCategorie::class, ['id' => 'news_category_id']);
     }
 
 }

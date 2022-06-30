@@ -15,15 +15,17 @@ use open20\amos\core\forms\AccordionWidget;
 use open20\amos\core\forms\ActiveForm;
 use open20\amos\core\forms\CreatedUpdatedWidget;
 use open20\amos\core\forms\editors\Select;
+use open20\amos\core\forms\TextEditorWidget;
 use open20\amos\core\helpers\Html;
 use open20\amos\news\AmosNews;
 use open20\amos\news\models\News;
 use open20\amos\news\utility\NewsUtility;
 use open20\amos\workflow\widgets\WorkflowTransitionButtonsWidget;
 use open20\amos\workflow\widgets\WorkflowTransitionStateDescriptorWidget;
+
 use kartik\datecontrol\DateControl;
+
 use yii\helpers\ArrayHelper;
-use open20\amos\core\forms\TextEditorWidget;
 
 /**
  * @var yii\web\View $this
@@ -32,29 +34,31 @@ use open20\amos\core\forms\TextEditorWidget;
  */
 $dateErrorMessage = AmosNews::t('error', "Controllare data");
 
+/** @var AmosNews $newsModule */
+$newsModule = AmosNews::instance();
+$moduleSeo = \Yii::$app->getModule('seo');
+
+$hideSeoModuleClass = $newsModule->hideSeoModule ? ' hidden' : '';
+
 $todayDate    = date('d-m-Y');
 $tomorrowDate = (new DateTime('tomorrow'))->format('d-m-Y');
 
-//\open20\amos\layout\assets\SpinnerWaitAsset::register($this);
+$customView       = Yii::$app->getViewPath().'/imageField.php';
+
 $js2 = <<<JS
-    $(document).ready(function () {
+$(document).ready(function () {
+    if($("#news_categorie_id-id option").length == 2){
+        $($("#news_categorie_id-id option").parent().parent().parent()).hide();
+    }
 
-        if($("#news_categorie_id-id option").length == 2){
-            $($("#news_categorie_id-id option").parent().parent().parent()).hide();
-        }
-
-    });
-
+});
 JS;
 
 $this->registerJs($js2);
-?>
 
-<?php
-$form             = ActiveForm::begin([
+$form = ActiveForm::begin([
     'options' => ['enctype' => 'multipart/form-data'] // important
 ]);
-$customView       = Yii::$app->getViewPath().'/imageField.php';
 ?>
 
 <?=
@@ -339,36 +343,32 @@ WorkflowTransitionStateDescriptorWidget::widget([
             ]);
             ?>
 
-            <?php
-            $moduleSeo      = \Yii::$app->getModule('seo');
-            if (isset($moduleSeo)) :
-                ?>
-                <?=
-                AccordionWidget::widget([
-                    'items' => [
-                        [
-                            'header' => AmosNews::t('amosnews', '#settings_seo_title'),
-                            'content' => \open20\amos\seo\widgets\SeoWidget::widget([
-                                'contentModel' => $model,
-                            ]),
-                        ]
-                    ],
-                    'headerOptions' => ['tag' => 'h2'],
-                    'options' =>  Yii::$app->user->can('ADMIN') ? [] : ['style' => 'display:none;'],
-                    'clientOptions' => [
-                        'collapsible' => true,
-                        'active' => 'false',
-                        'icons' => [
-                            'header' => 'ui-icon-amos am am-plus-square',
-                            'activeHeader' => 'ui-icon-amos am am-minus-square',
-                        ]
-                    ],
-                ]);
-                ?>
+            <?php if (isset($moduleSeo)) : ?>
+            <div class="<?= $hideSeoModuleClass ?>">
+            <?= AccordionWidget::widget([
+                'items' => [
+                    [
+                        'header' => AmosNews::t('amosnews', '#settings_seo_title'),
+                        'content' => \open20\amos\seo\widgets\SeoWidget::widget([
+                            'contentModel' => $model,
+                        ]),
+                    ]
+                ],
+                'headerOptions' => ['tag' => 'h2'],
+                'options' =>  Yii::$app->user->can('ADMIN') ? [] : ['style' => 'display:none;'],
+                'clientOptions' => [
+                    'collapsible' => true,
+                    'active' => 'false',
+                    'icons' => [
+                        'header' => 'ui-icon-amos am am-plus-square',
+                        'activeHeader' => 'ui-icon-amos am am-minus-square',
+                    ]
+                ],
+            ]);
+            ?>
+            </div>
             <?php endif; ?>
-
         </div>
-
 
         <?php
         $config = [
@@ -379,7 +379,6 @@ WorkflowTransitionStateDescriptorWidget::widget([
 
         $statusToRenderToHide = $model->getStatusToRenderToHide();
         ?>
-
 
         <?=
         WorkflowTransitionButtonsWidget::widget([

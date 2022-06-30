@@ -81,7 +81,7 @@ class NewsGroups extends Record
      */
     public function getNews()
     {
-        return $this->hasMany(\open20\amos\news\models\News::className(), ['news_groups_id' => 'id']);
+        return $this->hasMany(\open20\amos\news\models\News::class, ['news_groups_id' => 'id']);
     }
     
 }

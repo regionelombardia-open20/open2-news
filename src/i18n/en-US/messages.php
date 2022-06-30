@@ -244,5 +244,18 @@ return [
     "#beforeActionSubtitleSectionLogged" => "",
     "Tutte le notizie di mio interesse" => "All news of interest",
     "Visualizza la lista delle notizie di tuo interesse" => "Show the list of the news of interest",
+    
+    '#placeholder_for_choose_to_publish_on_hp' => 'Richiesta di visualizzare la notizia anche in Homepage?',
+    '#hp_request_publication_on' => 'Richiesta pubblicazione notizia in homepage',
+    '#hp_dear_user' => 'Gentile {whocan_name},<br /><br />nella community {community}',
+    '#hp_row_1' => "l'utente {user_request} ha richiesto la pubblicazione di una notizia in homepage.<br /><br />Qui di seguito il link:",
+    '#hp_row_2' => 'Titolo notizia: {news_title}',
+    '#hp_row_3' => 'Categoria: {news_categoria}',
+    '#hp_row_4' => 'Testo notizia: {news_descr}',
+    '#hp_row_5' => 'Tag di interesse: {tags}',
 
+    'Non ci sono news che corrispondono ai tuoi interessi!' => 'There is no news that matches your interests!',
+    'Clicca e scopri tutte le news della piattaforma' => 'Click and discover all the news of the platform',
+    'e scopri ora tutte le news di' => 'and find out now all the news of',
+    'Non sono presenti news' => 'There are no news'
 ];

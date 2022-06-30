@@ -12,6 +12,9 @@ namespace open20\amos\news\utility;
 
 use open20\amos\news\models\NewsCategorie;
 use open20\amos\news\models\NewsCategoryRolesMm;
+use open20\amos\core\utilities\Email;
+
+use Yii;
 use yii\base\BaseObject;
 use yii\db\ActiveQuery;
 
@@ -27,7 +30,8 @@ class NewsUtility extends BaseObject
         /** @var ActiveQuery $query */
         $query = NewsCategorie::find();
         if (\Yii::$app->getModule('news')->filterCategoriesByRole) {
-            //check enabled role for category active - user can publish under a category if there's at least one match betwwn category and user roles
+            //check enabled role for category active - user can publish under
+            //a category if there's at least one match betwwn category and user roles
             $query->joinWith('newsCategoryRolesMms')->innerJoin('auth_assignment',
                 'item_name='.NewsCategoryRolesMm::tableName().'.role and user_id ='.\Yii::$app->user->id);
         }
@@ -93,9 +97,11 @@ class NewsUtility extends BaseObject
     public static function isCommunityManager($community_id)
     {
         $count = \open20\amos\community\models\CommunityUserMm::find()
-                ->andWhere(['community_id' => $community_id])
-                ->andWhere(['user_id' => \Yii::$app->user->id])
-                ->andWhere(['role' => \open20\amos\community\models\Community::ROLE_COMMUNITY_MANAGER])->count();
+            ->andWhere(['community_id' => $community_id])
+            ->andWhere(['user_id' => \Yii::$app->user->id])
+            ->andWhere(['role' => \open20\amos\community\models\Community::ROLE_COMMUNITY_MANAGER])
+            ->count();
+
         return ($count > 0);
     }
 
@@ -108,5 +114,99 @@ class NewsUtility extends BaseObject
         /** @var ActiveQuery $query */
         $query = NewsCategorie::find();
         return $query;
+    }
+    
+    /**
+     * 
+     * @param type $whoCanPublishIds
+     * @param type $controller
+     * @param type $news
+     * @return boolean
+     */
+    public function sendEmailsForPublishOnHomePageRequest($whoCanPublishIds, $model)
+    {
+        // check if request to publish on hp is set on
+        if (is_array($whoCanPublishIds)) {
+            $emailBasePath = '@vendor/open20/amos-news/src/views/email/';
+
+            $userProfiles = \open20\amos\admin\models\UserProfile::find()
+                ->andWhere(['user_id' => $whoCanPublishIds])
+                ->all();
+            if (!empty($userProfiles)) {
+                $controller = \Yii::$app->controller;
+
+                $community_name = null;
+                $validatori = $model->validatori;
+                if (!empty($validatori)) {
+                    list($validatore, $community_id) = explode("-", array_shift($validatori));
+
+                    if (!empty($community_id)) {
+                        $community = \open20\amos\community\models\Community::find()
+                            ->andWhere(['id' => $community_id])
+                            ->one();
+                        if (!empty($community)) {
+                            $community_name = $community->name;
+                        }
+                    }
+                }
+
+                $requestedByUser = \open20\amos\admin\models\UserProfile::find()
+                    ->andWhere(['user_id' => $model->created_by])
+                    ->one();
+
+                $user_request = !empty($requestedByUser) ? $requestedByUser->getNomeCognome() : 'n./a.';
+                $news_url = Yii::$app->urlManager->createAbsoluteUrl([
+                    '/news/news/update',
+                    'id' => $model->id,
+                ]);
+                $news_title = $model->titolo;
+                $news_descr = $model->getDescription();
+                $news_categoria = NewsCategorie::find()
+                    ->andWhere(['id' => $model->news_categorie_id])
+                    ->one();
+
+                $tags = \open20\amos\tag\utility\TagUtility::findTagsByModel(
+                    \open20\amos\news\models\News::class,
+                    $model->id
+                );
+
+                if (!empty($tags)) {
+                    $tmp = [];
+                    foreach($tags as $tag) {
+                        $tmp[] = $tag->nome;
+                    }
+                    $tags_list = implode(", ", $tmp);
+                }
+
+                // Create SUBJECT
+                $subject = $controller->renderMailPartial($emailBasePath . '/publish_on_homepage_request_subject');
+                $from = Yii::$app->params['supportEmail'];
+                foreach($userProfiles as $user) {
+                    $to = $user->user->email;
+
+                    // Create TEXT
+                    $text = $controller->renderMailPartial($emailBasePath . '/publish_on_homepage_request_text', [
+                        'whocan_name' => $user->getNomeCognome(),
+                        'community' => $community_name,
+                        'user_request' => $user_request,
+                        'news_url' => $news_url,
+                        'news_title' => $news_title,
+                        'news_categoria' => !empty($news_categoria) ? $news_categoria->titolo : 'n./a.',
+                        'news_descr' => $news_descr,
+                        'tags' => $tags_list,
+                    ]);
+
+                    // SEND EMAIL
+                    $ok = Email::sendMail(
+                        $from,
+                        $to,
+                        $subject,
+                        $text
+                    );
+                }
+            }
+        }
+        
+        return true;
     }
 }

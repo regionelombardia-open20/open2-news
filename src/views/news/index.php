@@ -44,8 +44,7 @@ $newsModule = AmosNews::instance();
     <?= $this->render('_search', ['model' => $model, 'queryParamCurrentView' => $queryParamCurrentView]); ?>
     <?= $this->render('_order', ['model' => $model, 'queryParamCurrentView' => $queryParamCurrentView]); ?>
     <?= NewsCarouselWidget::widget(); ?>
-    <?=
-    DataProviderView::widget([
+    <?= DataProviderView::widget([
         'dataProvider' => $dataProvider,
         'currentView' => $currentView,
         'gridView' => [
@@ -152,9 +151,8 @@ $newsModule = AmosNews::instance();
                     'buttons' => [
                         'validate' => function ($url, $model) {
                             /** @var News $model */
-                            $btn = '';
                             if (Yii::$app->getUser()->can('NewsValidate', ['model' => $model])) {
-                                $btn = ModalUtility::addConfirmRejectWithModal([
+                                return ModalUtility::addConfirmRejectWithModal([
                                     'modalId' => 'validate-news-modal-id',
                                     'modalDescriptionText' => AmosNews::t('amosnews', '#VALIDATE_NEWS_MODAL_TEXT'),
                                     'btnText' => AmosIcons::show('check-circle', ['class' => '']),
@@ -162,14 +160,11 @@ $newsModule = AmosNews::instance();
                                     'btnOptions' => ['title' => AmosNews::t('amosnews', 'Publish'), 'class' => 'btn btn-tools-secondary']
                                 ]);
                             }
-
-                            return $btn;
                         },
                         'reject' => function ($url, $model) {
                             /** @var News $model */
-                            $btn = '';
                             if (Yii::$app->getUser()->can('NewsValidate', ['model' => $model])) {
-                                $btn = ModalUtility::addConfirmRejectWithModal([
+                                return ModalUtility::addConfirmRejectWithModal([
                                     'modalId' => 'reject-news-modal-id',
                                     'modalDescriptionText' => AmosNews::t('amosnews', '#REJECT_NEWS_MODAL_TEXT'),
                                     'btnText' => AmosIcons::show('minus-circle', ['class' => '']),
@@ -177,12 +172,9 @@ $newsModule = AmosNews::instance();
                                     'btnOptions' => ['title' => AmosNews::t('amosnews', 'Reject'), 'class' => 'btn btn-tools-secondary']
                                 ]);
                             }
-
-                            return $btn;
                         },
                         'update' => function ($url, $model) {
                             /** @var News $model */
-                            $btn = '';
                             if (Yii::$app->user->can('NEWS_UPDATE', ['model' => $model])) {
                                 $action = '/news/news/update?id=' . $model->id;
                                 $options = ModalUtility::getBackToEditPopup(
@@ -191,10 +183,8 @@ $newsModule = AmosNews::instance();
                                     $action,
                                     ['class' => 'btn btn-tools-secondary', 'title' => Yii::t('amoscore', 'Modifica'), 'data-pjax' => '0']
                                 );
-                                $btn = Html::a(AmosIcons::show('edit'), $action, $options);
+                                return Html::a(AmosIcons::show('edit'), $action, $options);
                             }
-
-                            return $btn;
                         }
                     ]
                 ],
@@ -203,15 +193,6 @@ $newsModule = AmosNews::instance();
         ],
         'listView' => [
             'itemView' => '_item',
-            // 'masonry' => false,
-            // 'masonrySelector' => '.grid',
-            // 'masonryOptions' => [
-            //     'itemSelector' => '.grid-item',
-            //     'columnWidth' => '.grid-sizer',
-            //     'percentPosition' => 'true',
-            //     'gutter' => 30
-            // ],
-            // 'showItemToolbar' => false,
         ],
         'iconView' => [
             'itemView' => '_icon',

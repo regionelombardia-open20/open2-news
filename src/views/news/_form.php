@@ -9,6 +9,8 @@
  * @category   CategoryName
  */
 
+use amos\sitemanagement\models\SiteManagementSliderElem;
+
 use open20\amos\attachments\components\AttachmentsInput;
 use open20\amos\attachments\components\AttachmentsList;
 use open20\amos\attachments\components\CropInput;
@@ -24,9 +26,13 @@ use open20\amos\news\models\NewsContentType;
 use open20\amos\news\utility\NewsUtility;
 use open20\amos\workflow\widgets\WorkflowTransitionButtonsWidget;
 use open20\amos\workflow\widgets\WorkflowTransitionStateDescriptorWidget;
+
 use kartik\datecontrol\DateControl;
+use kartik\select2\Select2;
+
 use open20\agid\organizationalunit\models\AgidOrganizationalUnit;
 use open20\agid\person\models\AgidPersonType;
+
 use yii\helpers\ArrayHelper;
 use yii\helpers\Url;
 
@@ -37,18 +43,26 @@ use yii\helpers\Url;
  * @var amos\sitemanagement\Module|null $siteManagementModule
  */
 $dateErrorMessage = AmosNews::t('error', "Controllare data");
+/** @var AmosNews $newsModule */
+$newsModule = \Yii::$app->getModule(AmosNews::getModuleName());
+$enableOtherNewsCategories = $newsModule->enableOtherNewsCategories;
 
-$todayDate    = date('d-m-Y');
+$todayDate = date('d-m-Y');
 $tomorrowDate = (new DateTime('tomorrow'))->format('d-m-Y');
 $moduleNotify = \Yii::$app->getModule('notify');
 
-/** @var AmosNews $newsModule */
-$newsModule = AmosNews::instance();
+
+$moduleSeo = \Yii::$app->getModule('seo');
+$hideSeoModuleClass = $newsModule->hideSeoModule ? ' hidden' : '';
+
+$reportModule = \Yii::$app->getModule('report');
 
 // ENABLE AGID FIELDS
 $enableAgid = $newsModule->enableAgid;
 $rtePlugins = $newsModule->rtePlugins;
 $rteToolbar = $newsModule->rteToolbar;
+
+$textAlertCategory = AmosNews::t('news', "Questa categoria è già stata scelta come categoria principale.");
 
 $js2 = <<<JS
   $(document).ready(function () {
@@ -59,11 +73,44 @@ $js2 = <<<JS
 
 JS;
 
-$this->registerJs($js2);
+$jsOtherCategory = <<<JS
 
-$form       = ActiveForm::begin([
-    'options' => ['enctype' => 'multipart/form-data'] // important
-]);
+     $(document).on('select2:selecting', '#news_categorie_mm_id-id', function(e){
+          var selected = e.params.args.data.id;
+          var current =  $('#news_categorie_id-id').val();
+          
+         if(current === selected){
+            alert("$textAlertCategory");
+            return false;
+         }
+     });
+     
+     $('#news_categorie_id-id').change(function(){
+        var current = $(this).val();
+        var currentText = $(this).text();
+        
+         var a = $('#news_categorie_mm_id-id').val();
+         var text = String(a);
+         var otherCategories = text.split(',');
+         if(otherCategories.includes(current)){
+             otherCategories.forEach(function (item, index) {
+                if(item == current){
+                    otherCategories.splice(index, 1);
+                    $('#news_categorie_mm_id-id').val(otherCategories.join(','));
+                    $('#news_categorie_mm_id-id').trigger('change');
+                }
+            });
+         }
+    });
+
+JS;
+
+$this->registerJs($js2);
+if($enableOtherNewsCategories) {
+    $this->registerJs($jsOtherCategory);
+}
+
+
 $customView = Yii::$app->getViewPath() . '/imageField.php';
 
 echo WorkflowTransitionStateDescriptorWidget::widget([
@@ -77,8 +124,10 @@ echo WorkflowTransitionStateDescriptorWidget::widget([
 
 $disableStandardWorkflow = $newsModule->disableStandardWorkflow;
 
+$hidePreviewDeleteButton = false;
 if ($enableAgid) {
     $newsImageElementId = Html::getInputId($model, 'newsImage');
+    $hidePreviewDeleteButton = true;
     $jsAgid = <<<JS
         function addRequiredAsterisk(fieldName) {
             $('.field-' + fieldName).addClass('required');
@@ -91,14 +140,16 @@ JS;
     $newsImageLabel = $model->getAttributeLabel('newsImage');
 }
 
+$form = ActiveForm::begin([
+    'options' => ['enctype' => 'multipart/form-data']
+]);
 ?>
 
 <div class="news-form">
     <div class="row">
         <div class="col-xs-12">
             <?php
-            $reportModule            = \Yii::$app->getModule('report');
-            $reportFlagWidget        = '';
+            $reportFlagWidget = '';
             if (isset($reportModule) && in_array($model->className(), $reportModule->modelsEnabled)) {
                 $reportFlagWidget = \open20\amos\report\widgets\ReportFlagWidget::widget([
                     'model' => $model,
@@ -106,39 +157,39 @@ JS;
             }
             ?>
         </div>
-        <!--contenuti multimediali-->
 
+        <!--contenuti multimediali-->
         <div class="col-xs-12 section-form">
             <h2 class="subtitle-form"><?= AmosNews::t('amosnews', 'Immagine principale') ?></h2>
             <div class="row">
                 <div class="col-xs-12">
-                    <?=
-                    $form->field($model, 'newsImage')->widget(
-                        CropInput::classname(),
-                        [
-                            'jcropOptions' => ['aspectRatio' => '1.7']
-                        ]
-                    )->label($newsImageLabel)->hint(AmosNews::t('amosnews', '#image_field_hint'))
+                    <?= $form->field($model, 'newsImage')->widget(CropInput::class, [
+                        'hidePreviewDeleteButton' => $hidePreviewDeleteButton,
+                        'jcropOptions' => ['aspectRatio' => '1.7']
+                    ])
+                        ->label($newsImageLabel)
+                        ->hint(AmosNews::t('amosnews', '#image_field_hint'))
                     ?>
                 </div>
             </div>
         </div>
+
         <!--nome e categoria-->
         <div class="col-xs-12 section-form">
             <h2 class="subtitle-form"><?= AmosNews::t('amosnews', 'Informazioni di base') ?></h2>
             <div class="row">
                 <div class="col-xs-12">
-                    <?=
-                    $form->field($model, 'titolo')->textInput([
+                    <?= $form->field($model, 'titolo')->textInput([
                         'maxlength' => true,
                         'placeholder' => AmosNews::t('amosnews', '#title_field_plceholder')
-                    ])->hint(AmosNews::t('amosnews', '#title_field_hint'))
+                    ])
+                        ->hint(AmosNews::t('amosnews', '#title_field_hint'))
                     ?>
                 </div>
+
                 <?php if (!$enableAgid): ?>
                     <div class="col-xs-12">
-                        <?=
-                        $form->field($model, 'sottotitolo')->textInput([
+                        <?= $form->field($model, 'sottotitolo')->textInput([
                             'maxlength' => true,
                             'placeholder' => AmosNews::t('amosnews', '#subtitle_field_plceholder')
                         ])
@@ -147,27 +198,30 @@ JS;
                     </div>
                 <?php endif; ?>
             </div>
+
             <!-- AGID FIELD -->
             <div class="row">
                 <?php if ($enableAgid) : ?>
                     <div class="col-xs-12">
-                        <?=
-                        $form->field($model, 'news_content_type_id')->widget(
-                            \kartik\select2\Select2::className(),
-                            [
-                                'data' => ArrayHelper::map(NewsContentType::find()->asArray()->all(), 'id', 'name'),
-                                'language' => substr(Yii::$app->language, 0, 2),
-                                'options' => [
-                                    'id' => 'news_content_type_id',
-                                    'multiple' => false,
-                                    'placeholder' => AmosNews::t('amosnews', 'Seleziona') . ' ...',
-                                ],
-                                'pluginOptions' => [
-                                    'allowClear' => true,
-                                ]
+                        <?= $form->field($model, 'news_content_type_id')->widget(Select2::class, [
+                            'data' => ArrayHelper::map(
+                                NewsContentType::find()
+                                    ->asArray()
+                                    ->all(),
+                                'id',
+                                'name'
+                            ),
+                            'language' => substr(Yii::$app->language, 0, 2),
+                            'options' => [
+                                'id' => 'news_content_type_id',
+                                'multiple' => false,
+                                'placeholder' => AmosNews::t('amosnews', 'Seleziona') . ' ...',
+                            ],
+                            'pluginOptions' => [
+                                'allowClear' => true,
                             ]
-                        )
-                        ->hint(AmosNews::t('amosnews', '#news_content_type_id'))
+                        ])
+                            ->hint(AmosNews::t('amosnews', '#news_content_type_id'))
                             ->label(AmosNews::t('amosnews', '#news_content_type_id'));
                         ?>
                     </div>
@@ -175,11 +229,17 @@ JS;
 
                 <div class="col-xs-12">
                     <?php
+                    $labelCategory = $enableOtherNewsCategories ? AmosNews::t('amosnews', "Main category") : $model->attributeLabels()['news_categorie_id'];
                     if ($model->isNewRecord && !empty(AmosNews::instance()->defaultCategory)) {
                         $model->news_categorie_id = AmosNews::instance()->defaultCategory;
                     }
 
-                    $newsCategories = NewsUtility::getNewsCategories()->orderBy('titolo')->all();
+                    $newsCategoriesQuery = NewsUtility::getNewsCategories()->orderBy('titolo');
+                    $otherNewsCategoriesQuery = clone $newsCategoriesQuery;
+                    if ($enableOtherNewsCategories) {
+                        $otherNewsCategoriesQuery->andWhere(['not in', 'news_categorie.id', $model->news_categorie_id]);
+                    }
+                    $newsCategories = $newsCategoriesQuery->all();
                     $newsCategoryId = $model->news_categorie_id;
                     if (!$model->news_categorie_id && (count($newsCategories) == 1)) {
                         $newsCategoryId = $newsCategories[0]->id;
@@ -187,7 +247,7 @@ JS;
                     ?>
                     <?=
                     $form->field($model, 'news_categorie_id')->widget(
-                        Select::className(),
+                        Select::class,
                         [
                             'auto_fill' => true,
                             'options' => [
@@ -198,41 +258,52 @@ JS;
                             ],
                             'data' => ArrayHelper::map($newsCategories, 'id', 'titolo'),
                         ]
-                    )
+                    )->label($labelCategory)
                     ?>
                 </div>
+
+                <?php if ($enableOtherNewsCategories) { ?>
+                    <div class="col-md-12">
+                        <?= $form->field($model, 'otherCategories')->widget(Select2::className(), [
+                            'options' => [
+                                'placeholder' => AmosNews::t('amosnews', '#category_field_placeholder'),
+                                'id' => 'news_categorie_mm_id-id',
+                                'multiple' => true,
+                            ],
+                            'pluginOptions' => [
+                                'allowClear' => true,
+                            ],
+                            'data' => ArrayHelper::map($otherNewsCategoriesQuery->all(), 'id', 'titolo')
+                        ])->label(AmosNews::t('amosnews', 'Other categories')) ?>
+                    </div>
+                <?php } ?>
             </div>
         </div>
-
 
         <!--testo della notizia-->
         <div class="col-xs-12 section-form">
             <h2 class="subtitle-form"><?= AmosNews::t('amosnews', 'Testi') ?></h2>
             <div class="row">
-            <div class="col-xs-12">
-                    <?=
-                    $form->field($model, 'descrizione_breve')->textarea([
+                <div class="col-xs-12">
+                    <?= $form->field($model, 'descrizione_breve')->textarea([
                         'maxlength' => 160,
                         'placeholder' => AmosNews::t('amosnews', '#abstract_field_placeholder')
-                    ])->hint(AmosNews::t('amosnews', '#abstract_field_hint'))
+                    ])
+                        ->hint(AmosNews::t('amosnews', '#abstract_field_hint'))
                     ?>
                 </div>
+
                 <div class="col-xs-12">
-                    <?=
-                    $form->field($model, 'descrizione')->widget(
-                        TextEditorWidget::className(),
-                        [
-                          'options' => ['placeholder' => AmosNews::t('amosnews', 'Inserisci...')],
-                            'clientOptions' => [
-                                'lang' => substr(Yii::$app->language, 0, 2),
-                                'plugins' => $rtePlugins,
-                                'toolbar' => $rteToolbar,
-                            ],
-                        ]
-                    )
+                    <?= $form->field($model, 'descrizione')->widget(TextEditorWidget::class, [
+                        'options' => ['placeholder' => AmosNews::t('amosnews', 'Inserisci...')],
+                        'clientOptions' => [
+                            'lang' => substr(Yii::$app->language, 0, 2),
+                            'plugins' => $rtePlugins,
+                            'toolbar' => $rteToolbar,
+                        ],
+                    ])
                     ?>
                 </div>
-                
             </div>
         </div>
 
@@ -244,12 +315,15 @@ JS;
                 <?php if (($enableAgid) && ($enableAgidAllegati)): ?>
                     <div class="col-xs-12">
                         <?=
-                        $form->field($model, 'news_documento_id')->widget(
-                            \kartik\select2\Select2::className(),
-                            [
-                                'data' => ArrayHelper::map(\open20\amos\documenti\models\Documenti::find()->andwhere(['status' => 'DocumentiWorkflow/VALIDATO'])->andWhere([
-                                    'deleted_at' => null
-                                ])->all(), 'id', 'titolo'),
+                        $form->field($model, 'news_documento_id')->widget(Select2::class, [
+                                'data' => ArrayHelper::map(
+                                    \open20\amos\documenti\models\Documenti::find()
+                                        ->andwhere(['status' => 'DocumentiWorkflow/VALIDATO'])
+                                        ->andWhere(['deleted_at' => null])
+                                        ->all(),
+                                    'id',
+                                    'titolo'
+                                ),
                                 'language' => substr(Yii::$app->language, 0, 2),
                                 'options' => [
                                     'id' => 'news_documento_id',
@@ -266,22 +340,19 @@ JS;
                 <?php endif; ?>
 
                 <div class="col-xs-12">
-                    <?=
-                    $form->field($model, 'attachments')->widget(
-                        AttachmentsInput::classname(),
-                        [
-                            'options' => [ // Options of the Kartik's FileInput widget
-                                'multiple' => true, // If you want to allow multiple upload, default to false
-                            ],
-                            'pluginOptions' => [ // Plugin options of the Kartik's FileInput widget
-                                'maxFileCount' => 100, // Client max files
-                                'showPreview' => false
-                            ]
+                    <?= $form->field($model, 'attachments')->widget(AttachmentsInput::class, [
+                        'options' => [ // Options of the Kartik's FileInput widget
+                            'multiple' => true, // If you want to allow multiple upload, default to false
+                        ],
+                        'pluginOptions' => [ // Plugin options of the Kartik's FileInput widget
+                            'maxFileCount' => 100, // Client max files
+                            'showPreview' => false
                         ]
-                    )->hint(AmosNews::t('amosnews', '#attachments_field_hint'))->label(AmosNews::t('amosnews', '#attachments_title'));
+                    ])
+                        ->hint(AmosNews::t('amosnews', '#attachments_field_hint'))
+                        ->label(AmosNews::t('amosnews', '#attachments_title'));
                     ?>
-                    <?=
-                    AttachmentsList::widget([
+                    <?= AttachmentsList::widget([
                         'model' => $model,
                         'attribute' => 'attachments'
                     ])
@@ -291,7 +362,6 @@ JS;
         </div>
 
         <!--referenti-->
-
         <!-- AGID FIELD -->
         <?php if (($enableAgid) && ($enableAgidReferenti)): ?>
             <div class="col-xs-12 section-form">
@@ -301,10 +371,15 @@ JS;
                     <div class="col-xs-12">
                         <!-- AGID FIELD -->
                         <?=
-                        $form->field($model, 'edited_by_agid_organizational_unit_id')->widget(
-                            \kartik\select2\Select2::className(),
+                        $form->field($model, 'edited_by_agid_organizational_unit_id')->widget(Select2::class,
                             [
-                                'data' => ArrayHelper::map(AgidOrganizationalUnit::find()->asArray()->all(), 'id', 'name'),
+                                'data' => ArrayHelper::map(
+                                    AgidOrganizationalUnit::find()
+                                        ->asArray()
+                                        ->all(),
+                                    'id',
+                                    'name'
+                                ),
                                 'language' => substr(Yii::$app->language, 0, 2),
                                 'options' => [
                                     'id' => 'edited_by_agid_organizational_unit_id',
@@ -324,16 +399,23 @@ JS;
                         foreach ($model->newsAgidPersonMm as $key => $value) {
                             $news_agid_person_mm[] = $value->agid_person_id;
                         }
-                        ?>
-                        <?=
-                        $form->field($model, 'news_agid_person_mm[]')->widget(
-                            \kartik\select2\Select2::className(),
+
+                        echo $form->field($model, 'news_agid_person_mm[]')->widget(
+                            \kartik\select2\Select2::class,
                             [
-                                'data' => ArrayHelper::map(\open20\agid\person\models\AgidPerson::find()
-                                    ->select(["id, name, surname, CONCAT(surname, ' ', name) AS surnameName"])
-                                    ->andWhere(['agid_person_type_id' => AgidPersonType::find()->andWhere(['name' => "Politica"])->one()->id ])
-                                    ->andWhere(['deleted_at' => null])
-                                    ->all(), 'id', 'surnameName'),
+                                'data' => ArrayHelper::map(
+                                    \open20\agid\person\models\AgidPerson::find()
+                                        ->select(["id, name, surname, CONCAT(surname, ' ', name) AS surnameName"])
+                                        ->andWhere(['agid_person_type_id' => AgidPersonType::find()
+                                            ->andWhere(['name' => "Politica"])
+                                            ->one()
+                                            ->id
+                                        ])
+                                        ->andWhere(['deleted_at' => null])
+                                        ->all(),
+                                    'id',
+                                    'surnameName'
+                                ),
                                 'options' => [
                                     'placeholder' => Yii::t('amosnews', 'Seleziona...'),
                                     'multiple' => true,
@@ -347,25 +429,28 @@ JS;
             </div>
         <?php endif; ?>
 
-
-
-
         <!-- AGID FIELD -->
         <?php if ($enableAgid): ?>
-
             <?php
             if (!is_null($siteManagementModule)) {
-                $siteManagementModule::setExternalPreviousSessionKeys(Url::current(), $model->getGrammar()->getModelSingularLabel() . ' ' . $model->getTitle());
+                $siteManagementModule::setExternalPreviousSessionKeys(
+                    Url::current(),
+                    $model->getGrammar()->getModelSingularLabel() . ' ' . $model->getTitle()
+                );
             }
             ?>
             <div class="row">
                 <div class="col-xs-12">
                     <?php
                     if (!$model->isNewRecord) {
-                        $max         = \amos\sitemanagement\models\SiteManagementSliderElem::find()->andWhere(['slider_id' => $model->image_site_management_slider_id])->max("site_management_slider_elem.order");
-                        $min         = \amos\sitemanagement\models\SiteManagementSliderElem::find()->andWhere(['slider_id' => $model->image_site_management_slider_id])->min("site_management_slider_elem.order");
-                        $newsModel   = $model;
-                    ?>
+                        $max = SiteManagementSliderElem::find()
+                            ->andWhere(['slider_id' => $model->image_site_management_slider_id])
+                            ->max("site_management_slider_elem.order");
+                        $min = SiteManagementSliderElem::find()
+                            ->andWhere(['slider_id' => $model->image_site_management_slider_id])
+                            ->min("site_management_slider_elem.order");
+                        $newsModel = $model;
+                        ?>
                         <h3><?= AmosNews::t('amosnews', 'Galleria immagini') ?></h3>
                         <?=
                         Html::a(
@@ -373,7 +458,7 @@ JS;
                             [
                                 '/sitemanagement/site-management-slider-elem/create',
                                 'id' => $slider_image->id,
-                                'slider_type' => \amos\sitemanagement\models\SiteManagementSliderElem::TYPE_IMG,
+                                'slider_type' => SiteManagementSliderElem::TYPE_IMG,
                                 "image",
                                 'urlRedirect' => urlencode('/news/news/update?id=' . $newsModel->id . '#tab-immagine'),
                                 'useCrop' => true,
@@ -400,7 +485,7 @@ JS;
                                 'enableSorting' => false
                             ],
                             [
-                                'class' => \open20\amos\core\views\grid\ActionColumn::className(),
+                                'class' => \open20\amos\core\views\grid\ActionColumn::class,
                                 'controller' => 'site-management-slider-elem',
                                 'template' => '{update}{delete}',
                                 'buttons' => [
@@ -454,17 +539,12 @@ JS;
                             'columns' => $gridColumns
                         ]);
                         ?>
-                    <?php
-                    } /* else {
-                      echo "<p>".AmosNews::t('amossitemanagement',
-                      "E' necessario salvare per poter inserire degli lementi allo slider.")."</p>";
-                      } */
+                        <?php
+                    }
                     ?>
                 </div>
                 <div class="col-xs-12">
-                    <?php
-                    if (!$model->isNewRecord) {
-                    ?>
+                    <?php if (!$model->isNewRecord) : ?>
                         <h3><?= AmosNews::t('amosnews', 'Video notizia') ?></h3>
                         <?=
                         Html::a(
@@ -472,7 +552,7 @@ JS;
                             [
                                 '/sitemanagement/site-management-slider-elem/create',
                                 'id' => $slider_video->id,
-                                'slider_type' => \amos\sitemanagement\models\SiteManagementSliderElem::TYPE_VIDEO,
+                                'slider_type' => SiteManagementSliderElem::TYPE_VIDEO,
                                 'urlRedirect' => urlencode('/news/news/update?id=' . $newsModel->id . '#tab-video'),
                                 'useCrop' => true,
                                 'cropRatio' => 1.7
@@ -498,7 +578,7 @@ JS;
                                 'enableSorting' => false
                             ],
                             [
-                                'class' => \open20\amos\core\views\grid\ActionColumn::className(),
+                                'class' => \open20\amos\core\views\grid\ActionColumn::class,
                                 'controller' => 'site-management-slider-elem',
                                 'template' => '{update}{delete}',
                                 'buttons' => [
@@ -553,18 +633,12 @@ JS;
                         ]);
                         ?>
 
-                    <?php
-                    } /* else {
-                      echo "<p>".AmosNews::t('amossitemanagement',
-                      "E' necessario salvare per poter inserire degli lementi allo slider.")."</p>";
-                      } */
-                    ?>
+                    <?php endif; ?>
                 </div>
             </div>
         <?php endif; ?>
 
         <!--altre informazioni-->
-
         <!-- AGID FIELD -->
         <?php if ($enableAgid) : ?>
             <div class="col-xs-12">
@@ -580,7 +654,7 @@ JS;
                         ?>
                         <?=
                         $form->field($model, 'date_news')->widget(
-                            DateControl::classname(),
+                            DateControl::class,
                             [
                                 'value' => $model->isNewRecord ? date("Y-m-d") : ''
                             ]
@@ -592,29 +666,32 @@ JS;
                     <div class="col-md-6 col-xs-12">
                         <!-- AGID FIELD -->
                         <?=
-                        $form->field($model, 'news_expiration_date')->widget(DateControl::classname(), [])
+                        $form->field($model, 'news_expiration_date')->widget(DateControl::className(), [])
                             ->hint(AmosNews::t('amosnews', 'news_expiration_date'))
                             ->label(AmosNews::t('amosnews', 'news_expiration_date'));
                         ?>
                     </div>
                 </div>
+
                 <div class="row">
-
                     <div class="col-md-6 col-xs-12">
-                        <!-- NEWS AGID FIELD -->
 
-                        <?php 
-                            foreach ($model->newsRelatedNewsMm as $key => $value) {
-                                $news_related_news_mm[] = $value->related_news_id ;
-                            }
-                            
-                            $query = \open20\amos\news\models\News::find()->andwhere(['status' => News::NEWS_WORKFLOW_STATUS_VALIDATO])->andWhere(['deleted_at' => null]);
-                            if (!empty($model->id)) {
-                                $query->andWhere(['!=','id', $model->id]);
-                            }
-                        ?>
-                        <?=
-                            $form->field($model, 'news_related_news_mm[]')->widget(\kartik\select2\Select2::className(),[
+                        <!-- NEWS AGID FIELD -->
+                        <?php if ($newsModule->enableAgidNewsRelatedNews == true): ?>
+                        <?php
+
+                        foreach ($model->newsRelatedNewsMm as $key => $value) {
+                            $news_related_news_mm[] = $value->related_news_id;
+                        }
+
+                        $query = \open20\amos\news\models\News::find()
+                            ->andwhere(['status' => News::NEWS_WORKFLOW_STATUS_VALIDATO])
+                            ->andWhere(['deleted_at' => null]);
+                        if (!empty($model->id)) {
+                            $query->andWhere(['!=', 'id', $model->id]);
+                        }
+
+                        echo $form->field($model, 'news_related_news_mm[]')->widget(Select2::class, [
                                 'data' => ArrayHelper::map($query->all(), 'id', 'titolo'),
                                 'language' => substr(Yii::$app->language, 0, 2),
                                 'options' => [
@@ -630,33 +707,39 @@ JS;
                         )->hint(AmosNews::t('amosnews', 'news_related_news_mm'));
                         ?>
                     </div>
+                    <?php endif; ?>
+
                     <div class="col-md-6 col-xs-12">
                         <?php if ($newsModule->enableAgidNewsRelatedDocumenti == true): ?>
-                        <?php
-                        foreach ($model->newsRelatedDocumentiMm as $key => $value) {
-                            $news_related_documenti_mm[] = $value->related_documenti_id;
-                        }
-                        ?>
-                        <?=
-                        $form->field($model, 'news_related_documenti_mm[]')->widget(
-                            \kartik\select2\Select2::className(),
-                            [
-                                'data' => ArrayHelper::map(\open20\amos\documenti\models\Documenti::find()->andwhere(['status' => 'DocumentiWorkflow/VALIDATO'])->andWhere([
-                                    'deleted_at' => null
-                                ])->all(), 'id', 'titolo'),
-                                'language' => substr(Yii::$app->language, 0, 2),
-                                'options' => [
-                                    'id' => 'news_related_documenti_mm',
-                                    'multiple' => true,
-                                    'placeholder' => 'Seleziona ...',
-                                    'value' => isset($news_related_documenti_mm) ? $news_related_documenti_mm : null,
-                                ],
-                                'pluginOptions' => [
-                                    'allowClear' => true,
+                            <?php
+                            foreach ($model->newsRelatedDocumentiMm as $key => $value) {
+                                $news_related_documenti_mm[] = $value->related_documenti_id;
+                            }
+                            ?>
+                            <?=
+                            $form->field($model, 'news_related_documenti_mm[]')->widget(Select2::class,
+                                [
+                                    'data' => ArrayHelper::map(
+                                        \open20\amos\documenti\models\Documenti::find()
+                                            ->andwhere(['status' => 'DocumentiWorkflow/VALIDATO'])
+                                            ->andWhere(['deleted_at' => null])
+                                            ->all(),
+                                        'id',
+                                        'titolo'
+                                    ),
+                                    'language' => substr(Yii::$app->language, 0, 2),
+                                    'options' => [
+                                        'id' => 'news_related_documenti_mm',
+                                        'multiple' => true,
+                                        'placeholder' => 'Seleziona ...',
+                                        'value' => isset($news_related_documenti_mm) ? $news_related_documenti_mm : null,
+                                    ],
+                                    'pluginOptions' => [
+                                        'allowClear' => true,
+                                    ]
                                 ]
-                            ]
-                        )->hint(AmosNews::t('amosnews', 'news_related_documenti_mm'));
-                        ?>
+                            )->hint(AmosNews::t('amosnews', 'news_related_documenti_mm'));
+                            ?>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -664,31 +747,37 @@ JS;
 
                     <div class="col-md-6 col-xs-12">
                         <?php if ($newsModule->enableAgidNewsRelatedAgidService == true): ?>
-                        <?php
-                        foreach ($model->newsRelatedAgidServiceMm as $key => $value) {
-                            $news_related_agid_service_mm[] = $value->related_agid_service_id;
-                        }
-                        ?>
-                        <?=
-                        $form->field($model, 'news_related_agid_service_mm[]')->widget(
-                            \kartik\select2\Select2::className(),
-                            [
-                                'data' => ArrayHelper::map(\open20\agid\service\models\AgidService::find()->andWhere(['status' => 'AgidServiceWorkflow/VALIDATED'])->andWhere([
-                                    'deleted_at' => null
-                                ])->all(), 'id', 'name'),
-                                'language' => substr(Yii::$app->language, 0, 2),
-                                'options' => [
-                                    'id' => 'news_related_agid_service_mm',
-                                    'multiple' => true,
-                                    'placeholder' => AmosNews::t('amosnews', 'Seleziona') . ' ...',
-                                    'value' => isset($news_related_agid_service_mm) ? $news_related_agid_service_mm : null,
-                                ],
-                                'pluginOptions' => [
-                                    'allowClear' => true,
+                            <?php
+                            foreach ($model->newsRelatedAgidServiceMm as $key => $value) {
+                                $news_related_agid_service_mm[] = $value->related_agid_service_id;
+                            }
+                            ?>
+                            <?=
+                            $form->field($model, 'news_related_agid_service_mm[]')->widget(Select2::class,
+                                [
+                                    'data' => ArrayHelper::map(
+                                        \open20\agid\service\models\AgidService::find()
+                                            ->andWhere(['status' => 'AgidServiceWorkflow/VALIDATED'])
+                                            ->andWhere(['deleted_at' => null])
+                                            ->all(),
+                                        'id',
+                                        'name'
+                                    ),
+                                    'language' => substr(Yii::$app->language, 0, 2),
+                                    'options' => [
+                                        'id' => 'news_related_agid_service_mm',
+                                        'multiple' => true,
+                                        'placeholder' => AmosNews::t('amosnews', 'Seleziona') . ' ...',
+                                        'value' => isset($news_related_agid_service_mm)
+                                            ? $news_related_agid_service_mm
+                                            : null,
+                                    ],
+                                    'pluginOptions' => [
+                                        'allowClear' => true,
+                                    ]
                                 ]
-                            ]
-                        )->hint(AmosNews::t('amosnews', 'news_related_agid_service_mm'));
-                        ?>
+                            )->hint(AmosNews::t('amosnews', 'news_related_agid_service_mm'));
+                            ?>
                         <?php endif; ?>
                     </div>
                     <div class="col-md-6 col-xs-12">
@@ -696,18 +785,15 @@ JS;
                 </div>
             </div>
         <?php endif; ?>
-
     </div>
 
-
     <div class="row">
-
         <?php
         $showReceiverSection = false;
 
-        $moduleCwh           = \Yii::$app->getModule('cwh');
+        $moduleCwh = \Yii::$app->getModule('cwh');
         isset($moduleCwh) ? $showReceiverSection = true : null;
-        isset($moduleCwh) ? $scope               = $moduleCwh->getCwhScope() : null;
+        isset($moduleCwh) ? $scope = $moduleCwh->getCwhScope() : null;
 
         $pubblicatedForCommunity = false;
         if (!$model->isNewRecord && isset($moduleCwh)) {
@@ -720,23 +806,18 @@ JS;
                 }
             }
         }
-        if($model->isNewRecord){
-            if(!empty($scope)){
+        if ($model->isNewRecord) {
+            if (!empty($scope)) {
                 $pubblicatedForCommunity = true;
             }
 
         }
 
         $moduleTag = \Yii::$app->getModule('tag');
-        //     isset($moduleTag) ? $showReceiverSection = true : null;
-
-        if (isset($moduleTag)) :
-        ?>
+        $tagTitle = ($enableAgid ? AmosNews::t('amosnews', '#tag') : AmosNews::t('amosnews', '#tags_title'));
+        if (isset($moduleTag)) : ?>
             <div class="col-xs-12 section-form">
                 <div class="section-modalita-pubblicazione">
-                    <?php
-                    $tagTitle = ($enableAgid ? AmosNews::t('amosnews', '#tag') : AmosNews::t('amosnews', '#tags_title'));
-                    ?>
                     <?=
                     Html::tag('h2', $tagTitle, ['class' => 'subtitle-form'])
                     ?>
@@ -754,11 +835,41 @@ JS;
                         </div>
 
                         <?php
-                        $publish_enabled = !empty(Yii::$app->getModule('news')->params['publication_always_enabled']) || ( \Yii::$app->user->can('NEWS_PUBLISHER_FRONTEND') && empty($scope) && !$pubblicatedForCommunity);
+                        $isCommunityManager = false;
+                        $publish_enabled = !empty(Yii::$app->getModule('news')->params['publication_always_enabled'])
+                            || (\Yii::$app->user->can('NEWS_PUBLISHER_FRONTEND')
+                                && empty($scope)
+                                && !$pubblicatedForCommunity);
+
+                        if ($newsModule->request_publish_on_hp == true) {
+                            if (isset($scope['community'])) {
+                                $structure = open20\structures\models\Structures::find()
+                                    ->andWhere(['community_id' => $scope['community']])
+                                    ->one();
+                                if (!empty($structure)) {
+                                    $isCommunityManager = \open20\amos\community\utilities\CommunityUtil::isManagerUser(
+                                        $structure,
+                                        'community_id'
+                                    );
+                                }
+                            }
+
+                            if (
+                                !\Yii::$app->user->can('ADMIN')
+                                || !\Yii::$app->user->can('ADMIN_ARIA')
+                            ) {
+                                $publish_enabled = false;
+                                $model->primo_piano = 0;
+                                $model->in_evidenza = 0;
+                            }
+                        }
 
                         if ($publish_enabled) {
-                            if (Yii::$app->getModule('news')->params['site_publish_enabled'] || Yii::$app->getModule('news')->params['site_featured_enabled']) {
-                        ?>
+                            if (
+                                Yii::$app->getModule('news')->params['site_publish_enabled']
+                                || Yii::$app->getModule('news')->params['site_featured_enabled']
+                            ) {
+                                ?>
                                 <div class="col-xs-12">
                                     <div class="row">
                                         <?php if (Yii::$app->getModule('news')->params['site_publish_enabled']) { ?>
@@ -766,16 +877,16 @@ JS;
                                                 <em>(<?= AmosNews::t('amosnews', "Choose if you want to publish the news also on the portal") ?>
                                                     )</em>
                                             </h3>
-                                        <?php
-                                            if(empty($model->primo_piano)){
-                                                $model->primo_piano = '0';
+                                            <?php
+                                            if (empty($model->primo_piano)) {
+                                                $model->primo_piano = 0;
                                             }
-                                            if(empty($model->in_evidenza)){
-                                                $model->in_evidenza = '0';
+                                            if (empty($model->in_evidenza)) {
+                                                $model->in_evidenza = 0;
                                             }
                                             $primoPiano = '<div class="col-md-6 col-xs-12">'
                                                 . $form->field($model, 'primo_piano')->widget(
-                                                    Select::className(),
+                                                    Select::class,
                                                     [
                                                         'auto_fill' => true,
                                                         'data' => [
@@ -795,13 +906,15 @@ JS;
                                                     ]
                                                 ) .
                                                 '</div>';
-                                            echo $primoPiano;
+                                            if ($publish_enabled) {
+                                                echo $primoPiano;
+                                            }
                                         }
 
                                         if (Yii::$app->getModule('news')->params['site_featured_enabled']) {
                                             $inEvidenza = '<div class="col-md-6 col-xs-12">'
                                                 . $form->field($model, 'in_evidenza')->widget(
-                                                    Select::className(),
+                                                    Select::class,
                                                     [
                                                         'auto_fill' => true,
                                                         'data' => [
@@ -810,20 +923,39 @@ JS;
                                                         ],
                                                         'options' => [
                                                             'prompt' => AmosNews::t('amosnews', 'Seleziona'),
-                                                            // 'disabled' => ($model->primo_piano == 1 ? false : true)
                                                             'disabled' => (isset($enableAgid) && true == $enableAgid) ? false : ($model->primo_piano
-                                                                == 1 ? false : true)
+                                                            == 1 ? false : true)
                                                         ]
                                                     ]
                                                 )
                                                 . '</div>';
-                                            echo $inEvidenza;
+                                            if ($publish_enabled) {
+                                                echo $inEvidenza;
+                                            }
                                         }
                                         ?>
                                     </div>
                                 </div>
-                        <?php
+
+                                <?php
                             }
+                        }
+
+                        if ($newsModule->request_publish_on_hp && $isCommunityManager == true) {
+                            $request_hp = '<div class="col-md-6 col-xs-12">'
+                                . $form->field($model, 'request_publish_on_hp')->widget(Select::class, [
+                                    'auto_fill' => true,
+                                    'data' => [
+                                        '0' => AmosNews::t('amosnews', 'No'),
+                                        '1' => AmosNews::t('amosnews', 'Si')
+                                    ],
+                                    'options' => [
+                                        'prompt' => AmosNews::t('amosnews', 'Seleziona'),
+                                        'disabled' => false,
+                                    ],
+                                ])->label(AmosNews::t('amosnews', '#placeholder_for_choose_to_publish_on_hp'))
+                                . '</div>';
+                            echo $request_hp;
                         }
                         ?>
                     </div>
@@ -831,13 +963,11 @@ JS;
             </div>
         <?php endif; ?>
 
-        <?php if (\Yii::$app->getModule('correlations')) { ?>
-            <?=
-            open2\amos\correlations\widget\ManageCorrelationsButtonWidget::widget([
+        <?php
+        if (\Yii::$app->getModule('correlations')) {
+            echo open2\amos\correlations\widget\ManageCorrelationsButtonWidget::widget([
                 'model' => $model
             ]);
-            ?>
-        <?php
         }
         ?>
         <div class="col-xs-12"><?= RequiredFieldsTipWidget::widget() ?></div>
@@ -847,24 +977,20 @@ JS;
     <div class="row">
         <div class="col-xs-12 section-form">
             <?php
-            $moduleNews = \Yii::$app->getModule(AmosNews::getModuleName());
-
-            if ($moduleNews->hidePubblicationDate == false) {
+            if ($newsModule->hidePubblicationDate == false) {
                 $publicationDate = Html::tag(
-                    'div',
-                    $form->field($model, 'data_pubblicazione')->widget(
-                        DateControl::className(),
-                        [
-                            'type' => DateControl::FORMAT_DATE
-                        ]
+                        'div',
+                        $form->field($model, 'data_pubblicazione')->widget(DateControl::class,
+                            [
+                                'type' => DateControl::FORMAT_DATE
+                            ]
+                        )
+                            ->hint(AmosNews::t('amosnews', '#start_publication_date_hint')),
+                        ['class' => 'col-md-4 col-xs-12']
                     )
-                        ->hint(AmosNews::t('amosnews', '#start_publication_date_hint')),
-                    ['class' => 'col-md-4 col-xs-12']
-                )
                     . Html::tag(
                         'div',
-                        $form->field($model, 'data_rimozione')->widget(
-                            DateControl::className(),
+                        $form->field($model, 'data_rimozione')->widget(DateControl::className(),
                             [
                                 'type' => DateControl::FORMAT_DATE
                             ]
@@ -877,10 +1003,10 @@ JS;
             }
 
             if ($model->isNewRecord) { //default enable comment
-                $model->comments_enabled = $moduleNews->defaultEnableComments;
+                $model->comments_enabled = $newsModule->defaultEnableComments;
             }
 
-            $enableComments  = Html::tag(
+            $enableComments = Html::tag(
                 'div',
                 $form->field($model, 'comments_enabled')->inline()->radioList(
                     [
@@ -895,11 +1021,11 @@ JS;
             <?php
             $contentLanguage = '';
             if ($moduleNotify && !empty($moduleNotify->enableNotificationContentLanguage) && $moduleNotify->enableNotificationContentLanguage) {
-            ?>
+                ?>
                 <?php
                 $contentLanguage = "<div class=\"col-xs-6 nop\">" . \open20\amos\notificationmanager\widgets\NotifyContentLanguageWidget::widget([
-                    'model' => $model
-                ]) . "</div>"
+                        'model' => $model
+                    ]) . "</div>"
                 ?>
             <?php } ?>
 
@@ -923,29 +1049,30 @@ JS;
             ]);
             ?>
 
-            <?php if (\Yii::$app->getModule('seo')) : ?>
-                <?=
-                AccordionWidget::widget([
-                    'items' => [
-                        [
-                            'header' => AmosNews::t('amosnews', '#settings_seo_title'),
-                            'content' => \open20\amos\seo\widgets\SeoWidget::widget([
-                                'contentModel' => $model,
-                            ]),
-                        ]
-                    ],
-                    'headerOptions' => ['tag' => 'h2'],
-                    'options' => Yii::$app->user->can('ADMIN') ? [] : ['style' => 'display:none;'],
-                    'clientOptions' => [
-                        'collapsible' => true,
-                        'active' => 'false',
-                        'icons' => [
-                            'header' => 'ui-icon-amos am am-plus-square',
-                            'activeHeader' => 'ui-icon-amos am am-minus-square',
-                        ]
-                    ],
-                ]);
-                ?>
+            <?php if ($moduleSeo) : ?>
+                <div class="<?= $hideSeoModuleClass ?>">
+                    <?= AccordionWidget::widget([
+                        'items' => [
+                            [
+                                'header' => AmosNews::t('amosnews', '#settings_seo_title'),
+                                'content' => \open20\amos\seo\widgets\SeoWidget::widget([
+                                    'contentModel' => $model,
+                                ]),
+                            ]
+                        ],
+                        'headerOptions' => ['tag' => 'h2'],
+                        'options' => Yii::$app->user->can('ADMIN') ? [] : ['style' => 'display:none;'],
+                        'clientOptions' => [
+                            'collapsible' => true,
+                            'active' => 'false',
+                            'icons' => [
+                                'header' => 'ui-icon-amos am am-plus-square',
+                                'activeHeader' => 'ui-icon-amos am am-minus-square',
+                            ]
+                        ],
+                    ]);
+                    ?>
+                </div>
             <?php endif; ?>
         </div>
 

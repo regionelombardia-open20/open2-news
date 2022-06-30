@@ -29,22 +29,18 @@ use kartik\color\ColorInput;
 $module = \Yii::$app->getModule('news');
 $enableCategoriesForCommunity = $module->enableCategoriesForCommunity;
 $filterCategoriesByRole = $module->filterCategoriesByRole;
+
+$form = ActiveForm::begin([
+    'options' => ['enctype' => 'multipart/form-data']
+]);
+
+$customView = Yii::$app->getViewPath() . '/imageField.php';
 ?>
 
 <div class="news-categorie-form">
-
-    <?php
-    $form = ActiveForm::begin([
-        'options' => ['enctype' => 'multipart/form-data'] // important
-    ]);
-
-    $customView = Yii::$app->getViewPath() . '/imageField.php';
-    ?>
-
     <?php $this->beginBlock('dettagli'); ?>
     <div class="row">
         <div class="col-sm-6">
-
             <?= $form->field($model, 'titolo')->textInput(['maxlength' => true]) ?>
             <?= $form->field($model, 'sottotitolo')->textInput(['maxlength' => true]) ?>
         </div>
@@ -198,5 +194,5 @@ $filterCategoriesByRole = $module->filterCategoriesByRole;
     ];
     ?>
     <?= CloseSaveButtonWidget::widget($config); ?>
-    <?php ActiveForm::end(); ?>
 </div>
+<?php ActiveForm::end(); ?>

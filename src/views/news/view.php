@@ -63,7 +63,7 @@ if ($model->status != News::NEWS_WORKFLOW_STATUS_VALIDATO) {
     ]);
 }
 
-$hideCategory   = false;
+$hideCategory = false;
 $newsCategories = NewsUtility::getAllNewsCategories();
 if ($newsCategories->count() == 1) {
     $hideCategory = true;
@@ -90,13 +90,20 @@ if ($newsCategories->count() == 1) {
         <div class="row">
             <div class="col-12">
                 <div class="it-hero-text-wrapper bg-dark">
-                    <span class="it-category  <?= $customCategoryClass ?>" <?php if ((!empty($colorBgCategory))) : ?> style="background-color: <?= $colorBgCategory ?> !important; padding: 0 4px; " <?php endif; ?>><strong <?php if ((!empty($colorTextCategory))) : ?> style="color: <?= $colorTextCategory ?>" <?php endif; ?>><?= $category ?></strong></span>
 
+                    <span class="it-category  <?= $customCategoryClass ?>" <?php if ((!empty($colorBgCategory))) : ?> style="background-color: <?= $colorBgCategory ?> !important; padding: 0 4px; " <?php endif; ?>><strong <?php if ((!empty($colorTextCategory))) : ?> style="color: <?= $colorTextCategory ?>" <?php endif; ?>><?= $category ?></strong></span>
+                    <?php
+                    /** @var  $otherCat \open20\amos\news\models\NewsCategorie*/
+                    foreach ($model->otherNewsCategories as $otherCat) {
+                        $customOtherCategoryClass = 'mb-1 px-1 ' . 'custom-category-bg-' . str_replace(' ', '-', strtolower($category)); ?>
+                        <span class="it-category  <?= $customOtherCategoryClass ?>" <?php if ((!empty($otherCat->color_background ))) : ?> style="background-color: <?= $otherCat->color_background ?> !important; padding: 0 4px; " <?php endif; ?>><strong <?php if ((!empty($otherCat->color_text))) : ?> style="color: <?= $otherCat->color_text ?>" <?php endif; ?>><?= $otherCat->titolo ?></strong></span>
+                    <?php } ?>
                     <p class="date"><?= Yii::$app->getFormatter()->asDate($model->data_pubblicazione) ?></p>
                     <h1 class="no_toc"><?= $model->titolo ?></h1>
                     <p class="d-none d-lg-block"><?= $model->sottotitolo ?></p>
                     <?php if (!empty(\open20\amos\core\utilities\CwhUtility::getTargetsString($model))) : ?>
-                    <p><span class="mdi mdi-account-supervisor-circle mdi-24px"></span> <em><?=  \open20\amos\core\utilities\CwhUtility::getTargetsString($model) ?></em></p>
+                        <p><span class="mdi mdi-account-supervisor-circle mdi-24px"></span>
+                            <em><?= \open20\amos\core\utilities\CwhUtility::getTargetsString($model) ?></em></p>
                     <?php endif; ?>
                 </div>
             </div>
@@ -113,6 +120,7 @@ if ($newsCategories->count() == 1) {
                         'publicationDateNotPresent' => true,
                         'showPrevalentPartnership' => true,
                         'enableLink' => !(CurrentUser::isPlatformGuest()),
+                        'absoluteUrlAvatar' => true,
                     ]
                 ) ?>
 
@@ -187,12 +195,12 @@ if ($newsCategories->count() == 1) {
                         $url = !empty(\Yii::$app->params['platform']['frontendUrl']) ? \Yii::$app->params['platform']['frontendUrl'] : "";
                         echo \open20\amos\core\forms\editors\socialShareWidget\SocialShareWidget::widget([
                             'mode' => \open20\amos\core\forms\editors\socialShareWidget\SocialShareWidget::MODE_NORMAL,
-                            'configuratorId'  => 'socialShare',
+                            'configuratorId' => 'socialShare',
                             'model' => $model,
-                            'url'           => $url . $model->getFullViewUrl(),
-                            'title'         => $model->title,
-                            'description'   => $model->descrizione_breve,
-                            'imageUrl'      => !empty($model->getNewsImage()) ? $model->getNewsImage()->getWebUrl('square_small') : '',
+                            'url' => $url . $model->getFullViewUrl(),
+                            'title' => $model->title,
+                            'description' => $model->descrizione_breve,
+                            'imageUrl' => !empty($model->getNewsImage()) ? $model->getNewsImage()->getWebUrl('square_small') : '',
                             'isRedationalContent' => $model->primo_piano,
                         ]);
                         ?>
@@ -255,13 +263,13 @@ if ($newsCategories->count() == 1) {
 
 
     <?php if (!is_null(\Yii::$app->getModule('sitemanagement')) && ($enableAgid)) : ?>
-        <?php if(!empty($model->image_site_management_slider_id) ): ?>
+        <?php if (!empty($model->image_site_management_slider_id)): ?>
             <?= \amos\sitemanagement\widgets\SMSliderWidget::widget(['sliderId' => $model->image_site_management_slider_id]); ?>
         <?php endif; ?>
-        <?php if(!empty($model->video_site_management_slider_id)): ?>
+        <?php if (!empty($model->video_site_management_slider_id)): ?>
             <?= \amos\sitemanagement\widgets\SMSliderWidget::widget(['sliderId' => $model->video_site_management_slider_id]); ?>
         <?php endif; ?>
-    
+
     <?php endif; ?>
 
 </div>

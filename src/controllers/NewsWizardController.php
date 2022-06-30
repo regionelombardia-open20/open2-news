@@ -59,7 +59,7 @@ class NewsWizardController extends CrudController
     {
         $behaviors = ArrayHelper::merge(parent::behaviors(), [
             'access' => [
-                'class' => AccessControl::className(),
+                'class' => AccessControl::class,
                 'rules' => [
                     [
                         'allow' => true,
@@ -75,7 +75,7 @@ class NewsWizardController extends CrudController
                 ]
             ],
             'verbs' => [
-                'class' => VerbFilter::className(),
+                'class' => VerbFilter::class,
                 'actions' => [
                     'delete' => ['post', 'get']
                 ]
@@ -236,7 +236,7 @@ class NewsWizardController extends CrudController
             if (!empty($cwhBehavior)) {
                 $this->model->detachBehavior('cwhBehavior');
             }
-            $this->model->detachBehaviorByClassName(TaggableBehavior::className());
+            $this->model->detachBehaviorByClassName(TaggableBehavior::class);
             if ($this->model->status == News::NEWS_WORKFLOW_STATUS_VALIDATO) {
                 $this->model->status = News::NEWS_WORKFLOW_STATUS_DAVALIDARE;
                 $this->model->save();

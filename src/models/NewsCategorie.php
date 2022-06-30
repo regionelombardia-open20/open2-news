@@ -63,7 +63,7 @@ class NewsCategorie extends \open20\amos\news\models\base\NewsCategorie
     {
         return ArrayHelper::merge(parent::behaviors(), [
             'fileBehavior' => [
-                'class' => FileBehavior::className()
+                'class' => FileBehavior::class
             ]
         ]);
     }
