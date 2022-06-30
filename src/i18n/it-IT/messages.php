@@ -106,6 +106,8 @@ return [
     '#ERROR_WHILE_VALIDATING_NEWS' => 'Errore durante la validazione della notizia',
     'FACILITATORE_NEWS' => 'Facilitatore News',
     'Finish' => 'Fine',
+    '#formatted_text' => 'E’ abilitata la copia da terze parti di testo formattato compatibile con il web',
+    '#formatted_text_for_you' => 'Per il tuo utente è abilitata la copia da terze parti di testo formattato compatibile con il web',
     'Galleria immagini' => 'Galleria immagini',
     '#go_back' => 'Torna indietro',
     'I campi' => 'I campi',

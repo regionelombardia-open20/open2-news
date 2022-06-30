@@ -90,6 +90,8 @@ return [
     '#ERROR_WHILE_VALIDATING_NEWS' => 'Error while validating the news',
     'FACILITATORE_NEWS' => 'News Facilitator',
     'Finish' => 'Finish',
+    '#formatted_text' => 'Copying of formatted text compatible with the web by third parties is enabled',
+    '#formatted_text_for_you' => 'Copying of web-compatible formatted text from third parties is enabled for your user',
     'Galleria immagini' => 'Images gallery',
     '#go_back' => 'Go back',
     'I campi' => 'The fields',

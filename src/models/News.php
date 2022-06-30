@@ -34,7 +34,7 @@ use open20\amos\report\utilities\ReportUtil;
 use open20\amos\seo\behaviors\SeoContentBehavior;
 use open20\amos\seo\interfaces\SeoModelInterface;
 use open20\amos\workflow\behaviors\WorkflowLogFunctionsBehavior;
-
+use open20\amos\core\helpers\StringHelper;
 use raoul2000\workflow\base\SimpleWorkflowBehavior;
 
 use Yii;
@@ -668,10 +668,7 @@ class News
         $ret = $this->descrizione;
 
         if ($truncate) {
-            $ret = \open20\amos\core\helpers\StringHelper::mb_str_split(
-                $this->descrizione,
-                200
-            );
+            $ret = $this->__shortText($this->descrizione, 200);
         }
 
         return $ret;

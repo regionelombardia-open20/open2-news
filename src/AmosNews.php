@@ -101,6 +101,20 @@ class AmosNews extends AmosModule implements ModuleInterface, SearchModuleInterf
      */
     
     public $searchByTags = false;
+	
+	
+    /**
+     * disable the paste_as_text in thexeditor for news description
+     * @var bool|false $textEditorClientOptions
+     */
+    public $textEditorClientOptions = false;
+    
+    /**
+     * disable the paste_as_text in thexeditor for news description only for the list of id in the array
+     * @var bool|false $arrayTextEditorClients
+     */
+    
+    public $arrayTextEditorClients = [];
 
     /**
      * The ID of the default category pre-selected for the new News

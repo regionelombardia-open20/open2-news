@@ -26,6 +26,7 @@ use open20\amos\news\models\NewsContentType;
 use open20\amos\news\utility\NewsUtility;
 use open20\amos\workflow\widgets\WorkflowTransitionButtonsWidget;
 use open20\amos\workflow\widgets\WorkflowTransitionStateDescriptorWidget;
+use open20\amos\core\icons\AmosIcons;
 
 use kartik\datecontrol\DateControl;
 use kartik\select2\Select2;
@@ -294,14 +295,31 @@ $form = ActiveForm::begin([
                 </div>
 
                 <div class="col-xs-12">
-                    <?= $form->field($model, 'descrizione')->widget(TextEditorWidget::class, [
-                        'options' => ['placeholder' => AmosNews::t('amosnews', 'Inserisci...')],
-                        'clientOptions' => [
-                            'lang' => substr(Yii::$app->language, 0, 2),
-                            'plugins' => $rtePlugins,
-                            'toolbar' => $rteToolbar,
-                        ],
-                    ])
+                    <?php
+                    $clientOption = [
+                        'lang' => substr(Yii::$app->language, 0, 2),
+                        'plugins' => $rtePlugins,
+                        'toolbar' => $rteToolbar,
+                    ];
+                    $hint = '';
+                    if($newsModule->textEditorClientOptions){
+                        $hint = '#formatted_text';
+                        if(empty($newsModule->arrayTextEditorClients) || in_array(\Yii::$app->user->id,$newsModule->arrayTextEditorClients)){
+                                $clientOption['paste_as_text'] = false;
+                        }
+                        if(!empty($newsModule->arrayTextEditorClients) && in_array(\Yii::$app->user->id,$newsModule->arrayTextEditorClients)){
+                                $hint = '#formatted_text_for_you';
+                        }else{
+                                $hint = '';
+                        }
+                    }
+                   echo $form->field($model, 'descrizione')->widget(
+                        TextEditorWidget::class,
+                        [
+                          'options' => ['placeholder' => AmosNews::t('amosnews', 'Inserisci...')],
+                            'clientOptions' =>$clientOption,
+                        ]
+                    )->hint(AmosIcons::show('info-outline') . ' ' .AmosNews::t('amosnews', $hint));
                     ?>
                 </div>
             </div>
