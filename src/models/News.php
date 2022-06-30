@@ -36,6 +36,7 @@ use open20\amos\seo\interfaces\SeoModelInterface;
 use open20\amos\workflow\behaviors\WorkflowLogFunctionsBehavior;
 use open20\amos\core\helpers\StringHelper;
 use raoul2000\workflow\base\SimpleWorkflowBehavior;
+use open20\amos\core\interfaces\ContentPublicationInteraface;
 
 use Yii;
 use yii\log\Logger;
@@ -59,7 +60,8 @@ class News
         \open20\amos\news\models\base\News
     implements
         ContentModelInterface, CommentInterface, ViewModelInterface,
-        ModelImageInterface, SeoModelInterface, CustomUrlModelInterface
+        ModelImageInterface, SeoModelInterface, CustomUrlModelInterface,
+        ContentPublicationInteraface
 {
     // Workflow ID
     const NEWS_WORKFLOW = 'NewsWorkflow';
@@ -1142,6 +1144,18 @@ class News
                 }
             }
         }
+    }
+
+    /**
+     * Show if the content is visible
+     * used in particular to know if attachments file are visible
+     * @return boolean
+     */
+    public function isContentPublic(){
+        if($this->primo_piano){
+            return true;
+        }
+        return false;
     }
 
 }

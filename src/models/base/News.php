@@ -12,22 +12,20 @@
 namespace open20\amos\news\models\base;
 
 use amos\sitemanagement\models\SiteManagementSlider;
+use open20\amos\admin\models\base\UserProfile;
 use open20\amos\core\module\AmosModule;
 use open20\amos\core\record\ContentModel;
 use open20\amos\documenti\models\Documenti;
 use open20\amos\news\AmosNews;
+use open20\amos\news\models\NewsAgidPersonMm;
+use open20\amos\news\models\NewsCategorie;
 use open20\amos\news\models\NewsContentType;
+use open20\amos\news\models\NewsGroups;
+use open20\amos\news\models\NewsRelatedAgidServiceMm;
 use open20\amos\news\models\NewsRelatedDocumentiMm;
 use open20\amos\news\models\NewsRelatedNewsMm;
-use open20\amos\news\models\NewsAgidPersonMm;
-use open20\amos\news\models\NewsRelatedAgidServiceMm;
-use open20\amos\news\models\NewsGroups;
-use open20\amos\admin\models\base\UserProfile;
-use open20\amos\news\models\NewsCategorie;
 use open20\amos\upload\models\FilemanagerMediafile;
-
 use open20\agid\organizationalunit\models\AgidOrganizationalUnit;
-
 use yii\helpers\ArrayHelper;
 
 /**
@@ -134,20 +132,12 @@ abstract class News extends ContentModel
 
         if ($this->newsModule->enableAgid) {
             $rules[] = [['body_news'], 'string'];
-            $rules[] = [['news_documento_id', 'edited_by_agid_organizational_unit_id',
-                'news_content_type_id'], 'integer'
-            ];
+            $rules[] = [[
+                'news_documento_id',
+                'edited_by_agid_organizational_unit_id',
+            ], 'integer'];
             $rules[] = [['date_news', 'news_expiration_date'], 'safe'];
-
-
-            $rules[] = [
-                ['news_content_type_id'],
-                'exist',
-                'skipOnError' => true,
-                'targetClass' => NewsContentType::class,
-                'targetAttribute' => ['news_content_type_id' => 'id']
-            ];
-
+            
             $rules[] = [
                 ['edited_by_agid_organizational_unit_id'],
                 'exist',
@@ -163,12 +153,26 @@ abstract class News extends ContentModel
                 'targetClass' => Documenti::class,
                 'targetAttribute' => ['news_documento_id' => 'id']
             ];
-
+    
             $rules[] = [
-                ['news_content_type_id', 'date_news', 'descrizione_breve'],
-                'required'
+                [
+                    'date_news',
+                    'descrizione_breve'
+                ], 'required'
             ];
-
+    
+            if ($this->newsModule->enableAgidNewsContentType) {
+                $rules[] = [['news_content_type_id'], 'integer'];
+                $rules[] = [['news_content_type_id'], 'required'];
+                $rules[] = [
+                    ['news_content_type_id'],
+                    'exist',
+                    'skipOnError' => true,
+                    'targetClass' => NewsContentType::class,
+                    'targetAttribute' => ['news_content_type_id' => 'id']
+                ];
+            }
+    
             /** @var \amos\sitemanagement\Module|AmosModule $siteManagementModule */
             $siteManagementModule = \Yii::$app->getModule('sitemanagement');
             if (!is_null($siteManagementModule)) {

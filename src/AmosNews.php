@@ -28,16 +28,10 @@ use yii\helpers\ArrayHelper;
  * Class AmosNews
  * @package open20\amos\news
  */
-class AmosNews extends AmosModule implements ModuleInterface, SearchModuleInterface,
-    CmsModuleInterface, BreadcrumbInterface
+class AmosNews extends AmosModule implements ModuleInterface, SearchModuleInterface, CmsModuleInterface, BreadcrumbInterface
 {
-    const
-        MAX_LAST_NEWS_ON_DASHBOARD = 3;
+    const MAX_LAST_NEWS_ON_DASHBOARD = 3;
 
-    /**
-     * 
-     * @var type
-     */
     public static $CONFIG_FOLDER = 'config';
 
     /**
@@ -143,10 +137,9 @@ class AmosNews extends AmosModule implements ModuleInterface, SearchModuleInterf
      * @var boolean $autoUpdatePublicationDate
      */
     public $autoUpdatePublicationDate = false;
-
+    
     /**
-     *
-     * @var type
+     * @var string
      */
     public $defaultWidgetIndexUrl = '/news/news/all-news';
 
@@ -168,8 +161,7 @@ class AmosNews extends AmosModule implements ModuleInterface, SearchModuleInterf
     ];
     
     /**
-     * 
-     * @var type
+     * @var string[] $viewPathEmailSummaryNetwork
      */
     public $viewPathEmailSummaryNetwork = [
         'open20\amos\news\models\News' => '@vendor/open20/amos-news/src/views/email/notify_summary_network'
@@ -207,15 +199,19 @@ class AmosNews extends AmosModule implements ModuleInterface, SearchModuleInterf
     
     /**
      * Enable/Disable correspondent select on _form page
-     * @var type
+     * @var bool $enableAgidReferenti
      */
     public $enableAgidReferenti = true;
     
     /**
-     * 
-     * @var type
+     * @var bool $enableAgidAllegati
      */
     public $enableAgidAllegati = true;
+    
+    /**
+     * @var bool $enableAgidNewsContentType
+     */
+    public $enableAgidNewsContentType = true;
     
     /**
      * Enable/Disable notification on News model
@@ -239,16 +235,15 @@ class AmosNews extends AmosModule implements ModuleInterface, SearchModuleInterf
      * @var string
      */
     public $rteToolbar = 'undo redo | link';
-
+    
     /**
-     * 
-     * @var type
+     * @var bool
      */
     public $request_publish_on_hp = false;
 
     /**
      * hide block on _form relative to seo module even if it is present
-     * @var type
+     * @var bool
      */
     public $hideSeoModule = false;
 
@@ -413,5 +408,4 @@ class AmosNews extends AmosModule implements ModuleInterface, SearchModuleInterf
 
         return $names;
     }
-
 }

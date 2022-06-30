@@ -202,31 +202,31 @@ $form = ActiveForm::begin([
 
             <!-- AGID FIELD -->
             <div class="row">
-                <?php if ($enableAgid) : ?>
-                    <div class="col-xs-12">
-                        <?= $form->field($model, 'news_content_type_id')->widget(Select2::class, [
-                            'data' => ArrayHelper::map(
-                                NewsContentType::find()
-                                    ->asArray()
-                                    ->all(),
-                                'id',
-                                'name'
-                            ),
-                            'language' => substr(Yii::$app->language, 0, 2),
-                            'options' => [
-                                'id' => 'news_content_type_id',
-                                'multiple' => false,
-                                'placeholder' => AmosNews::t('amosnews', 'Seleziona') . ' ...',
-                            ],
-                            'pluginOptions' => [
-                                'allowClear' => true,
-                            ]
-                        ])
-                            ->hint(AmosNews::t('amosnews', '#news_content_type_id'))
-                            ->label(AmosNews::t('amosnews', '#news_content_type_id'));
-                        ?>
-                    </div>
-                <?php endif; ?>
+            <?php if ($enableAgid && $newsModule->enableAgidNewsContentType) : ?>
+                <div class="col-xs-12">
+                <?= $form->field($model, 'news_content_type_id')->widget(Select2::class, [
+                    'data' => ArrayHelper::map(
+                        NewsContentType::find()
+                        ->asArray()
+                        ->all(),
+                        'id',
+                        'name'
+                    ),
+                    'language' => substr(Yii::$app->language, 0, 2),
+                    'options' => [
+                            'id' => 'news_content_type_id',
+                            'multiple' => false,
+                            'placeholder' => AmosNews::t('amosnews', 'Seleziona') . ' ...',
+                        ],
+                        'pluginOptions' => [
+                            'allowClear' => true,
+                        ]
+                    ])
+                    ->hint(AmosNews::t('amosnews', '#news_content_type_id'))
+                    ->label(AmosNews::t('amosnews', '#news_content_type_id'));
+                ?>
+                </div>
+            <?php endif; ?>
 
                 <div class="col-xs-12">
                     <?php
