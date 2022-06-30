@@ -45,7 +45,7 @@
                                             </table>
                                         </td>
                                         <td align="right" width="85" valign="bottom" style="text-align: center; padding-left: 10px;">
-                                            <a href="<?=  Yii::$app->urlManager->createAbsoluteUrl($model->getFullViewUrl())?>" style="background: #297A38; border:3px solid #297A38; color: #ffffff; font-family: sans-serif; font-size: 11px; line-height: 22px; text-align: center; text-decoration: none; display: block; font-weight: bold; text-transform: uppercase; padding:1px;" class="button-a">
+                                            <a href="<?=  Yii::$app->urlManager->createAbsoluteUrl($model->getFullViewUrl())?>" style="background: #297A38; border:3px solid #297A38; color: #ffffff; font-family: sans-serif; font-size: 11px; line-height: 22px; text-align: center; text-decoration: none; display: block; font-weight: bold; text-transform: uppercase; height: 20px;" class="button-a">
                                                 <!--[if mso]>&nbsp;&nbsp;&nbsp;&nbsp;<![endif]-->Leggi<!--[if mso]>&nbsp;&nbsp;&nbsp;&nbsp;<![endif]-->
                                             </a>
                                         </td>
