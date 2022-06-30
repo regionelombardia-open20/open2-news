@@ -1027,4 +1027,13 @@ class News extends \open20\amos\news\models\base\News implements ContentModelInt
         }
     }
 
+    /**
+     * @return bool
+     */
+    public function sendNotification()
+    {
+        return AmosNews::instance()->newsModelsendNotification;
+    }
+
+
 }

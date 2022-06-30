@@ -161,6 +161,12 @@ class AmosNews extends AmosModule implements ModuleInterface, SearchModuleInterf
      */
     public $enableAgidNewsRelatedAgidService = true;
     
+    /**
+     * Enable/Disable notification on News model
+     * @var bool $newsModelsendNotification
+     */
+    public $newsModelsendNotification = true;
+
     /*
      * @var int $numberListTag 10 default
      */
