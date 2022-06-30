@@ -9,15 +9,12 @@
  * @category   CategoryName
  */
 
-use open20\amos\core\helpers\Html;
 use open20\amos\news\AmosNews;
 use open20\amos\news\assets\ModuleNewsAsset;
+use open20\amos\news\controllers\NewsController;
 use open20\amos\news\widgets\graphics\WidgetGraphicsUltimeNews;
 use yii\data\ActiveDataProvider;
 use yii\web\View;
-use open20\amos\core\utilities\CurrentUser;
-
-
 
 ModuleNewsAsset::register($this);
 
@@ -27,17 +24,16 @@ ModuleNewsAsset::register($this);
  * @var WidgetGraphicsUltimeNews $widget
  * @var string $toRefreshSectionId
  */
-$moduleNews  = \Yii::$app->getModule(AmosNews::getModuleName());
+
 $listaModels = $listaNews->getModels();
-$userModule = CurrentUser::getUserProfile();
+
 ?>
 
 <?php
 
 $modelLabel = 'news';
 
-$titleSection = AmosNews::t('amosnews', 'Notizie');
-$urlLinkAll = AmosNews::t('amosnews', '/news/news/all-news');
+$urlLinkAll = '/news/news/all-news';
 $labelLinkAll = AmosNews::t('amosnews', 'Tutte le notizie');
 $titleLinkAll = AmosNews::t('amosnews', 'Visualizza la lista delle notizie');
 
@@ -45,19 +41,15 @@ $labelCreate = AmosNews::t('amosnews', 'Nuova');
 $titleCreate = AmosNews::t('amosnews', 'Crea una nuova notizia');
 $labelManage = AmosNews::t('amosnews', 'Gestisci');
 $titleManage = AmosNews::t('amosnews', 'Gestisci le notizie');
-$urlCreate = AmosNews::t('amosnews', '/news/news/create');
+$urlCreate = '/news/news/create';
 
-$manageLinks = [];
-$controller = \open20\amos\news\controllers\NewsController::class;
-if (method_exists($controller, 'getManageLinks')) {
-    $manageLinks = $controller::getManageLinks();
-}
-
+$controller = NewsController::class;
+$manageLinks = (method_exists($controller, 'getManageLinks') ? $controller::getManageLinks() : []);
 
 $moduleCwh = \Yii::$app->getModule('cwh');
-if (isset($moduleCwh) && !empty($moduleCwh->getCwhScope())) {
+if (isset($moduleCwh)) {
     $scope = $moduleCwh->getCwhScope();
-    $isSetScope = (!empty($scope)) ? true : false;
+    $isSetScope = (!empty($scope));
 }
 
 ?>
@@ -70,8 +62,7 @@ if (isset($moduleCwh) && !empty($moduleCwh->getCwhScope())) {
                 'isGuest' => \Yii::$app->user->isGuest,
                 'isSetScope' => $isSetScope,
                 'modelLabel' => 'news',
-                'titleSection' => $titleSection,
-                'subTitleSection' => $subTitleSection,
+                'titleSection' => $widget->getLabel(),
                 'urlLinkAll' => $urlLinkAll,
                 'labelLinkAll' => $labelLinkAll,
                 'titleLinkAll' => $titleLinkAll,
@@ -85,7 +76,7 @@ if (isset($moduleCwh) && !empty($moduleCwh->getCwhScope())) {
         );
         ?>
     </div>
-
+    
     <?php if ($listaModels) { ?>
         <div class="list-view">
             <div>
@@ -98,6 +89,6 @@ if (isset($moduleCwh) && !empty($moduleCwh->getCwhScope())) {
                 </div>
             </div>
         </div>
-
+    
     <?php } ?>
 </div>

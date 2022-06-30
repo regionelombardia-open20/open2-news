@@ -10,6 +10,7 @@
 
 namespace open20\amos\news\utility;
 
+use open20\amos\news\models\News;
 use open20\amos\news\models\NewsCategorie;
 use open20\amos\news\models\NewsCategoryRolesMm;
 use open20\amos\core\utilities\Email;
@@ -115,9 +116,9 @@ class NewsUtility extends BaseObject
         $query = NewsCategorie::find();
         return $query;
     }
-    
+
     /**
-     * 
+     *
      * @param type $whoCanPublishIds
      * @param type $controller
      * @param type $news
@@ -151,7 +152,7 @@ class NewsUtility extends BaseObject
                 }
 
                 $requestedByUser = \open20\amos\admin\models\UserProfile::find()
-                    ->andWhere(['user_id' => $model->created_by])
+                    ->andWhere(['user_id' => $model->updated_by])
                     ->one();
 
                 $user_request = !empty($requestedByUser) ? $requestedByUser->getNomeCognome() : 'n./a.';
@@ -206,7 +207,7 @@ class NewsUtility extends BaseObject
                 }
             }
         }
-        
+
         return true;
     }
 }

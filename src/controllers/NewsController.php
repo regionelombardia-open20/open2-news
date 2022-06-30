@@ -550,6 +550,7 @@ class NewsController extends CrudController
         Yii::$app->view->params['textHelp']['filename'] = 'create_news_dashboard_description';
 
         $enableAgid = $this->newsModule->enableAgid;
+        $enableOtherNewsCategories = $this->newsModule->enableOtherNewsCategories;
 
         if ($this->newsModule->hidePubblicationDate) {
             $scenario = News::SCENARIO_CREATE_HIDE_PUBBLICATION_DATE;
@@ -561,6 +562,9 @@ class NewsController extends CrudController
         if (($enableAgid) && ($this->newsModule->request_publish_on_hp == false)) {
             $model->primo_piano = 1;
             $model->in_evidenza = 1;
+        }
+        if(!empty(Yii::$app->request->get('category_id'))){
+            $model->news_categorie_id = Yii::$app->request->get('category_id');
         }
         $this->model = $model;
 
@@ -590,6 +594,10 @@ class NewsController extends CrudController
                         $model->createNewsRelatedDocumentiMm();
                         $model->createNewsRelatedAgidServiceMm();
                     }
+                    if($enableOtherNewsCategories){
+                        $model->saveOtherNewsCategories();
+                    }
+
 
                     Yii::$app->getSession()->addFlash(
                         'success',

@@ -14,6 +14,8 @@ namespace open20\amos\news\models;
 use open20\amos\attachments\models\File;
 use open20\amos\attachments\behaviors\FileBehavior;
 use open20\amos\comments\models\CommentInterface;
+use open20\amos\community\models\Community;
+use open20\amos\community\utilities\CommunityUtil;
 use open20\amos\core\helpers\Html;
 use open20\amos\core\interfaces\CustomUrlModelInterface;
 use open20\amos\core\interfaces\ModelImageInterface;
@@ -399,7 +401,7 @@ class News
                     ['date_news', 'compare', 'compareAttribute' => 'news_expiration_date', 'operator' => '<=',
                         'when' => function($model) {
                             return !empty($model->news_expiration_date);
-                        },      
+                        },
                         'whenClient' => "function (attribute, value) {
                             return Boolean($('news_expiration_date').val());
 
@@ -409,7 +411,7 @@ class News
                     ['news_expiration_date', 'compare', 'compareAttribute' => 'date_news', 'operator' => '>=',
                         'when' => function($model) {
                             return !empty($model->date_news);
-                        },      
+                        },
                         'whenClient' => "function (attribute, value) {
                             return Boolean($('date_news').val());
 
@@ -1117,14 +1119,55 @@ class News
         parent::afterSave($insert, $changedAttributes);
 
         if (!empty($this->request_publish_on_hp) && $this->request_publish_on_hp == 1) {
-            $whoCanPublishIds = \yii\helpers\ArrayHelper::merge(
-                \Yii::$app->authManager->getUserIdsByRole('ADMIN'),
-                \Yii::$app->authManager->getUserIdsByRole('NewsPublishOnHomePage')
-            );
+            if (($this->status == self::NEWS_WORKFLOW_STATUS_VALIDATO) && $this->isCommunityManagerLoggedUserInThisNews()) {
+                $whoCanPublishIds = \yii\helpers\ArrayHelper::merge(
+                    \Yii::$app->authManager->getUserIdsByRole('ADMIN'),
+                    \Yii::$app->authManager->getUserIdsByRole('NewsPublishOnHomePage')
+                );
 
-            NewsUtility::sendEmailsForPublishOnHomePageRequest($whoCanPublishIds, $this);
+                NewsUtility::sendEmailsForPublishOnHomePageRequest($whoCanPublishIds, $this);
+            }
         }
     }
+
+    /**
+     * @return bool
+     */
+    public function isCommunityManagerLoggedUserInThisNews()
+    {
+        $ret = false;
+
+        $moduleCwh = \Yii::$app->getModule('cwh');
+        if ($moduleCwh && $this->isNewRecord) {
+            $scope = $moduleCwh->getCwhScope();
+            if (isset($scope['community']) && !empty($scope['community'])) {
+                $communityScoped = $scope['community'];
+                $community = new Community();
+                $community->id = $communityScoped;
+                $ret = \open20\amos\community\utilities\CommunityUtil::hasRole($community);
+            }
+        }
+
+        if (!$ret) {
+            $targets = $this->getTargets();
+            if (!empty($targets) && is_array($targets)) {
+                $communityArray = explode('-', reset($targets));
+                if (isset($communityArray[0]) && $communityArray[0] == 'community') {
+                    if (isset($communityArray[1])) {
+                        $comm = Community::findOne(['id' => $communityArray[1]]);
+                        $moduleCommunity = Yii::$app->getModule('community');
+                        if (!empty($comm) && !empty($moduleCommunity)) {
+                            $ret = \open20\amos\community\utilities\CommunityUtil::isManagerLoggedUser($comm);
+                        }
+                    }
+                }
+            }
+        }
+
+        return $ret;
+    }
+
+
 
     /**
      * @param $attribute
@@ -1132,17 +1175,30 @@ class News
      */
     public function checkImageRequired($attribute){
         if($this->newsModule->enableAgid) {
-            $reflectionClass = new \ReflectionClass($this);
-            $classname = $reflectionClass->getShortName();
-            foreach ((array)$_FILES[$classname]['name'] as $attributeName => $filename) {
-                if ($attribute == $attributeName) {
-                    if (empty($filename)) {
-                        if (empty($this->$attribute)) {
-                            $this->addError($attribute, AmosNews::t('amosnews', "Il campo immagine è obbligatorio."));
+
+            $csrfParam = \Yii::$app->request->csrfParam;
+            $csrf = \Yii::$app->request->post($csrfParam);
+            $dataImage = \Yii::$app->session->get($csrf);
+
+            $fileDataBankExist = false;
+            if(!empty($dataImage)) {
+                $fileDataBankExist = true;
+            }
+
+            if (!$fileDataBankExist) {
+                $reflectionClass = new \ReflectionClass($this);
+                $classname = $reflectionClass->getShortName();
+                foreach ((array)$_FILES[$classname]['name'] as $attributeName => $filename) {
+                    if ($attribute == $attributeName) {
+                        if (empty($filename)) {
+                            if (empty($this->$attribute)) {
+                                $this->addError($attribute, AmosNews::t('amosnews', "Il campo immagine è obbligatorio."));
+                            }
                         }
                     }
                 }
             }
+
         }
     }
 

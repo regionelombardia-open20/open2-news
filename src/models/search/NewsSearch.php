@@ -349,8 +349,11 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
         if (!empty($params["conditionSearch"])) {
             $commands = explode(";", $params["conditionSearch"]);
             foreach ($commands as $command) {
-                $query->andWhere(eval("return ".$command.";"));
-            }
+                if (strpos($command, 'news_categorie_ids') !== false) {
+                    $this->cmsFilterCategories($command, $query);
+                } else {
+                    $query->andWhere(eval("return " . $command . ";"));
+                }            }
         }
 
         return $dataProvider;
@@ -1159,5 +1162,25 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
     public function searchCreatedByMeQuery($params)
     {
         return $this->buildQuery($params, 'created-by');
+    }
+
+
+    /**
+     * @param $command
+     * @param $query ActiveQuery
+     */
+    public function cmsFilterCategories($command, $query){
+        $explode = explode('=>',$command );
+        if(count($explode) == 2){
+            $val = trim($explode[1]);
+            $val = str_replace('[', '', $val);
+            $val = str_replace(']', '', $val);
+            $categoryIds = explode(',', $val);
+            $query->leftJoin('news_categorie_mm', 'news_categorie_mm.news_id = news.id')
+                ->andWhere([ 'OR',
+                    ['news_categorie_mm.news_categorie_id' => $categoryIds],
+                    ['news.news_categorie_id' => $categoryIds]
+                ]);
+        }
     }
 }

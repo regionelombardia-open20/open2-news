@@ -251,6 +251,8 @@ return [
     'Visualizza la lista delle notizie' => 'Visualizza la lista delle notizie',
     'Visualizza la lista delle notizie di mio interesse' => 'Visualizza la lista delle notizie di mio interesse',
     'Visualizzazioni' => 'Visualizzazioni',
+    '#widget_graphic_cms_last_news_description' => 'Elenca le ultime news',
+    '#widget_graphic_cms_last_news_label' => 'Ultime news',
     '#wizard_introduction_insert_information' => 'Nei passaggi successivi ti saranno richiesti',
     '#wizard_introduction_press_continue' => 'Per creare una notizia, premi PROSEGUI in basso a destra',
     'You are not authorized to delete this news category' => 'Non sei autorizzato a cancellare questa categoria delle notizie',

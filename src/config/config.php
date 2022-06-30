@@ -29,7 +29,7 @@ return [
                     'titolo',
                     'data_pubblicazione'
                 ],
-                'default_field' => ['data_pubblicazione', 'created_at'],
+                'default_field' => 'news.data_pubblicazione',
                 'order_type' => SORT_DESC
             ]
         ],

@@ -31,8 +31,8 @@ class WidgetGraphicsCmsUltimeNews extends WidgetGraphic
         parent::init();
         
         $this->setCode('ULTIME_NEWS_GRAPHIC');
-        $this->setLabel(AmosNews::tHtml('amosnews', 'Ultime news'));
-        $this->setDescription(AmosNews::t('amosnews', 'Elenca le ultime news'));
+        $this->setLabel(AmosNews::t('amosnews', '#widget_graphic_cms_last_news_label'));
+        $this->setDescription(AmosNews::t('amosnews', '#widget_graphic_cms_last_news_description'));
     }
     
     /**
@@ -43,34 +43,23 @@ class WidgetGraphicsCmsUltimeNews extends WidgetGraphic
         $search = new NewsSearch();
         $search->setNotifier(new NotifyWidgetDoNothing());
         
-        $viewPath = '@vendor/open20/amos-news/src/widgets/graphics/views/';
-        $viewToRender = $viewPath . 'ultime_news_cms';
-        
         $newsLimit = AmosNews::MAX_LAST_NEWS_ON_DASHBOARD;
         if (!empty(\Yii::$app->params['dashboardEngine']) && \Yii::$app->params['dashboardEngine'] == WidgetAbstract::ENGINE_ROWS) {
             $newsLimit = 12;
         }
         
         $listaNews = $search->ultimeNews($_GET, $newsLimit);
-
-        if( isset(\Yii::$app->params['showWidgetEmptyContent']) && \Yii::$app->params['showWidgetEmptyContent'] == false ){
-            if($listaNews->getTotalCount() == 0 ){
+        
+        if (isset(\Yii::$app->params['showWidgetEmptyContent']) && \Yii::$app->params['showWidgetEmptyContent'] == false) {
+            if ($listaNews->getTotalCount() == 0) {
                 return false;
             }
         }
-
-        $moduleLayout = \Yii::$app->getModule('layout');
-        if (is_null($moduleLayout)) {
-            $viewToRender .= '_old';
-        }
         
-        return $this->render(
-            $viewToRender,
-            [
-                'listaNews' => $listaNews,
-                'widget' => $this,
-                'toRefreshSectionId' => 'widgetGraphicLatestNews'
-            ]
-        );
+        return $this->render('@vendor/open20/amos-news/src/widgets/graphics/views/ultime_news_cms', [
+            'listaNews' => $listaNews,
+            'widget' => $this,
+            'toRefreshSectionId' => 'widgetGraphicLatestNews'
+        ]);
     }
 }
