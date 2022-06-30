@@ -421,7 +421,7 @@ class NewsController extends CrudController
      *
      * @return mixed
      */
-    public function actionCreate()
+    public function actionCreate($urlRedirect = null)
     {
         $this->setUpLayout('form');
         $this->registerConfirmJs();
@@ -470,7 +470,9 @@ class NewsController extends CrudController
                         $redirectToUpdatePage = true;
                     }
 
-                    if ($redirectToUpdatePage) {
+                    if($urlRedirect){
+                        return $this->redirect($urlRedirect);
+                    } else if ($redirectToUpdatePage) {
                         return $this->redirect(['/news/news/update', 'id' => $model->id]);
                     } else {
                         return $this->redirect('/news/news/own-news');
@@ -560,7 +562,7 @@ class NewsController extends CrudController
      *
      * @return mixed
      */
-    public function actionUpdate($id, $backToEditStatus = false)
+    public function actionUpdate($id, $backToEditStatus = false, $urlRedirect = null)
     {
         $this->setUpLayout('form');
 
@@ -584,6 +586,9 @@ class NewsController extends CrudController
 
                 if ($model->validate()) {
                     if ($model->save()) {
+                        if($urlRedirect){
+                            return $this->redirect($urlRedirect);
+                        }
                         $redirectToUpdatePage = false;
                         if (Yii::$app->getUser()->can('NEWS_UPDATE', ['model' => $model])) {
                             $redirectToUpdatePage = true;
@@ -661,7 +666,7 @@ class NewsController extends CrudController
      *
      * @return mixed
      */
-    public function actionDelete($id)
+    public function actionDelete($id, $urlRedirect = null)
     {
         /** @var News $model */
         $model = $this->findModel($id);
@@ -674,6 +679,9 @@ class NewsController extends CrudController
                 AmosNews::t('amosnews', 'Non sei autorizzato a cancellare la notizia.'));
         }
 
+        if($urlRedirect){
+            return $this->redirect($urlRedirect);
+        }
         return $this->redirect(Yii::$app->session->get(AmosNews::beginCreateNewSessionKey()));
     }
 

@@ -216,7 +216,7 @@ $disableStandardWorkflow = $appController->newsModule->disableStandardWorkflow;
 
                     <?php
                     $publish_enabled = \Yii::$app->user->can('NEWS_PUBLISHER_FRONTEND')
-                        || !empty(Yii::$app->getModule('news')->params['publication_always_enabled']);
+                        && !empty(Yii::$app->getModule('news')->params['publication_always_enabled']);
 
                     $publish_enabled = $publish_enabled
                         ? $publish_enabled
