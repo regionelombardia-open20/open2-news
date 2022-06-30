@@ -24,7 +24,7 @@ return [
         //active the order
         'orderParams' => [
             'news' => [
-                'enable' => true,
+                'enable' => false,
                 'fields' => [
                     'titolo',
                     'data_pubblicazione'

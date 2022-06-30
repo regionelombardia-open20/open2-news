@@ -33,7 +33,7 @@ class ModuleNewsAsset extends AssetBundle
         $moduleL = \Yii::$app->getModule('layout');
 
         if(!empty(\Yii::$app->params['dashboardEngine']) && \Yii::$app->params['dashboardEngine'] == WidgetAbstract::ENGINE_ROWS){
-            $this->css = ['less/news_fullsize.less'];
+            $this->css = ['less/news_fullsize.less','less/news_design_bi.less'];
         }
 
         if(!empty($moduleL)){

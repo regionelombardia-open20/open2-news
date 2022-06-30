@@ -86,6 +86,7 @@ class NewsCategorieController extends CrudController
         Yii::$app->view->params['textHelp']['filename'] = 'news_dashboard_description';
         $this->view->params['currentDashboard'] = $this->getCurrentDashboard();
 
+
         $this->setDataProvider($this->getModelSearch()->search(Yii::$app->request->getQueryParams()));
         return parent::actionIndex($this->layout);
     }

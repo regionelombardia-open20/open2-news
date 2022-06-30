@@ -11,10 +11,13 @@
 
 use open20\amos\news\AmosNews;
 use open20\amos\news\models\News;
+use open20\amos\admin\AmosAdmin;
 use kartik\select2\Select2;
+use open20\amos\core\forms\editors\Select;
 use kartik\datecontrol\DateControl;
 use yii\helpers\Html;
 use yii\widgets\ActiveForm;
+use yii\helpers\ArrayHelper;
 
 /**
  * @var yii\web\View $this
@@ -24,9 +27,12 @@ use yii\widgets\ActiveForm;
 
 $moduleTag = Yii::$app->getModule('tag');
 
-$enableAutoOpenSearchPanel = isset(\Yii::$app->params['enableAutoOpenSearchPanel']) 
-    ? \Yii::$app->params['enableAutoOpenSearchPanel'] 
-    : false;
+
+$newsModule = AmosNews::instance();
+
+// enable open search section
+$enableAutoOpenSearchPanel = !isset(\Yii::$app->params['enableAutoOpenSearchPanel']) || \Yii::$app->params['enableAutoOpenSearchPanel'] === true;
+
 ?>
 
 <div class="news-search element-to-toggle" data-toggle-element="form-search">
@@ -82,7 +88,7 @@ $enableAutoOpenSearchPanel = isset(\Yii::$app->params['enableAutoOpenSearchPanel
                     'allowClear' => true,
                     'minimumInputLength' => 3,
                     'ajax' => [
-                        'url' => \yii\helpers\Url::to(['/admin/user-profile-ajax/ajax-user-list']),
+                        'url' => \yii\helpers\Url::to(['/'.AmosAdmin::getModuleName().'/user-profile-ajax/ajax-user-list']),
                         'dataType' => 'json',
                         'data' => new \yii\web\JsExpression('function(params) { return {q:params.term}; }')
                     ],
@@ -91,6 +97,71 @@ $enableAutoOpenSearchPanel = isset(\Yii::$app->params['enableAutoOpenSearchPanel
         );
         ?>
     </div>
+
+    <?php  if ($newsModule->enableAgid) : ?>
+
+        <div class="col-sm-6 col-lg-4">
+            <?= 
+                $form->field($model, 'updated_by')->widget(Select::className(), [
+                'data' => ArrayHelper::map(\open20\amos\admin\models\UserProfile::find()->andWhere(['deleted_at' => NULL])->all(), 'user_id', function($model) {
+                    return $model->nome . " " . $model->cognome;
+                }),
+                    'language' => substr(Yii::$app->language, 0, 2),
+                    'options' => [
+                        'multiple' => false,
+                        'placeholder' => AmosNews::t('amosnews', '#select_choose') . '...'
+                    ],
+                    'pluginOptions' => [
+                        'allowClear' => true
+                    ],
+                ])->label(AmosNews::t('amosnews', '#updated_by')); 
+            ?>
+        </div>
+
+        <div class="col-sm-6 col-lg-4">
+            <?= 
+                $form->field($model, 'status')->widget(Select::className(), [
+                    'data' => $model->getAllWorkflowStatus(),
+
+                    'language' => substr(Yii::$app->language, 0, 2),
+                    'options' => [
+                        'multiple' => false,
+                        'placeholder' => AmosNews::t('amosnews', '#select_choose') . '...',
+                        'value' => $model->status = \Yii::$app->request->get(end(explode("\\", $model::className())))['status']
+                    ],
+                    'pluginOptions' => [
+                        'allowClear' => true
+                    ],
+                ]); 
+            ?>
+        </div>
+
+        <div class="col-sm-6 col-lg-4">
+            <?= 
+                $form->field($model, 'news_categorie_id')->widget(Select::className(), [
+                    'data' => ArrayHelper::map(\open20\amos\news\models\NewsCategorie::find()
+                        ->andWhere(['deleted_at' => NULL])->all(), 'id', 'titolo') ,
+
+                    'language' => substr(Yii::$app->language, 0, 2),
+                    'options' => [
+                        'multiple' => false,
+                        'placeholder' => AmosNews::t('amosnews', '#select_choose') . '...',
+                        'value' => $model->status = \Yii::$app->request->get(end(explode("\\", $model::className())))['status']
+                    ],
+                    'pluginOptions' => [
+                        'allowClear' => true
+                    ],
+                ]); 
+            ?>
+        </div>
+
+        <div class="col-sm-6 col-lg-4">
+            <!-- Aggiornato il (range da -> a) -->
+        </div>
+        
+    <?php endif; ?>
+
+    
 
     <!--div class="col-sm-6 col-lg-4">
         < ?= $form->field($model, 'data_rimozione')->widget(DateControl::className(), [
@@ -112,11 +183,12 @@ $enableAutoOpenSearchPanel = isset(\Yii::$app->params['enableAutoOpenSearchPanel
     </div>
     <?php endif; ?>
 
+
     <div class="col-xs-12">
         <div class="pull-right">
             <?= Html::a(AmosNews::t('amosnews', 'Annulla'), [Yii::$app->controller->action->id, 'currentView' => Yii::$app->request->getQueryParam('currentView')],
-                ['class' => 'btn btn-secondary']) ?>
-            <?= Html::submitButton(AmosNews::t('amosnews', 'Cerca'), ['class' => 'btn btn-navigation-primary']) ?>
+                ['class' => 'btn btn-outline-primary']) ?>
+            <?= Html::submitButton(AmosNews::tHtml('amosnews', 'Cerca'), ['class' => 'btn btn-primary']) ?>
         </div>
     </div>
 

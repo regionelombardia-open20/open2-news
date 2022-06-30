@@ -23,6 +23,8 @@ use open20\amos\attachments\components\AttachmentsList;
 use open20\amos\core\forms\InteractionMenuWidget;
 use open20\amos\news\assets\ModuleNewsAsset;
 use \open20\amos\news\models\News;
+use open20\amos\core\utilities\CurrentUser;
+
 
 ModuleNewsAsset::register($this);
 
@@ -71,6 +73,7 @@ if ($model->status != News::NEWS_WORKFLOW_STATUS_VALIDATO) {
                     'model' => $model,
                     'publicationDateField' => 'data_pubblicazione',
                     'showPrevalentPartnershipAndTargets' => true,
+                    'enableLink' => !(CurrentUser::isPlatformGuest())
                 ]
             ) ?>
             <?= ContextMenuWidget::widget([
@@ -171,4 +174,12 @@ if ($model->status != News::NEWS_WORKFLOW_STATUS_VALIDATO) {
                                 'class' => 'btn btn-secondary pull-left m-b-10'
          ]) ?>
     </div>
+
+                
+    <?php if (!is_null(\Yii::$app->getModule('sitemanagement'))): ?>
+        <?= \amos\sitemanagement\widgets\SMSliderWidget::widget(['sliderId' => $model->image_site_management_slider_id]); ?>
+        <?= \amos\sitemanagement\widgets\SMSliderWidget::widget(['sliderId' => $model->video_site_management_slider_id]); ?>
+    <?php endif; ?>
+
 </div>
+

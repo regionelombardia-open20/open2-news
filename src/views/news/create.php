@@ -22,13 +22,15 @@ $controller->setNetworkDashboardBreadcrumb();
 $this->title = AmosNews::t('amosnews', 'Inserisci notizia');
 $this->params['breadcrumbs'][] = ['label' => Yii::$app->session->get('previousTitle'), 'url' => Yii::$app->session->get('previousUrl')];
 $this->params['breadcrumbs'][] = $this->title;
+
 ?>
 <div class="news-create">
 <?= $this->render(
   '_form', [
     'model' => $model,
     'moduleCwh' => $moduleCwh,
-    'scope' => $scope
+    'scope' => $scope,
+    'siteManagementModule' => (isset($siteManagementModule) ? $siteManagementModule : null)
   ]) 
 ?>
 </div>

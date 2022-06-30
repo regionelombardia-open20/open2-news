@@ -11,9 +11,15 @@
 
 namespace open20\amos\news\models\base;
 
+use amos\sitemanagement\models\SiteManagementSlider;
+use open20\amos\core\module\AmosModule;
 use open20\amos\core\record\ContentModel;
+use open20\amos\documenti\models\Documenti;
 use open20\amos\news\AmosNews;
+use open20\amos\news\models\NewsContentType;
+use open20\agid\organizationalunit\models\AgidOrganizationalUnit;
 use yii\helpers\ArrayHelper;
+use open20\amos\admin\models\base\UserProfile;
 
 /**
  * Class News
@@ -45,6 +51,12 @@ use yii\helpers\ArrayHelper;
  * @property integer $updated_by
  * @property integer $deleted_by
  * @property integer $version
+ * @property string $date_news
+ * @property string $news_expiration_date
+ * @property integer $edited_by_agid_organizational_unit_id
+ * @property integer $news_content_type_id
+ * @property integer $news_groups_id
+ *
  *
  * @property \open20\amos\news\models\NewsCategorie $newsCategorie
  * @property \open20\amos\upload\models\FilemanagerMediafile $immagineNews
@@ -53,26 +65,126 @@ use yii\helpers\ArrayHelper;
  */
 abstract class News extends ContentModel
 {
+    public $news_agid_person_mm;
+    public $news_related_documenti_mm;
+    public $news_related_news_mm;
+    public $news_related_agid_service_mm;
+    
     /**
+     * @var AmosNews|null $newsModule
+     */
+    public $newsModule = null;
+    
+    /**
+     * @inheritdoc
+     */
+    public function init()
+    {
+        $this->newsModule = AmosNews::instance();
+        parent::init();
+    }
+    
+    /**
+     * @inheritdoc
      */
     public static function tableName()
     {
         return 'news';
     }
-
+    
     /**
+     * @inheritdoc
      */
     public function rules()
     {
-
-        return ArrayHelper::merge(parent::rules(), [
+        $rules = ArrayHelper::merge(parent::rules(), [
             [['descrizione', 'metakey', 'metadesc'], 'string'],
             [['primo_piano', 'immagine', 'hits', 'abilita_pubblicazione', 'in_evidenza', 'news_categorie_id', 'created_by', 'updated_by', 'deleted_by', 'version', 'comments_enabled'], 'integer'],
             [['slug', 'data_pubblicazione', 'data_rimozione', 'created_at', 'updated_at', 'deleted_at', 'status', 'comments_enabled'], 'safe'],
             [['titolo', 'sottotitolo'], 'string', 'max' => 100],
             [['descrizione_breve'], 'string', 'max' => 250],
+//            [['news_content_type_id'], 'exist', 'skipOnError' => true, 'targetClass' => NewsContentType::className(), 'targetAttribute' => ['news_content_type_id' => 'id']],
+//            [['edited_by_agid_organizational_unit_id'], 'exist', 'skipOnError' => true, 'targetClass' => AgidOrganizationalUnit::className(), 'targetAttribute' => ['edited_by_agid_organizational_unit_id' => 'id']],
+//            [['news_documento_id'], 'exist', 'skipOnError' => true, 'targetClass' => Documenti::className(), 'targetAttribute' => ['news_documento_id' => 'id']],
+//            [['news_content_type_id','date_news', 'descrizione_breve'], 'required'],
+//            [['newsImage'], 'file', 'extensions' => 'jpeg, jpg, png, gif', 'maxFiles' => 1],
+//            /**
+//             * SiteManagementSlider
+//             * image slider
+//             * video slider
+//             */
+//            [['image_site_management_slider_id'], 'exist', 'skipOnError' => true, 'targetClass' => SiteManagementSlider::className(), 'targetAttribute' => ['image_site_management_slider_id' => 'id']],
+//            [['video_site_management_slider_id'], 'exist', 'skipOnError' => true, 'targetClass' => SiteManagementSlider::className(), 'targetAttribute' => ['video_site_management_slider_id' => 'id']],
         ]);
-
+    
+        if ($this->newsModule->enableAgid) {
+            $rules[] = [['body_news'], 'string'];
+            $rules[] = [['news_documento_id', 'edited_by_agid_organizational_unit_id', 'news_content_type_id', 'news_groups_id'], 'integer'];
+            $rules[] = [['date_news', 'news_expiration_date'], 'safe'];
+            $rules[] = [['news_content_type_id'], 'exist', 'skipOnError' => true, 'targetClass' => NewsContentType::className(), 'targetAttribute' => ['news_content_type_id' => 'id']];
+            $rules[] = [['edited_by_agid_organizational_unit_id'], 'exist', 'skipOnError' => true, 'targetClass' => AgidOrganizationalUnit::className(), 'targetAttribute' => ['edited_by_agid_organizational_unit_id' => 'id']];
+            $rules[] = [['news_documento_id'], 'exist', 'skipOnError' => true, 'targetClass' => Documenti::className(), 'targetAttribute' => ['news_documento_id' => 'id']];
+            $rules[] = [['news_content_type_id','date_news', 'descrizione_breve'], 'required'];
+    
+            /** @var \amos\sitemanagement\Module|AmosModule $siteManagementModule */
+            $siteManagementModule = \Yii::$app->getModule('sitemanagement');
+            if (!is_null($siteManagementModule)) {
+                /**
+                 * SiteManagementSlider
+                 * image slider
+                 * video slider
+                 */
+                $rules[] = [['image_site_management_slider_id'], 'exist', 'skipOnError' => true, 'targetClass' => SiteManagementSlider::className(), 'targetAttribute' => ['image_site_management_slider_id' => 'id']];
+                $rules[] = [['video_site_management_slider_id'], 'exist', 'skipOnError' => true, 'targetClass' => SiteManagementSlider::className(), 'targetAttribute' => ['video_site_management_slider_id' => 'id']];
+            }
+        }
+        
+        return $rules;
+    }
+    
+    /**
+     * @inheritdoc
+     */
+    public function afterValidate()
+    {
+        if ($this->newsModule->enableAgid) {
+            // caso update del model news
+            if (null != $this->id) {
+        
+                // controllo se il model ha gia l'immagine
+                $news_image = (new \yii\db\Query())
+                    ->from('attach_file')
+                    ->where(['LIKE', 'model', 'open20\amos\news\models\News'])
+                    ->andWhere([
+                        'itemId' => $this->id
+                    ])
+                    ->one();
+        
+                // se il model new non ha l'immagine salvata controllo se è stato caricato in post
+                if (null == $news_image) {
+            
+                    // non esiste in post
+                    if (null == \Yii::$app->request->post('newsImage_data', '')) {
+                        $this->addError("newsImage");
+                
+                        return false;
+                    }
+                }
+        
+                return true;
+        
+            } else {
+                // caso create del model news
+        
+                // controllo se esiste l'immagine del model news in post
+                if ((null == \Yii::$app->request->post('newsImage_data', '') && null == $this->id)) {
+                    $this->addError("newsImage");
+                    return false;
+                }
+        
+                return true;
+            }
+        }
     }
 
     /**
@@ -104,6 +216,17 @@ abstract class News extends ContentModel
                 'updated_by' => AmosNews::t('amosnews', 'Aggiornato da'),
                 'deleted_by' => AmosNews::t('amosnews', 'Cancellato da'),
                 'version' => AmosNews::t('amosnews', 'Versione numero'),
+                "news_content_type_id" => AmosNews::t('amosnews', 'Content Type'),
+                "edited_by_agid_organizational_unit_id" => AmosNews::t('amosnews', 'A cura di'),
+                "date_news" => AmosNews::t('amosnews', 'Data della news'),
+                "news_expiration_date" => AmosNews::t('amosnews', 'Data di scadenza'),
+                "body_news" => AmosNews::t('amosnews', 'Corpo della news'),
+                "news_related_documenti_mm" => AmosNews::t('amosnews', 'Correlati: documenti'),
+                "news_related_news_mm" => AmosNews::t('amosnews', 'Correlati: novità'),
+                "news_related_agid_service_mm" => AmosNews::t('amosnews', 'Correlati: servizi'),
+                "news_documento_id" => AmosNews::t('amosnews', 'Documenti allegati'),
+                'video_site_management_slider_id' => AmosNews::t('project_cards', 'video_site_management_slider_id'),
+                'image_site_management_slider_id' => AmosNews::t('project_cards', 'image_site_management_slider_id'),
             ]
         );
     }
@@ -138,6 +261,15 @@ abstract class News extends ContentModel
                 'updated_by' => AmosNews::t('amosnews', ''),
                 'deleted_by' => AmosNews::t('amosnews', ''),
                 'version' => AmosNews::t('amosnews', ''),
+                "news_content_type_id" => AmosNews::t('amosnews', 'news_content_type_id'),
+                "edited_by_agid_organizational_unit_id" => AmosNews::t('amosnews', 'edited_by_agid_organizational_unit_id'),
+                "date_news" => AmosNews::t('amosnews', 'Data della news'),
+                "news_expiration_date" => AmosNews::t('amosnews', 'Data di scadenza'),
+                "body_news" => AmosNews::t('amosnews', 'Corpo della news'),
+                "news_related_documenti_mm" => AmosNews::t('amosnews', 'Correlati: documenti'),
+                "news_related_news_mm" => AmosNews::t('amosnews', 'Correlati: novità'),
+                "news_related_agid_service_mm" => AmosNews::t('amosnews', 'Correlati: servizi'),
+                "news_documento_id" => AmosNews::t('amosnews', 'Documenti allegati'),
             ]
         );
     }
@@ -150,10 +282,10 @@ abstract class News extends ContentModel
      */
     public function checkDate($attribute, $params)
     {
-        $isValid = TRUE;
+        $isValid = true;
         if ($this->isNewRecord && \Yii::$app->getModule('news')->validatePublicationDate == true) {
             if ($this->$attribute < date('Y-m-d')) {
-                $isValid = FALSE;
+                $isValid = false;
             }
         }
         if (!$isValid) {
@@ -171,8 +303,7 @@ abstract class News extends ContentModel
     {
         return $this->hasOne(\open20\amos\news\models\NewsCategorie::className(), ['id' => 'news_categorie_id']);
     }
-
-
+    
     /**
      * This is the relation between the news and the single related picture.
      * Return an ActiveQuery related to FilemanagerMediafile model.
@@ -183,5 +314,125 @@ abstract class News extends ContentModel
     public function getImmagineNews()
     {
         return $this->hasOne(\open20\amos\upload\models\FilemanagerMediafile::className(), ['id' => 'immagine']);
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getNewsContentType(){
+
+        return $this->hasOne(\open20\amos\news\models\NewsContentType::className(), ['id' => 'news_content_type_id']);
+    }
+    
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getNewsGroups(){
+
+        return $this->hasOne(\open20\amos\news\models\NewsGroups::className(), ['id' => 'news_groups_id']);
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getEditedByAgidOrganizationalUnit(){
+
+        return $this->hasOne(\open20\agid\organizationalunit\models\AgidOrganizationalUnit::className(), ['id' => 'edited_by_agid_organizational_unit_id']);
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getNewsDocumento(){
+
+        return $this->hasOne(\open20\amos\documenti\models\Documenti::className(), ['id' => 'news_documento_id']);
+    }
+
+    /**
+     * news agid person
+     */
+    public function getNewsAgidPersonMm(){
+        return $this->hasMany(\open20\amos\news\models\NewsAgidPersonMm::className(), ['news_id' => 'id']);
+    }
+
+    /**
+     * news related documenti
+     */
+    public function getNewsRelatedDocumentiMm(){
+        return $this->hasMany(\open20\amos\news\models\NewsRelatedDocumentiMm::className(), ['news_id' => 'id']);
+    }
+
+    /**
+     * news related news
+     */
+    public function getNewsRelatedNewsMm(){
+        return $this->hasMany(\open20\amos\news\models\NewsRelatedNewsMm::className(), ['news_id' => 'id']);
+    }
+
+    /**
+     * news related agid service
+     */
+    public function getNewsRelatedAgidServiceMm(){
+        return $this->hasMany(\open20\amos\news\models\NewsRelatedAgidServiceMm::className(), ['news_id' => 'id']);
+    }
+    
+    /**
+     * @return \yii\db\ActiveQuery|null
+     */
+    public function getSliderImage()
+    {
+        /** @var \amos\sitemanagement\Module|AmosModule $siteManagementModule */
+        $siteManagementModule = \Yii::$app->getModule('sitemanagement');
+        if (is_null($siteManagementModule)) {
+            return null;
+        }
+        return $this->hasOne(\amos\sitemanagement\models\SiteManagementSlider::className(), ['id' => 'image_site_management_slider_id']);
+    }
+    
+    /**
+     * @return \yii\db\ActiveQuery|null
+     */
+    public function getSliderVideo()
+    {
+        /** @var \amos\sitemanagement\Module|AmosModule $siteManagementModule */
+        $siteManagementModule = \Yii::$app->getModule('sitemanagement');
+        if (is_null($siteManagementModule)) {
+            return null;
+        }
+        return $this->hasOne(\amos\sitemanagement\models\SiteManagementSlider::className(), ['id' => 'video_site_management_slider_id']);
+    }
+
+    /**
+     * Method to return UserProfile by user_id
+     *
+     * @param int $id
+     * @return void
+     */
+    public function getUserProfileByUserId($id = null){
+
+        return UserProfile::find()->andWhere(['user_id' => $id])->one();
+    }
+
+    /**
+     * Method to get all workflow status for model
+     *
+     * @return array
+     */
+    public function getAllWorkflowStatus(){
+
+        return ArrayHelper::map(
+                ArrayHelper::getColumn(
+                    (new \yii\db\Query())->from('sw_status')
+                    ->where(['workflow_id' => $this::NEWS_WORKFLOW])
+                    ->orderBy(['sort_order' => SORT_ASC])
+                    ->all(),
+
+                    function ($element) {
+                        $array['status'] = $element['workflow_id'] . "/" . $element['id'];
+                        $array['label'] = $element['label'];
+                        return $array;
+                    }
+                ),
+            'status', 'label');
     }
 }

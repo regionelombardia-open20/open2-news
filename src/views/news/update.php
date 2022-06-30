@@ -27,12 +27,20 @@ $this->params['breadcrumbs'][] = AmosNews::t('amosnews', 'Aggiorna');
 ?>
 
 <div class="news-update">
-<?= $this->render(
-  '_form',
-  [
-    'model' => $model,
-    'moduleCwh' => $moduleCwh,
-    'scope' => $scope
-  ])
-?>
+	<?=
+		$this->render('_form', [
+			'model' => $model,
+			'moduleCwh' => $moduleCwh,
+			'scope' => $scope,
+
+			/**
+			 * SiteManagementSlider
+			 */
+			'slider_image' => $slider_image,
+			'dataProviderSliderElemImage' => $dataProviderSliderElemImage,
+			'slider_video' => $slider_video,
+			'dataProviderSliderElemVideo' => $dataProviderSliderElemVideo,
+            'siteManagementModule' => (isset($siteManagementModule) ? $siteManagementModule : null)
+		])
+	?>
 </div>

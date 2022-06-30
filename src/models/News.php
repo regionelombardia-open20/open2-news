@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Aria S.p.A.
  * OPEN 2.0
@@ -10,28 +11,33 @@
 
 namespace open20\amos\news\models;
 
-use open20\amos\attachments\behaviors\FileBehavior;
-use open20\amos\attachments\models\File;
-use open20\amos\comments\models\CommentInterface;
-use open20\amos\core\helpers\Html;
-use open20\amos\core\interfaces\ContentModelInterface;
-use open20\amos\core\interfaces\ModelImageInterface;
-use open20\amos\core\interfaces\ViewModelInterface;
-use open20\amos\core\views\toolbars\StatsToolbarPanels;
+use Yii;
+use yii\log\Logger;
+use yii\helpers\Url;
+use yii\helpers\ArrayHelper;
+use yii\behaviors\SluggableBehavior;
 use open20\amos\news\AmosNews;
-use open20\amos\news\i18n\grammar\NewsGrammar;
-use open20\amos\news\widgets\icons\WidgetIconNewsDashboard;
-use open20\amos\notificationmanager\behaviors\NotifyBehavior;
+use open20\amos\core\helpers\Html;
 use open20\amos\report\utilities\ReportUtil;
+use raoul2000\workflow\base\SimpleWorkflowBehavior;
+use open20\amos\news\i18n\grammar\NewsGrammar;
+use open20\amos\news\models\NewsRelatedNewsMm;
+use open20\amos\attachments\behaviors\FileBehavior;
 use open20\amos\seo\behaviors\SeoContentBehavior;
 use open20\amos\seo\interfaces\SeoModelInterface;
+use open20\amos\news\models\NewsRelatedDocumentiMm;
+use open20\amos\core\interfaces\ModelImageInterface;
+use open20\amos\news\models\NewsRelatedAgidServiceMm;
+use open20\amos\core\interfaces\ContentModelInterface;
+use open20\amos\core\utilities\CmsUtility;
+use open20\amos\attachments\models\File;
+use open20\amos\news\models\NewsAgidPersonMm;
+use open20\amos\comments\models\CommentInterface;
+use open20\amos\core\interfaces\ViewModelInterface;
+use open20\amos\core\views\toolbars\StatsToolbarPanels;
+use open20\amos\news\widgets\icons\WidgetIconNewsDashboard;
+use open20\amos\notificationmanager\behaviors\NotifyBehavior;
 use open20\amos\workflow\behaviors\WorkflowLogFunctionsBehavior;
-use raoul2000\workflow\base\SimpleWorkflowBehavior;
-use Yii;
-use yii\behaviors\SluggableBehavior;
-use yii\helpers\ArrayHelper;
-use yii\helpers\Url;
-use yii\log\Logger;
 use open20\amos\core\interfaces\CustomUrlModelInterface;
 
 /**
@@ -45,11 +51,11 @@ use open20\amos\core\interfaces\CustomUrlModelInterface;
  *
  * @package open20\amos\news\models
  */
-class News extends \open20\amos\news\models\base\News implements ContentModelInterface, CommentInterface, ViewModelInterface,
-    ModelImageInterface, SeoModelInterface, CustomUrlModelInterface
+class News extends \open20\amos\news\models\base\News implements ContentModelInterface, CommentInterface, ViewModelInterface, ModelImageInterface, SeoModelInterface, CustomUrlModelInterface
 {
     // Workflow ID
     const NEWS_WORKFLOW                    = 'NewsWorkflow';
+    
     // Workflow states IDS
     const NEWS_WORKFLOW_STATUS_BOZZA       = 'NewsWorkflow/BOZZA';
     const NEWS_WORKFLOW_STATUS_DAVALIDARE  = 'NewsWorkflow/DAVALIDARE';
@@ -110,80 +116,22 @@ class News extends \open20\amos\news\models\base\News implements ContentModelInt
     private $attachmentsForItemView;
 
     /**
-     *
-     * @var AmosNews $moduleNews
-     */
-    protected $moduleNews;
-
-    /**
-     *
-     * @var bool $usePrettyUrl
-     */
-    protected $usePrettyUrl;
-
-    /**
      */
     public function init()
     {
         parent::init();
-        if (empty($this->getModuleNews())) {
-            $moduleNews = AmosNews::instance();
-            $this->setModuleNews($moduleNews);
-        }
-        if (empty($this->getUsePrettyUrl())) {
-            if (!empty($this->moduleNews) && !empty($this->moduleNews->usePrettyUrl) && ($this->moduleNews->usePrettyUrl
-                == true)) {
-                $this->setUsePrettyUrl(true);
-            }
-        }
+
         if ($this->isNewRecord) {
             $this->status = $this->getWorkflowSource()->getWorkflow(self::NEWS_WORKFLOW)->getInitialStatusId();
 
-            $moduleNews = \Yii::$app->getModule(AmosNews::getModuleName());
-            if (!is_null($moduleNews)) {
-                if ($moduleNews->hidePubblicationDate) {
+            if (!is_null($this->newsModule)) {
+                if ($this->newsModule->hidePubblicationDate) {
                     // the news will be visible forever
                     $this->data_rimozione = '9999-12-31';
                 }
                 //$this->data_pubblicazione = date("Y-m-d");
             }
         }
-    }
-
-    /**
-     *
-     * @return bool
-     */
-    public function getUsePrettyUrl()
-    {
-        return $this->usePrettyUrl;
-    }
-
-    /**
-     *
-     * @param bool $usePrettyUrl
-     */
-    public function setUsePrettyUrl($usePrettyUrl)
-    {
-        $this->usePrettyUrl = $usePrettyUrl;
-    }
-
-    /**
-     *
-     * @return bool
-     */
-    public function getModuleNews()
-    {
-        return $this->moduleNews;
-    }
-
-    /**
-     *
-     * @param AmosNews $moduleNews
-     */
-    public function setModuleNews($moduleNews)
-    {
-        $this->moduleNews = $moduleNews;
     }
     /**
      */
@@ -214,14 +162,6 @@ class News extends \open20\amos\news\models\base\News implements ContentModelInt
         }
 
         return parent::beforeSave($insert);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function afterFind()
-    {
-        parent::afterFind();
     }
 
     /**
@@ -259,8 +199,7 @@ class News extends \open20\amos\news\models\base\News implements ContentModelInt
      * @param bool $canCache
      * @return string
      */
-    public function getNewsImageUrl($size = 'original', $protected = true, $url = '/img/img_default.jpg',
-                                    $absolute = false, $canCache = false)
+    public function getNewsImageUrl($size = 'original', $protected = true, $url = '/img/img_default.jpg', $absolute = false, $canCache = false)
     {
         $newsImage = $this->getNewsImage();
         if (!is_null($newsImage)) {
@@ -276,8 +215,7 @@ class News extends \open20\amos\news\models\base\News implements ContentModelInt
     /**
      * @inheritdoc
      */
-    public function getModelImageUrl($size = 'original', $protected = true, $url = '/img/img_default.jpg',
-                                     $absolute = false, $canCache = false)
+    public function getModelImageUrl($size = 'original', $protected = true, $url = '/img/img_default.jpg', $absolute = false, $canCache = false)
     {
         return $this->getNewsImageUrl($size, $protected, $url, $absolute, $canCache);
     }
@@ -385,7 +323,7 @@ class News extends \open20\amos\news\models\base\News implements ContentModelInt
                 [$requiredArray, 'required'],
                 [['slug', 'destinatari_pubblicazione', 'destinatari_notifiche'], 'safe'],
                 [['attachments'], 'file', 'maxFiles' => 0],
-                [['newsImage'], 'file', 'extensions' => 'jpeg, jpg, png, gif'],
+                [['newsImage'], 'file', 'extensions' => 'jpeg, jpg, png, gif', 'maxFiles' => 1],
         ]);
 
         if ($this->scenario != self::SCENARIO_DETAILS_HIDE_PUBBLICATION_DATE && $this->scenario != self::SCENARIO_CREATE_HIDE_PUBBLICATION_DATE
@@ -547,7 +485,7 @@ class News extends \open20\amos\news\models\base\News implements ContentModelInt
      */
     public function getViewUrl()
     {
-        if ($this->usePrettyUrl == true) {
+        if (!empty($this->usePrettyUrl) && ($this->usePrettyUrl == true)) {
             return 'news/news';
         } else {
             return 'news/news/view';
@@ -716,8 +654,11 @@ class News extends \open20\amos\news\models\base\News implements ContentModelInt
      */
     public function getFullViewUrl()
     {
-        if ($this->usePrettyUrl == true) {
+        if (!empty($this->usePrettyUrl) && ($this->usePrettyUrl == true)) {
             return Url::toRoute(["/".$this->getViewUrl()."/".$this->id."/".$this->getPrettyUrl()]);
+        } else if (!empty($this->useFrontendView) && ($this->useFrontendView == true) && method_exists($this,
+                'getBackendobjectsUrl')) {
+            return $this->getBackendobjectsUrl();
         } else {
             return Url::toRoute(["/".$this->getViewUrl(), "id" => $this->id]);
         }
@@ -836,4 +777,254 @@ class News extends \open20\amos\news\models\base\News implements ContentModelInt
             return \Yii::$app->params['platform']['frontendUrl'].$this->getFullFrontendViewUrl();
         } else return \Yii::$app->params['platform']['backendUrl'].$this->getFullViewUrl();
     }
+
+
+
+
+
+    /**
+     * *** SiteManagementSlider
+     */
+
+    /**
+     * @return string
+     */
+    public function getTitleSlider()
+    {
+        return 'News '.$this->id;
+    }
+
+
+
+    /**
+     * Method to create relationship between News and related News
+     *
+     * @return void
+     */
+    public function createNewsRelatedNewsMm(){
+
+        $post_request = \Yii::$app->request->post('News', '');
+
+        if( isset($post_request['news_related_news_mm']) ){
+
+            foreach ($post_request['news_related_news_mm'] as $key => $value) {
+
+                $news_related_news_mm = new NewsRelatedNewsMm;
+
+                $news_related_news_mm->news_id = $this->id;
+                $news_related_news_mm->related_news_id = $value;
+
+                $news_related_news_mm->save();
+            }
+        }
+    }
+
+
+    /**
+     * Method to update relationship between News and related News
+     *
+     * @return void
+     */
+    public function updateNewsRelatedNewsMm(){
+
+        $post_request = \Yii::$app->request->post('News','');
+
+        if( isset($post_request['news_related_news_mm']) ){
+
+            $this->deleteNewsRelatedNewsMm();
+
+            $this->createNewsRelatedNewsMm();
+        }
+    }
+
+
+    /**
+     * Method to delete the relationship between News and related News
+     *
+     * @return void
+     */
+    public function deleteNewsRelatedNewsMm(){
+
+        $news_related_news_mm = $this->newsRelatedNewsMm;
+
+        foreach ($news_related_news_mm as $key => $value) {
+
+            $value->delete();
+        }
+    }
+
+
+    /**
+     * Method to create the relationship between News and related Documenti
+     *
+     * @return void
+     */
+    public function createNewsRelatedDocumentiMm(){
+
+        $post_request = \Yii::$app->request->post('News', '');
+
+        if( isset($post_request['news_related_documenti_mm']) ){
+
+            foreach ($post_request['news_related_documenti_mm'] as $key => $value) {
+
+                $news_related_documenti_mm = new NewsRelatedDocumentiMm;
+
+                $news_related_documenti_mm->news_id = $this->id;
+                $news_related_documenti_mm->related_documenti_id = $value;
+
+                $news_related_documenti_mm->save();
+            }
+        }
+    }
+
+
+    /**
+     * Method to update the relationship between News and related Documenti
+     *
+     * @return void
+     */
+    public function updateNewsRelatedDocumentiMm(){
+
+        $post_request = \Yii::$app->request->post('News', '');
+
+        if( isset($post_request['news_related_documenti_mm']) ){
+
+            $this->deleteNewsRelatedDocumentiMm();
+
+            $this->createNewsRelatedDocumentiMm();
+        }
+    }
+
+
+    /**
+     * Method to delete the relationship between News and related Documenti
+     *
+     * @return void
+     */
+    public function deleteNewsRelatedDocumentiMm(){
+
+        $news_related_documenti_mm = $this->newsRelatedDocumentiMm;
+
+        foreach ($news_related_documenti_mm as $key => $value) {
+
+            $value->delete();
+        }
+    }
+
+
+    /**
+     * Method to create the realationship between News and Agid Service
+     *
+     * @return void
+     */
+    public function createNewsRelatedAgidServiceMm(){
+
+        $post_request = \Yii::$app->request->post('News', '');
+
+        if( isset($post_request['news_related_agid_service_mm']) ){
+
+            foreach ($post_request['news_related_agid_service_mm'] as $key => $value) {
+
+                $news_related_agid_service_mm = new NewsRelatedAgidServiceMm;
+
+                $news_related_agid_service_mm->news_id = $this->id;
+                $news_related_agid_service_mm->related_agid_service_id = $value;
+
+                $news_related_agid_service_mm->save();
+            }
+        }
+    }
+
+
+    /**
+     * Method to update the retalionship between News and Agid Service
+     *
+     * @return void
+     */
+    public function updateNewsRelatedAgidServiceMm(){
+
+        $post_request = \Yii::$app->request->post('News', '');
+
+        if( isset($post_request['news_related_agid_service_mm']) ){
+
+            $this->deleteNewsRelatedAgidServiceMm();
+
+            $this->createNewsRelatedAgidServiceMm();
+        }
+    }
+
+
+    /**
+     * Method to delete the relationship between Newsand related Documenti
+     *
+     * @return void
+     */
+    public function deleteNewsRelatedAgidServiceMm(){
+
+        $news_related_agid_service_mm = $this->newsRelatedAgidServiceMm;
+
+        foreach ($news_related_agid_service_mm as $key => $value) {
+
+            $value->delete();
+        }
+    }
+
+
+    /**
+     * Method to crete relationship between News and Agid Person
+     *
+     * @return void
+     */
+    public function createNewsAgidPersonMm(){
+
+        $post_request = \Yii::$app->request->post('News','');
+
+        if( isset($post_request['news_agid_person_mm']) ){
+
+            foreach ($post_request['news_agid_person_mm'] as $key => $value) {
+
+                $news_agid_person_mm = new NewsAgidPersonMm;
+
+                $news_agid_person_mm->news_id = $this->id;
+                $news_agid_person_mm->agid_person_id = $value;
+
+                $news_agid_person_mm->save();
+            }
+        }
+    }
+
+
+    /**
+     * Method to update the relationship between News and Agid Person
+     *
+     * @return void
+     */
+    public function updateNewsAgidPersonMm(){
+
+        $post_request = \Yii::$app->request->post('News','');
+
+        if( isset($post_request['news_agid_person_mm']) ){
+
+            $this->deleteNewsAgidPersonMm();
+
+            $this->createNewsAgidPersonMm();
+        }
+    }
+
+
+    /**
+     * Method to delete the relationship between News and Agid Person
+     *
+     * @return void
+     */
+    public function deleteNewsAgidPersonMm(){
+
+        $news_agid_person_mm = $this->newsAgidPersonMm;
+
+        foreach ($news_agid_person_mm as $key => $value) {
+
+            $value->delete();
+        }
+    }
+
 }

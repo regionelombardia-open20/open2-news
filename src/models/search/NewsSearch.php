@@ -16,8 +16,10 @@ use open20\amos\core\interfaces\ContentModelSearchInterface;
 use open20\amos\core\interfaces\SearchModelInterface;
 use open20\amos\core\record\CmsField;
 use open20\amos\news\models\News;
+use open20\amos\tag\models\EntitysTagsMm;
 use Yii;
 use yii\data\ActiveDataProvider;
+use yii\db\ExpressionInterface;
 use yii\di\Container;
 
 /**
@@ -53,10 +55,9 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
             [['titolo', 'sottotitolo', 'descrizione_breve', 'descrizione', 'metakey', 'metadesc', 'data_pubblicazione', 'data_rimozione', 'created_at', 'updated_at', 'deleted_at'], 'safe'],
         ];
     }
-
+    
     /**
-     *
-     * @return type
+     * @return array|string[]
      */
     public function searchFieldsMatch()
     {
@@ -80,10 +81,9 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
             'data_pubblicazione'
         ];
     }
-
+    
     /**
-     *
-     * @return type
+     * @return array|string[]
      */
     public function searchFieldsLike()
     {
@@ -96,9 +96,9 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
             'metadesc',
         ];
     }
-
+    
     /**
-     *
+     * @return array|string[]
      */
     public function searchFieldsGlobalSearch()
     {
@@ -288,6 +288,7 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
         $now = date('Y-m-d');
         $tableName = $this->tableName();
         $query = $this->baseSearch($params)
+            ->distinct()->leftJoin(EntitysTagsMm::tableName(), EntitysTagsMm::tableName() . ".classname = '".  str_replace('\\','\\\\',News::className()) . "' and ".EntitysTagsMm::tableName(). ".record_id = ". News::tableName() . ".id  and " . EntitysTagsMm::tableName(). ".deleted_at is NULL")
             ->andWhere([
                 $tableName . '.status' => News::NEWS_WORKFLOW_STATUS_VALIDATO,
                 $tableName . '.primo_piano' => 1
@@ -296,7 +297,11 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
             ->andWhere(['or',
                 ['>=', 'data_rimozione', $now],
                 ['data_rimozione' => null]]
-            );
+            )
+        ->andWhere(['or',
+            ['>=', 'news_expiration_date', $now],
+            ['news_expiration_date' => null]]
+    );
 
         return $query;
     }
@@ -341,11 +346,10 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
 
         return $dataProvider;
     }
-
+    
     /**
-     *
-     * @param type $params
-     * @param type $limit
+     * @param array $params
+     * @param int|ExpressionInterface|null $limit
      * @return ActiveDataProvider
      */
     public function cmsSearchClusterAgrifood($params, $limit = null)
@@ -374,11 +378,10 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
 //    
 //    return $dataProvider;
     }
-
+    
     /**
-     *
-     * @param type $params
-     * @param type $limit
+     * @param array $params
+     * @param int|ExpressionInterface|null $limit
      * @return ActiveDataProvider
      */
     public function cmsSearchClusterAerospazio($params, $limit = null)
@@ -407,11 +410,10 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
 //    
 //    return $dataProvider;
     }
-
+    
     /**
-     *
-     * @param type $params
-     * @param type $limit
+     * @param array $params
+     * @param int|ExpressionInterface|null $limit
      * @return ActiveDataProvider
      */
     public function cmsSearchClusterChimicaverde($params, $limit = null)
@@ -440,11 +442,10 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
 //    
 //    return $dataProvider;
     }
-
+    
     /**
-     *
-     * @param type $params
-     * @param type $limit
+     * @param array $params
+     * @param int|ExpressionInterface|null $limit
      * @return ActiveDataProvider
      */
     public function cmsSearchClusterMobilita($params, $limit = null)
@@ -474,11 +475,10 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
 //    
 //    return $dataProvider;
     }
-
+    
     /**
-     *
-     * @param type $params
-     * @param type $limit
+     * @param array $params
+     * @param int|ExpressionInterface|null $limit
      * @return ActiveDataProvider
      */
     public function cmsSearchClusterFabbricaIntelligente($params, $limit = null)
@@ -508,11 +508,10 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
 //    
 //    return $dataProvider;
     }
-
+    
     /**
-     *
-     * @param type $params
-     * @param type $limit
+     * @param array $params
+     * @param int|ExpressionInterface|null $limit
      * @return ActiveDataProvider
      */
     public function cmsSearchClusterEnergia($params, $limit = null)
@@ -542,11 +541,10 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
 //    
 //    return $dataProvider;
     }
-
+    
     /**
-     *
-     * @param type $params
-     * @param type $limit
+     * @param array $params
+     * @param int|ExpressionInterface|null $limit
      * @return ActiveDataProvider
      */
     public function cmsSearchClusterTecnologieSmartCommunities($params, $limit = null)
@@ -576,11 +574,10 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
 //    
 //    return $dataProvider;
     }
-
+    
     /**
-     *
-     * @param type $params
-     * @param type $limit
+     * @param array $params
+     * @param int|ExpressionInterface|null $limit
      * @return ActiveDataProvider
      */
     public function cmsSearchClusterScienzeVita($params, $limit = null)
@@ -609,11 +606,10 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
 //    
 //    return $dataProvider;
     }
-
+    
     /**
-     *
-     * @param type $params
-     * @param type $limit
+     * @param array $params
+     * @param int|ExpressionInterface|null $limit
      * @return ActiveDataProvider
      */
     public function cmsSearchTecnologieAmbientiVita($params, $limit = null)
@@ -643,11 +639,10 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
 //    
 //    return $dataProvider;
     }
-
+    
     /**
-     *
-     * @param type $params
-     * @param type $limit
+     * @param array $params
+     * @param int|ExpressionInterface|null $limit
      * @return ActiveDataProvider
      */
     public function cmsSearchStorieInnovazione($params, $limit = null)
@@ -675,9 +670,11 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
 //    
 //    return $dataProvider;
     }
-
+    
     /**
-     *
+     * @param array $params
+     * @param int|ExpressionInterface|null $limit
+     * @return ActiveDataProvider
      */
     public function cmsSearchLabLombardia($params, $limit = null)
     {
@@ -705,14 +702,15 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
 //    
 //    return $dataProvider;
     }
-
+    
     /**
-     *
+     * @param array $params
+     * @param int|ExpressionInterface|null $limit
+     * @return ActiveDataProvider
+     * @throws \yii\base\InvalidConfigException
      */
     public function cmsSearchCampusParty($params, $limit = null)
     {
-        $tableName = $this->tableName();
-
         $this->load($params);
         $query = $this->baseSearch($params);
         $dataProvider = new ActiveDataProvider([
@@ -741,14 +739,15 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
 
         return $dataProvider;
     }
-
+    
     /**
-     *
+     * @param array $params
+     * @param int|ExpressionInterface|null $limit
+     * @return ActiveDataProvider
+     * @throws \yii\base\InvalidConfigException
      */
     public function cmsSearchStatiGenerali($params, $limit = null)
     {
-        $tableName = $this->tableName();
-
         $this->load($params);
         $query = $this->baseSearch($params);
         $dataProvider = new ActiveDataProvider([
@@ -777,9 +776,11 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
 
         return $dataProvider;
     }
-
+    
     /**
-     *
+     * @param array $params
+     * @param int|ExpressionInterface|null $limit
+     * @return ActiveDataProvider
      */
     public function cmsSearchPremio($params, $limit = null)
     {
@@ -808,11 +809,10 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
 //    
 //    return $dataProvider;
     }
-
+    
     /**
-     *
-     * @param type $params
-     * @param type $limit
+     * @param array $params
+     * @param int|ExpressionInterface|null $limit
      * @return ActiveDataProvider
      */
     public function cmsSearchForoRegionale($params, $limit = null)
@@ -842,9 +842,11 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
 //    
 //    return $dataProvider;
     }
-
+    
     /**
-     *
+     * @param array $params
+     * @param int|ExpressionInterface|null $limit
+     * @return ActiveDataProvider
      */
     public function cmsSearchLeggeRegionale($params, $limit = null)
     {
@@ -875,9 +877,8 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
     }
 
     /**
-     *
-     * @param type $params
-     * @param type $limit
+     * @param array $params
+     * @param int|ExpressionInterface|null $limit
      * @return ActiveDataProvider
      */
     public function cmsSearchRedazione($params, $limit = null)
@@ -907,12 +908,12 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
 //    
 //    return $dataProvider;
     }
-
+    
     /**
-     *
-     * @param type $params
-     * @param type $limit
-     * @param type $category
+     * @param array $params
+     * @param int|ExpressionInterface|null $limit
+     * @param int|null $category
+     * @return ActiveDataProvider
      */
     public function cmsSearchByCategory($params, $limit = null, $category = null)
     {
@@ -943,7 +944,6 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
     }
 
     /**
-     *
      * @return array
      */
     public function cmsViewFields()
@@ -964,7 +964,6 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
     }
 
     /**
-     *
      * @return array
      */
     public function cmsSearchFields()
@@ -985,7 +984,6 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
     }
 
     /**
-     *
      * @param int $id
      * @return boolean
      */
@@ -1057,5 +1055,4 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
     {
         return $this->buildQuery($params, 'created-by');
     }
-
 }

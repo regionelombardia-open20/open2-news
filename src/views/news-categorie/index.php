@@ -20,8 +20,9 @@ use yii\helpers\Html;
  * @var open20\amos\news\models\search\NewsCategorieSearch $searchModel
  */
 
-$this->title = AmosNews::t('amosnews', 'Categorie notizie');
-$this->params['breadcrumbs'][] = ['label' => $this->title, 'url' => '/news'];
+//cta: tutte le notizie
+$this->title ='Categoria notizie';
+$this->params['breadcrumbs'][] = ['label' => AmosNews::t('amosnews', 'Categorie notizie') , 'url' => '/news'];
 //$this->params['breadcrumbs'][] = $this->title;
 
 ?>
