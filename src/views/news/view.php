@@ -11,6 +11,9 @@
 
 use open20\amos\core\forms\ContextMenuWidget;
 use open20\amos\core\forms\ItemAndCardHeaderWidget;
+use open20\amos\core\utilities\ModalUtility;
+use open20\amos\core\views\DataProviderView;
+use open20\amos\events\AmosEvents;
 use open20\amos\news\utility\NewsUtility;
 use open20\amos\core\helpers\Html;
 use open20\amos\core\icons\AmosIcons;
@@ -30,6 +33,9 @@ $enableAgid = AmosNews::instance()->enableAgid;
 /**
  * @var yii\web\View $this
  * @var open20\amos\news\models\News $model
+ * @var \open20\amos\events\models\Event $events
+ * @var yii\data\ActiveDataProvider $dataProviderEvents
+ * @var string $currentView
  */
 
 $this->title = $model->titolo;
@@ -45,8 +51,10 @@ $controller->setNetworkDashboardBreadcrumb();
 $this->params['breadcrumbs'][] = ['label' => Yii::$app->session->get('previousTitle'), 'url' => Yii::$app->session->get('previousUrl')];
 $this->params['breadcrumbs'][] = $this->title;
 
+/** @var AmosEvents $eventsModule */
+$eventsModule = Yii::$app->getModule('events');
 
-if (!empty($_GET['redactional'])) {
+if (\Yii::$app->request->get('redactional')) {
     $this->params['forceBreadcrumbs'][] = ['label' => AmosNews::t('amosnews',"News"), 'url' => ['/news/news/redaction-all-news']];
     $this->params['forceBreadcrumbs'][] = ['label' => $this->title];
 }
@@ -54,19 +62,79 @@ if (!empty($_GET['redactional'])) {
 
 $hidePubblicationDate = Yii::$app->controller->newsModule->hidePubblicationDate;
 $numberListTag = Yii::$app->controller->newsModule->numberListTag;
+$enableGalleryAttachment = Yii::$app->controller->newsModule->enableGalleryAttachment;
+$enableRelateEvents = Yii::$app->controller->newsModule->enableRelateEvents;
+$enableLikeWidget = Yii::$app->controller->newsModule->enableLikeWidget;
+
 
 $url = '/img/img_default.jpg';
 if (!is_null($model->newsImage)) {
     $url = $model->newsImage->getWebUrl('square_large', false, true);
 }
 
-if ($model->status != News::NEWS_WORKFLOW_STATUS_VALIDATO) {
+if (!\Yii::$app->user->isGuest && $model->status != News::NEWS_WORKFLOW_STATUS_VALIDATO) {
+
+    $customStatusLabel = [];
+
+    if (Yii::$app->user->can('NewsValidate', ['model' => $model]) || Yii::$app->user->can('ADMIN')) {
+        $customStatusLabel[News::NEWS_WORKFLOW_STATUS_DAVALIDARE] = Yii::t('amosnews', 'La notizia è in fase di approvazione per la pubblicazione');
+    }
+
     echo \open20\amos\workflow\widgets\WorkflowTransitionStateDescriptorWidget::widget([
         'model' => $model,
         'workflowId' => News::NEWS_WORKFLOW,
         'classDivMessage' => 'message',
-        'viewWidgetOnNewRecord' => true
+        'viewWidgetOnNewRecord' => true,
+        'forceStatusLabel' => $customStatusLabel
     ]);
+
+    // NUOVO WIDGET CON BOTTONE
+//    $form = \open20\amos\core\forms\ActiveForm::begin([
+//        'action' => 'update?id=' . $model->id,
+//        'method' => 'post',
+//        'options' => [
+//            'enctype' => 'multipart/form-data'
+//        ]
+//    ]);
+//
+//    $workflowWithButtonStatus = [];
+//    if (Yii::$app->user->can('NewsValidate', ['model' => $model]) || Yii::$app->user->can('ADMIN')) {
+//        $workflowWithButtonStatus = [
+//            News::NEWS_WORKFLOW_STATUS_BOZZA => [
+//                'saveToStatus' => News::NEWS_WORKFLOW_STATUS_VALIDATO,
+//                'showConfirm' => true,
+//            ],
+//            News::NEWS_WORKFLOW_STATUS_DAVALIDARE => [
+//                'saveToStatus' => News::NEWS_WORKFLOW_STATUS_VALIDATO,
+//                'showConfirm' => true,
+//            ],
+//        ];
+//    } else {
+//        $workflowWithButtonStatus = [
+//            News::NEWS_WORKFLOW_STATUS_BOZZA => [
+//                'saveToStatus' => News::NEWS_WORKFLOW_STATUS_DAVALIDARE,
+//                'showConfirm' => true,
+//            ],
+//        ];
+//    }
+//
+//    echo \frontend\modules\news\widgets\WorkflowTransitionStateDescriptionAndButtons::widget([
+//        'form' => $form,
+//        'model' => $model,
+//        'workflowId' => News::NEWS_WORKFLOW,
+//        'addStatusHiddenField' => true,
+//        'stateDescriptorWidgetOptions' => [
+//            'classDivIcon' => '',
+//            'classDivMessage' => 'message',
+//        ],
+//        'buttonOptions' => [
+//            'status' => $workflowWithButtonStatus
+//        ],
+//        'viewWidgetOnNewRecord' => false
+//    ]);
+//
+//    \open20\amos\core\forms\ActiveForm::end();
+
 }
 
 $hideCategory = false;
@@ -177,6 +245,26 @@ if ($newsCategories->count() == 1) {
                     'viewFilesCounter' => true,
                 ]);
                 ?>
+
+                <?php
+                if (!empty($eventsModule) && ($enableRelateEvents) && ($dataProviderEvents->getTotalCount() > 0)) {
+                    open20\amos\events\assets\EventsAsset::register($this);
+                    $urlIcon = '@vendor/open20/amos-events/src/views/event/_icon';
+                    ?>
+
+                    <div class="event-index">
+                        <?php
+                        echo DataProviderView::widget([
+                            'dataProvider' => $dataProviderEvents,
+                            'currentView' => $currentView,
+                            'iconView' => [
+                                'itemView' => $urlIcon
+                            ],
+                        ]);
+                        ?>
+                    </div>
+                <?php } ?>
+
                 <?php
                 $tagsWidget = '';
                 $tagsWidget = \open20\amos\core\forms\ListTagsWidget::widget([
@@ -187,6 +275,27 @@ if ($newsCategories->count() == 1) {
                 ?>
 
                 <?= $attachmentsWidget ?>
+
+                <?php $arrayImg = $model->getGalleriaUrl();
+                if ($enableGalleryAttachment && $arrayImg != NULL) { ?>
+                    <div class="gallery-section m-t-30">
+                        <div class="container">
+                            <strong class="text-uppercase"><?= AmosNews::t('amosnews', 'Gallery') ?></strong>
+                            <div class="row m-t-20">
+                                <?php
+                                foreach ($arrayImg as $image) { ?>
+                                    <div class="col-md-4 col-xs-6 m-b-30">
+                                        <img alt="<?= AmosNews::t('amosnews', 'Immagine galleria') ?>"
+                                             src="<?= $image ?>" class="img-responsive">
+                                    </div>
+                                <?php } ?>
+                            </div>
+
+                        </div>
+                    </div>
+                    <?php
+                }
+                ?>
 
                 <div class="clearfix"></div>
 
@@ -211,16 +320,15 @@ if ($newsCategories->count() == 1) {
                         ]);
                         ?>
                     </div>
-                    <div class="widget-body-content">
-
-
-                        <?php
-
-                        echo \open20\amos\core\forms\editors\likeWidget\LikeWidget::widget([
-                            'model' => $model,
-                        ]);
-                        ?>
-                    </div>
+                    <?php if($enableLikeWidget) : ?>
+                        <div class="widget-body-content">
+                            <?php
+                            echo \open20\amos\core\forms\editors\likeWidget\LikeWidget::widget([
+                                'model' => $model,
+                            ]);
+                            ?>
+                        </div>
+                    <?php endif; ?>
                 </div>
                 <?php if (\Yii::$app->getModule('correlations')) { ?>
                     <?=

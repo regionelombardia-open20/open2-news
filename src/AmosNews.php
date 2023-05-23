@@ -23,6 +23,7 @@ use open20\amos\news\widgets\icons\WidgetIconNewsCreatedBy;
 use open20\amos\news\widgets\icons\WidgetIconNewsDashboard;
 use open20\amos\news\widgets\icons\WidgetIconNewsDaValidare;
 use yii\helpers\ArrayHelper;
+use kartik\datecontrol\DateControl;
 
 /**
  * Class AmosNews
@@ -309,6 +310,28 @@ class AmosNews extends AmosModule implements ModuleInterface, SearchModuleInterf
      * @var bool
      */
     public $enableFreeTags = false;
+
+     /** Enable/Disable correspondent select on _form page
+     * @var bool $enableGalleryAttachment
+     */
+    public $enableGalleryAttachment = false;
+
+    /**
+     * Enable/Disable correspondent select on _form page
+     * @var bool $enableRelateEvents
+     */
+    public $enableRelateEvents = false;
+
+    /**
+     * Format of the date used for publication range (start + end)
+     * @var string $dateFormatNews
+     */
+    public $dateFormatNews = DateControl::FORMAT_DATE;
+
+    /**
+     * @var bool $enableLikeWidget
+     */
+    public $enableLikeWidget = true;
 
     /**
      * @inheritdoc

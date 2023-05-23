@@ -18,8 +18,12 @@ use open20\amos\core\helpers\Html;
 use open20\amos\core\icons\AmosIcons;
 use open20\amos\cwh\query\CwhActiveQuery;
 use open20\amos\dashboard\controllers\TabDashboardControllerTrait;
+use open20\amos\events\AmosEvents;
+use open20\amos\events\assets\EventsAsset;
+use open20\amos\events\models\Event;
 use open20\amos\news\AmosNews;
 use open20\amos\news\assets\ModuleNewsAsset;
+use open20\amos\news\models\base\NewsRelatedEventMm;
 use open20\amos\news\models\News;
 use open20\amos\news\models\search\NewsSearch;
 use open20\amos\news\utility\NewsUtility;
@@ -51,6 +55,7 @@ class NewsController extends CrudController
     public $newsModule = null; // @var AmosNews|null $newsModule
     public $moduleCwh;
     public $scope;
+
 
     /**
      * @inheritdoc
@@ -453,6 +458,20 @@ class NewsController extends CrudController
     {
         /** @var News $model */
         $model = $this->findModel($id);
+        $events = [];
+        $dataProviderEvents = null;
+        if ($this->newsModule->enableRelateEvents){
+            $correlatedEvent = NewsRelatedEventMm::find()->andWhere(['news_id' => $id])->select('event_id')->asArray()->all();
+            foreach ($correlatedEvent as $ids){
+                $events[] = $ids['event_id'];
+            }
+            $events = Event::find()
+                ->andWhere(['in', 'id', $events])
+                ->andWhere(['status' => 'EventWorkflow/PUBLISHED']);
+            $dataProviderEvents = new ActiveDataProvider([
+                'query' => $events
+            ]);
+        }
 
         if (isset(Yii::$app->params['isPoi']) && Yii::$app->params['isPoi'] == true) {
             if ($id == 2579) {
@@ -480,6 +499,9 @@ class NewsController extends CrudController
         return $this->render(
             'view',
             [
+                'currentView' => $this->getCurrentView(),
+                'events' => $events,
+                'dataProviderEvents' => $dataProviderEvents,
                 'model' => $model,
                 'moduleCwh' => $this->moduleCwh,
                 'scope' => $this->scope
@@ -1195,7 +1217,7 @@ class NewsController extends CrudController
         }
 
         return $this->render(
-            'index',
+            'redaction-index',
             [
                 'dataProvider' => $this->getDataProvider(),
                 'model' => $this->getModelSearch(),

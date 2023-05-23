@@ -10,6 +10,7 @@
  */
 
 use open20\amos\attachments\components\AttachmentsInput;
+use open20\amos\attachments\components\CropInput;
 use open20\amos\core\forms\ActiveForm;
 use open20\amos\core\forms\CloseSaveButtonWidget;
 use open20\amos\core\forms\CreatedUpdatedWidget;
@@ -18,7 +19,6 @@ use open20\amos\news\AmosNews;
 use yii\bootstrap\Tabs;
 use open20\amos\core\forms\TextEditorWidget;
 use kartik\color\ColorInput;
-
 
 /**
  * @var yii\web\View $this
@@ -35,6 +35,9 @@ $form = ActiveForm::begin([
 ]);
 
 $customView = Yii::$app->getViewPath() . '/imageField.php';
+
+$hidePreviewDeleteButton = false;
+$newsImageLabel = AmosNews::t('amosnews', '#image_field_required');
 ?>
 
 <div class="news-categorie-form">
@@ -46,21 +49,11 @@ $customView = Yii::$app->getViewPath() . '/imageField.php';
         </div>
         <div class="col-sm-6">
             <div>
-                <?= $form->field($model, 'categoryIcon')->widget(AttachmentsInput::classname(), [
-                    'options' => [ // Options of the Kartik's FileInput widget
-                        'multiple' => false, // If you want to allow multiple upload, default to false
-                        'accept' => "image/*"
-                    ],
-                    'pluginOptions' => [ // Plugin options of the Kartik's FileInput widget
-                        'maxFileCount' => 1,
-                        'showRemove' => false, // Client max files,
-                        'indicatorNew' => false,
-                        'allowedPreviewTypes' => ['image'],
-                        'previewFileIconSettings' => false,
-                        'overwriteInitial' => false,
-                        'layoutTemplates' => false
-                    ]
-                ]) ?>
+                <?= $form->field($model, 'categoryIcon')->widget(CropInput::class, [
+                    'hidePreviewDeleteButton' => $hidePreviewDeleteButton,
+                    'jcropOptions' => ['aspectRatio' => '1.7']
+                ])->label($newsImageLabel)->hint(AmosNews::t('amosnews', '#image_category_field_hint'))
+                ?>
             </div>
             <div class="row">
                 <div class="col-md-6">

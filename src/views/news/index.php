@@ -17,7 +17,7 @@ use open20\amos\core\views\DataProviderView;
 use open20\amos\news\AmosNews;
 use open20\amos\news\models\News;
 use open20\amos\news\widgets\NewsCarouselWidget;
-
+//var_dump(Yii::$app->controller->action->id);die;
 /**
  * @var yii\web\View $this
  * @var yii\data\ActiveDataProvider $dataProvider
@@ -131,7 +131,7 @@ $newsModule = AmosNews::instance();
                     'attribute' => 'data_rimozione',
                     'value' => function ($model) {
                         /** @var News $model */
-                        return (is_null($model->data_rimozione)) ? AmosNews::t('amosnews', 'Mai') : Yii::$app->formatter->asDate($model->data_rimozione);
+                        return (is_null($model->data_rimozione) || $model->data_rimozione == '9999-12-31 00:00:00') ? AmosNews::t('amosnews', 'Mai') : Yii::$app->formatter->asDate($model->data_rimozione);
                     },
                 ],
                 'status' => [

@@ -313,7 +313,7 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
      */
     public function highlightedAndHomepageNewsQuery($params)
     {
-        $now = date('Y-m-d');
+        $now = date('Y-m-d H:i:s');
         $tableName = $this->tableName();
         $query = $this->baseSearch($params)
             ->distinct()->leftJoin(EntitysTagsMm::tableName(), EntitysTagsMm::tableName() . ".classname = '" . str_replace('\\', '\\\\', News::className()) . "' and " . EntitysTagsMm::tableName() . ".record_id = " . News::tableName() . ".id  and " . EntitysTagsMm::tableName() . ".deleted_at is NULL")
@@ -344,7 +344,7 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
      */
     public function otherPageNewsQuery($params)
     {
-        $now = date('Y-m-d');
+        $now = date('Y-m-d H:i:s');
         $tableName = $this->tableName();
         $query = $this->baseSearch($params)
             ->distinct()->leftJoin(EntitysTagsMm::tableName(), EntitysTagsMm::tableName() . ".classname = '" . str_replace('\\', '\\\\', News::className()) . "' and " . EntitysTagsMm::tableName() . ".record_id = " . News::tableName() . ".id  and " . EntitysTagsMm::tableName() . ".deleted_at is NULL")
@@ -374,7 +374,7 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
      */
     public function homepageNewsQuery($params)
     {
-        $now = date('Y-m-d');
+        $now = date('Y-m-d H:i:s');
         $tableName = $this->tableName();
 
         $query = $this->baseSearch($params)
@@ -617,13 +617,13 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
 //    $this->load($params);
 //    $query = $this->homepageNewsQuery($params);
 //    $this->applySearchFilters($query);
-//    
+//
 //    $query
 //      ->limit($limit)
 //      ->andWhere([
 //        $tableName . '.news_categorie_id' => News::NEWS_CLUSTERCAT_AGRIFOOD_ID,
 //      ]);
-//    
+//
 //    $dataProvider = new ActiveDataProvider([
 //      'query' => $query,
 //      'sort' => [
@@ -632,7 +632,7 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
 //        ],
 //      ],
 //    ]);
-//    
+//
 //    return $dataProvider;
     }
 
@@ -649,13 +649,13 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
 //    $this->load($params);
 //    $query = $this->homepageNewsQuery($params);
 //    $this->applySearchFilters($query);
-//    
+//
 //    $query
 //      ->limit($limit)
 //      ->andWhere([
 //        $tableName . '.news_categorie_id' => News::NEWS_CLUSTERCAT_AEROSPAZIO_ID,
 //      ]);
-//    
+//
 //    $dataProvider = new ActiveDataProvider([
 //      'query' => $query,
 //      'sort' => [
@@ -664,7 +664,7 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
 //        ],
 //      ],
 //    ]);
-//    
+//
 //    return $dataProvider;
     }
 
@@ -681,13 +681,13 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
 //    $this->load($params);
 //    $query = $this->homepageNewsQuery($params);
 //    $this->applySearchFilters($query);
-//    
+//
 //    $query
 //      ->limit($limit)
 //      ->andWhere([
 //        $tableName . '.news_categorie_id' => News::NEWS_CLUSTERCAT_CHIMICAVERDE_ID,
 //      ]);
-//    
+//
 //    $dataProvider = new ActiveDataProvider([
 //      'query' => $query,
 //      'sort' => [
@@ -696,7 +696,7 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
 //        ],
 //      ],
 //    ]);
-//    
+//
 //    return $dataProvider;
     }
 
@@ -714,13 +714,13 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
 //    $this->load($params);
 //    $query = $this->homepageNewsQuery($params);
 //    $this->applySearchFilters($query);
-//    
+//
 //    $query
 //      ->limit($limit)
 //      ->andWhere([
 //        $tableName . '.news_categorie_id' => News::NEWS_CLUSTERCAT_MOBILITA_ID,
 //      ]);
-//    
+//
 //    $dataProvider = new ActiveDataProvider([
 //      'query' => $query,
 //      'sort' => [
@@ -729,7 +729,7 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
 //        ],
 //      ],
 //    ]);
-//    
+//
 //    return $dataProvider;
     }
 
@@ -747,13 +747,13 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
 //    $this->load($params);
 //    $query = $this->homepageNewsQuery($params);
 //    $this->applySearchFilters($query);
-//    
+//
 //    $query
 //      ->limit($limit)
 //      ->andWhere([
 //        $tableName . '.news_categorie_id' => News::NEWS_CLUSTERCAT_FABBRICAINTELLGENTE_ID,
 //      ]);
-//    
+//
 //    $dataProvider = new ActiveDataProvider([
 //      'query' => $query,
 //      'sort' => [
@@ -762,7 +762,7 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
 //        ],
 //      ],
 //    ]);
-//    
+//
 //    return $dataProvider;
     }
 
@@ -780,13 +780,13 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
 //    $this->load($params);
 //    $query = $this->homepageNewsQuery($params);
 //    $this->applySearchFilters($query);
-//    
+//
 //    $query
 //      ->limit($limit)
 //      ->andWhere([
 //        $tableName . '.news_categorie_id' => News::NEWS_CLUSTERCAT_ENERGIA_ID,
 //      ]);
-//    
+//
 //    $dataProvider = new ActiveDataProvider([
 //      'query' => $query,
 //      'sort' => [
@@ -795,7 +795,7 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
 //        ],
 //      ],
 //    ]);
-//    
+//
 //    return $dataProvider;
     }
 
@@ -813,13 +813,13 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
 //    $this->load($params);
 //    $query = $this->homepageNewsQuery($params);
 //    $this->applySearchFilters($query);
-//    
+//
 //    $query
 //      ->limit($limit)
 //      ->andWhere([
 //        $tableName . '.news_categorie_id' => News::NEWS_CLUSTERCAT_SMARTCOMUNITIESTEC_ID,
 //        ]);
-//    
+//
 //    $dataProvider = new ActiveDataProvider([
 //      'query' => $query,
 //      'sort' => [
@@ -828,7 +828,7 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
 //        ],
 //      ],
 //    ]);
-//    
+//
 //    return $dataProvider;
     }
 
@@ -851,7 +851,7 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
 //      ->andWhere([
 //        $tableName . '.news_categorie_id' => News::NEWS_CLUSTERCAT_SCIENZEVITA_ID,
 //      ]);
-//    
+//
 //    $dataProvider = new ActiveDataProvider([
 //      'query' => $query,
 //      'sort' => [
@@ -860,7 +860,7 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
 //        ],
 //      ],
 //    ]);
-//    
+//
 //    return $dataProvider;
     }
 
@@ -878,13 +878,13 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
 //    $this->load($params);
 //    $query = $this->homepageNewsQuery($params);
 //    $this->applySearchFilters($query);
-//    
+//
 //    $query
 //      ->limit($limit)
 //      ->andWhere([
 //        $tableName . '.news_categorie_id' => News::NEWS_CLUSTERCAT_AMBIENTIVITATEC_ID,
 //      ]);
-//    
+//
 //    $dataProvider = new ActiveDataProvider([
 //      'query' => $query,
 //      'sort' => [
@@ -893,7 +893,7 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
 //        ],
 //      ],
 //    ]);
-//    
+//
 //    return $dataProvider;
     }
 
@@ -915,7 +915,7 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
 //      ->andWhere([
 //        $tableName . '.news_categorie_id' => News::NEWS_CLUSTERCAT_STORIEINNOVAZIONE_ID,
 //      ]);
-//    
+//
 //    $dataProvider = new ActiveDataProvider([
 //      'query' => $query,
 //      'sort' => [
@@ -924,7 +924,7 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
 //        ],
 //      ],
 //    ]);
-//    
+//
 //    return $dataProvider;
     }
 
@@ -941,13 +941,13 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
 //    $this->load($params);
 //    $query = $this->homepageNewsQuery($params);
 //    $this->applySearchFilters($query);
-//    
+//
 //    $query
 //      ->limit($limit)
 //      ->andWhere([
 //        $tableName . '.news_categorie_id' => News::NEWS_CLUSTERCAT_LABLOMBARDIA_ID,
 //      ]);
-//    
+//
 //    $dataProvider = new ActiveDataProvider([
 //      'query' => $query,
 //      'sort' => [
@@ -956,7 +956,7 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
 //        ],
 //      ],
 //    ]);
-//    
+//
 //    return $dataProvider;
     }
 
@@ -1048,13 +1048,13 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
 //    $this->load($params);
 //    $query = $this->homepageNewsQuery($params);
 //    $this->applySearchFilters($query);
-//    
+//
 //    $query
 //      ->limit($limit)
 //      ->andWhere([
 //        $tableName . '.news_categorie_id' => News::NEWS_CLUSTERCAT_PREMIO_ID,
 //      ]);
-//    
+//
 //    $dataProvider = new ActiveDataProvider([
 //      'query' => $query,
 //      'sort' => [
@@ -1063,7 +1063,7 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
 //        ],
 //      ],
 //    ]);
-//    
+//
 //    return $dataProvider;
     }
 
@@ -1081,13 +1081,13 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
 //    $this->load($params);
 //    $query = $this->homepageNewsQuery($params);
 //    $this->applySearchFilters($query);
-//    
+//
 //    $query
 //      ->limit($limit)
 //      ->andWhere([
 //        $tableName . '.news_categorie_id' => News::NEWS_CLUSTERCAT_FOROREGIONALE_ID,
 //      ]);
-//      
+//
 //    $dataProvider = new ActiveDataProvider([
 //      'query' => $query,
 //      'sort' => [
@@ -1096,7 +1096,7 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
 //        ],
 //      ],
 //    ]);
-//    
+//
 //    return $dataProvider;
     }
 
@@ -1114,13 +1114,13 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
 //    $this->load($params);
 //    $query = $this->homepageNewsQuery($params);
 //    $this->applySearchFilters($query);
-//    
+//
 //    $query
 //      ->limit($limit)
 //      ->andWhere([
 //        $tableName . '.news_categorie_id' => News::NEWS_CLUSTERCAT_LEGGEREGIONALE_ID,
 //      ]);
-//    
+//
 //    $dataProvider = new ActiveDataProvider([
 //      'query' => $query,
 //      'sort' => [
@@ -1129,7 +1129,7 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
 //        ],
 //      ],
 //    ]);
-//    
+//
 //    return $dataProvider;
     }
 
@@ -1147,13 +1147,13 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
 //    $this->load($params);
 //    $query = $this->homepageNewsQuery($params);
 //    $this->applySearchFilters($query);
-//    
+//
 //    $query
 //      ->limit($limit)
 //      ->andWhere([
 //        $tableName . '.news_categorie_id' => News::NEWS_CLUSTERCAT_REDAZIONE_ID,
 //      ]);
-//    
+//
 //    $dataProvider = new ActiveDataProvider([
 //      'query' => $query,
 //      'sort' => [
@@ -1162,7 +1162,7 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
 //        ],
 //      ],
 //    ]);
-//    
+//
 //    return $dataProvider;
     }
 
@@ -1198,18 +1198,6 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
         ]);
 
         return $dataProvider;
-    }
-
-    /**
-     * Show only news in evidence (in_evidenza = true).
-     * Method for cms.
-     * @param $params
-     * @param $limit
-     * @return ActiveDataProvider
-     */
-    public function cmsSearchInEvidenza($params, $limit = null)
-    {
-        return $this->cmsSearch($params, $limit, 'in_evidenza');
     }
 
     /**

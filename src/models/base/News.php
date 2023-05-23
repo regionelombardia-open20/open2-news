@@ -63,7 +63,7 @@ use yii\helpers\ArrayHelper;
  * @property integer $edited_by_agid_organizational_unit_id
  * @property integer $news_content_type_id
  * @property integer $news_groups_id
- *
+ * @property array $newsRelatedEventMmAttribute
  *
  * @property \open20\amos\news\models\NewsCategorie $newsCategorie
  * @property \open20\amos\upload\models\FilemanagerMediafile $immagineNews
@@ -96,6 +96,16 @@ abstract class News extends ContentModel
      * @var AmosNews|null $newsModule
      */
     public $newsModule = null;
+
+    /**
+     * @var File[] $news_gallery_attachment
+     */
+    public $news_gallery_attachment;
+
+    /**
+     * @var array $newsRelatedEventMmAttribute
+     */
+    public $newsRelatedEventMmAttribute;
 
     /**
      * @inheritdoc
@@ -199,11 +209,31 @@ abstract class News extends ContentModel
             }
         }
 
+        if($this->newsModule->enableGalleryAttachment){
+            $rules[] = [
+                ['news_gallery_attachment'], 'file', 'maxFiles' => 100
+            ];
+        }
+
+        if($this->newsModule->enableRelateEvents){
+            $rules[] = [
+                ['newsRelatedEventMmAttribute'], 'safe'
+            ];
+        }
+
         if ($this->newsModule->request_publish_on_hp) {
             $rules[] = [['request_publish_on_hp'], 'safe'];
         }
 
         return $rules;
+    }
+
+    public function afterFind()
+    {
+        if($this->newsModule->enableRelateEvents){
+            $this->newsRelatedEventMmAttribute = ArrayHelper::map(NewsRelatedEventMm::find()->andWhere(['news_id' => $this->id])->asArray()->all(), 'event_id', 'event_id');
+        }
+        return parent::afterFind();
     }
 
 
@@ -246,9 +276,10 @@ abstract class News extends ContentModel
                 "news_related_news_mm" => AmosNews::t('amosnews', 'Correlati: novità'),
                 "news_related_agid_service_mm" => AmosNews::t('amosnews', 'Correlati: servizi'),
                 "news_documento_id" => AmosNews::t('amosnews', 'Documenti allegati'),
+                "news_gallery_attachment" => AmosNews::t('amosnews', 'Immagini allegate'),
                 'video_site_management_slider_id' => AmosNews::t('project_cards', 'video_site_management_slider_id'),
                 'image_site_management_slider_id' => AmosNews::t('project_cards', 'image_site_management_slider_id'),
-                'request_publish_on_hp' => AmosNews::t('amosnews', '#placeholder_for_choose_to_publish_on_hp')
+                'request_publish_on_hp' => AmosNews::t('amosnews', '#placeholder_for_choose_to_publish_on_hp'),
             ]
         );
     }
@@ -387,6 +418,14 @@ abstract class News extends ContentModel
     public function getNewsRelatedDocumentiMm()
     {
         return $this->hasMany(NewsRelatedDocumentiMm::class, ['news_id' => 'id']);
+    }
+
+    /**
+     * news related events
+     */
+    public function getNewsRelatedEventMm()
+    {
+        return $this->hasMany(NewsRelatedEventMm::class, ['news_id' => 'id']);
     }
 
     /**

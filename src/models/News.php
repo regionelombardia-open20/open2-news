@@ -20,14 +20,16 @@ use open20\amos\core\helpers\Html;
 use open20\amos\core\interfaces\CustomUrlModelInterface;
 use open20\amos\core\interfaces\ModelImageInterface;
 use open20\amos\core\interfaces\ContentModelInterface;
+use open20\amos\core\interfaces\PublicationDateFieldsInterface;
 use open20\amos\core\interfaces\ViewModelInterface;
 use open20\amos\core\views\toolbars\StatsToolbarPanels;
 use open20\amos\core\utilities\CmsUtility;
 use open20\amos\news\AmosNews;
 use open20\amos\news\i18n\grammar\NewsGrammar;
+use open20\amos\news\models\base\NewsRelatedEventMm;
+use open20\amos\news\models\NewsRelatedDocumentiMm;
 use open20\amos\news\models\NewsRelatedNewsMm;
 use open20\amos\news\utility\NewsUtility;
-use open20\amos\news\models\NewsRelatedDocumentiMm;
 use open20\amos\news\models\NewsRelatedAgidServiceMm;
 use open20\amos\news\models\NewsAgidPersonMm;
 use open20\amos\news\widgets\icons\WidgetIconNewsDashboard;
@@ -37,6 +39,7 @@ use open20\amos\seo\behaviors\SeoContentBehavior;
 use open20\amos\seo\interfaces\SeoModelInterface;
 use open20\amos\workflow\behaviors\WorkflowLogFunctionsBehavior;
 use open20\amos\core\helpers\StringHelper;
+use kartik\datecontrol\DateControl;
 use raoul2000\workflow\base\SimpleWorkflowBehavior;
 use open20\amos\core\interfaces\ContentPublicationInteraface;
 
@@ -59,11 +62,11 @@ use yii\behaviors\SluggableBehavior;
  */
 class News
     extends
-        \open20\amos\news\models\base\News
+    \open20\amos\news\models\base\News
     implements
-        ContentModelInterface, CommentInterface, ViewModelInterface,
-        ModelImageInterface, SeoModelInterface, CustomUrlModelInterface,
-        ContentPublicationInteraface
+    ContentModelInterface, CommentInterface, ViewModelInterface,
+    ModelImageInterface, SeoModelInterface, CustomUrlModelInterface,
+    ContentPublicationInteraface, PublicationDateFieldsInterface
 {
     // Workflow ID
     const NEWS_WORKFLOW = 'NewsWorkflow';
@@ -110,7 +113,7 @@ class News
      * @var string $distance Distanza
      */
     public $distance;
-    
+
     public $tag_free;
 
     /**
@@ -206,6 +209,45 @@ class News
         $this->newsImage = $image;
     }
 
+    public function getGalleria()
+    {
+        if (empty($this->galleria)) {
+            $query = $this->hasMultipleFiles('news_gallery_attachment');
+            $query->multiple = false;
+            $this->news_gallery_attachment = $query->all();
+        }
+
+        return $this->news_gallery_attachment;
+    }
+
+    /**
+     * @param string $size
+     * @param bool $protected
+     * @param string $url
+     * @param bool $absolute
+     * @param bool $canCache
+     * @return string
+     */
+    public function getGalleriaUrl(
+        $size = 'original',
+        $protected = false,
+        $url = [],
+        $absolute = false,
+        $canCache = false
+    )
+    {
+        $immagini = $this->getGalleria();
+        foreach($immagini as $immagine) {
+            if ($protected) {
+                $url[] = $immagine->getUrl($size, $absolute, $canCache);
+            } else {
+                $url[] = $immagine->getWebUrl($size, $absolute, $canCache);
+            }
+        }
+
+        return $url;
+    }
+
     /**
      * @param string $size
      * @param bool $protected
@@ -230,12 +272,17 @@ class News
                 $url = $newsImage->getWebUrl($size, $absolute, $canCache);
             }
         }
-        
+
         return $url;
     }
 
     /**
-     * @inheritdoc
+     * @param $size
+     * @param $protected
+     * @param $url
+     * @param $absolute
+     * @param $canCache
+     * @return string
      */
     public function getModelImageUrl(
         $size = 'original',
@@ -259,7 +306,7 @@ class News
             $query->multiple = false;
             $this->attachments = $query->all();
         }
-        
+
         return $this->attachments;
     }
 
@@ -281,7 +328,7 @@ class News
             $query->multiple = false;
             $this->attachmentsForItemView = $query->all();
         }
-     
+
         return $this->attachmentsForItemView;
     }
 
@@ -401,7 +448,7 @@ class News
                             return Boolean($('#news-data_pubblicazione').val() && $('#news-data_rimozione').val());
 
                         }"],
-                    
+
                     ['date_news', 'compare', 'compareAttribute' => 'news_expiration_date', 'operator' => '<=',
                         'when' => function($model) {
                             return !empty($model->news_expiration_date);
@@ -526,7 +573,7 @@ class News
                     return Html::img($url,
                         [
                             'class' => 'gridview-image'
-                    ]);
+                        ]);
                 },
                 'headerOptions' => [
                     'id' => AmosNews::t('amosnews', 'immagine'),
@@ -695,7 +742,7 @@ class News
             $panels = parent::getStatsToolbar($disableLink);
             $filescount = !is_null($this->newsImage) ? $this->getFileCount() - 1 : $this->getFileCount();
             $panels = ArrayHelper::merge($panels,
-                    StatsToolbarPanels::getDocumentsPanel($this, $filescount, $disableLink));
+                StatsToolbarPanels::getDocumentsPanel($this, $filescount, $disableLink));
             if ($this->isCommentable()) {
                 $commentModule = \Yii::$app->getModule('comments');
                 if ($commentModule) {
@@ -703,11 +750,11 @@ class News
                     $count_comments = $commentModule->countComments($this);
                 }
                 $panels = ArrayHelper::merge($panels,
-                        StatsToolbarPanels::getCommentsPanel($this, $count_comments, $disableLink));
+                    StatsToolbarPanels::getCommentsPanel($this, $count_comments, $disableLink));
             }
             $reportCount = ReportUtil::retrieveReportsCount(get_class($this), $this->id);
             $panels = ArrayHelper::merge($panels,
-                    StatsToolbarPanels::getReportsPanel($this, $reportCount, $disableLink));
+                StatsToolbarPanels::getReportsPanel($this, $reportCount, $disableLink));
         } catch (\Exception $ex) {
             Yii::getLogger()->log($ex->getMessage(), Logger::LEVEL_ERROR);
         }
@@ -833,7 +880,7 @@ class News
             );
             $hideDraftStatus[] = News::NEWS_WORKFLOW_STATUS_VALIDATO;
         }
- 
+
         return [
             'statusToRender' => $statusToRender,
             'hideDraftStatus' => $hideDraftStatus
@@ -996,6 +1043,47 @@ class News
     }
 
     /**
+     * Method to delete the relationship between News and related Event
+     *
+     * @return void
+     */
+    public function createNewsRelatedEventMm()
+    {
+        if (!empty($this->newsRelatedEventMmAttribute)) {
+            foreach ($this->newsRelatedEventMmAttribute as $value) {
+                $news_related_event_mm = new NewsRelatedEventMm;
+                $news_related_event_mm->news_id = $this->id;
+                $news_related_event_mm->event_id = $value;
+                $news_related_event_mm->save();
+            }
+        }
+    }
+
+    /**
+     * Method to update the relationship between News and related Documenti
+     *
+     * @return void
+     */
+    public function updateNewsRelatedEventMm()
+    {
+        $this->deleteNewsRelatedEventMm();
+        $this->createNewsRelatedEventMm();
+    }
+
+    /**
+     * Method to delete the relationship between News and related Documenti
+     *
+     * @return void
+     */
+    public function deleteNewsRelatedEventMm()
+    {
+        $newsToDelete = NewsRelatedEventMm::find()->andWhere(['news_id' => $this->id])->all();
+        foreach ($newsToDelete as $news) {
+            $news->delete();
+        }
+    }
+
+    /**
      * Method to create the realationship between News and Agid Service
      *
      * @return void
@@ -1114,7 +1202,7 @@ class News
     }
 
     /**
-     * 
+     *
      * @param type $insert
      * @param type $changedAttributes
      * @return type
@@ -1122,6 +1210,10 @@ class News
     public function afterSave($insert, $changedAttributes)
     {
         parent::afterSave($insert, $changedAttributes);
+
+        if ($this->newsModule->enableRelateEvents){
+            $this->updateNewsRelatedEventMm();
+        }
 
         if (!empty($this->request_publish_on_hp) && $this->request_publish_on_hp == 1) {
             if (($this->status == self::NEWS_WORKFLOW_STATUS_VALIDATO) && $this->isCommunityManagerLoggedUserInThisNews()) {
@@ -1222,5 +1314,33 @@ class News
         return false;
     }
 
+    /**
+     * This method returns the name of the publication date begin field
+     * @return string
+     */
+    public function getPublicatedFromField() {
+        return self::tableName() . '.data_pubblicazione';
+    }
+
+    /**
+     * This method returns the name of the publication date end field
+     * @return string
+     */
+    public function getPublicatedAtField() {
+        return self::tableName() . '.data_rimozione';
+    }
+
+    /**
+     * This method returns true if the publication date fields are datetime instead of only date fields
+     * @return bool
+     */
+    public function theDatesAreDatetime() {
+        $result = false;
+        $newsModule = Yii::$app->getModule('news');
+        if($newsModule){
+            $result = ($newsModule->dateFormatNews == DateControl::FORMAT_DATETIME);
+        }
+        return $result;
+    }
 
 }
