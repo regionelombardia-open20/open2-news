@@ -15,6 +15,7 @@ use open20\amos\core\icons\AmosIcons;
 use open20\amos\core\utilities\ModalUtility;
 use open20\amos\core\views\DataProviderView;
 use open20\amos\news\AmosNews;
+use open20\amos\news\controllers\NewsController;
 use open20\amos\news\models\News;
 use open20\amos\news\widgets\NewsCarouselWidget;
 
@@ -38,6 +39,10 @@ $queryParamCurrentView = Yii::$app->request->getQueryParam('currentView');
 
 /** @var AmosNews $newsModule */
 $newsModule = AmosNews::instance();
+
+/** @var NewsController $appController */
+$appController = \Yii::$app->controller;
+
 \Yii::$app->params['hideDownload'] = true;
 
 $textActionView = AmosNews::t('amosnews', 'Visualizza');
@@ -278,7 +283,7 @@ $dataProvider->setSort([
                                 $action = '/news/news/update?id=' . $model->id . '&redactional=1';
                                 $options = ModalUtility::getBackToEditPopup(
                                     $model,
-                                    'NewsValidate',
+                                    News::NEWS_WORKFLOW_STATUS_VALIDATO,
                                     $action,
                                     ['class' => 'btn btn-tools-secondary', 'title' => Yii::t('amoscore', 'Modifica'), 'data-pjax' => '0']
                                 );
@@ -308,6 +313,11 @@ $dataProvider->setSort([
                 ],
             ],
             'enableExport' => true
+        ],
+        'exportConfig' => [
+            'exportEnabled' => true,
+            'exportColumns' => $appController->getExportRedactionColumns($model),
+            'noExportColumns' => []
         ],
         'listView' => [
             'itemView' => '_item',

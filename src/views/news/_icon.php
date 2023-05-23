@@ -75,7 +75,7 @@ if (strlen($model->descrizione) > 150)
                         ]) ?>
                         <?= NewsWidget::widget(['model' => $model]); ?>
                         <div class="card-calendar d-flex flex-column justify-content-center position-absolute rounded-0">
-                            <span class="card-day font-weight-bold text-600 lead"><?= Html::tag('strong', \Yii::$app->getFormatter()->asDate($model->getPublicatedFrom(), 'd')) ?></span>
+                            <span class="card-day font-weight-bold text-600 lead"><?= Html::tag('strong', \Yii::$app->getFormatter()->asDate($model->getPublicatedFrom(), 'dd')) ?></span>
                             <span class="card-month text-uppercase font-weight-bold text-600 small"><?= Html::tag('strong', \Yii::$app->getFormatter()->asDate($model->getPublicatedFrom(), 'MMM')) ?></span>
                             <span class="card-year font-weight-light text-600 small"><?= \Yii::$app->getFormatter()->asDate($model->getPublicatedFrom(), 'y') ?></span>
                         </div>

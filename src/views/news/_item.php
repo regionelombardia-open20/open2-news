@@ -62,11 +62,11 @@ $model->descrizione = strip_tags($model->descrizione, 0, 147) . '...';
                             'actionModify' => "/news/news/update?id=" . $model->id,
                             'actionDelete' => "/news/news/delete?id=" . $model->id,
                             'labelDeleteConfirm' => AmosNews::t('amosnews', 'Sei sicuro di voler cancellare questa notizia?'),
-                            'modelValidatePermission' => 'NewsValidate'
+                            'modelValidatePermission' => \open20\amos\news\models\News::NEWS_WORKFLOW_STATUS_VALIDATO
                         ]) ?>
                         <?= NewsWidget::widget(['model' => $model]); ?>
                         <div class="card-calendar d-flex flex-column justify-content-center position-absolute rounded-0">
-                            <span class="card-day font-weight-bold text-600 lead"><?= Html::tag('strong', \Yii::$app->getFormatter()->asDate($model->getPublicatedFrom(), 'd')) ?></span>
+                            <span class="card-day font-weight-bold text-600 lead"><?= Html::tag('strong', \Yii::$app->getFormatter()->asDate($model->getPublicatedFrom(), 'dd')) ?></span>
                             <span class="card-month text-uppercase font-weight-bold text-600 small"><?= Html::tag('strong', \Yii::$app->getFormatter()->asDate($model->getPublicatedFrom(), 'MMM')) ?></span>
                             <span class="card-year font-weight-light text-600 small"><?= \Yii::$app->getFormatter()->asDate($model->getPublicatedFrom(), 'y') ?></span>
                         </div>

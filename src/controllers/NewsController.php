@@ -19,6 +19,7 @@ use open20\amos\core\icons\AmosIcons;
 use open20\amos\cwh\query\CwhActiveQuery;
 use open20\amos\dashboard\controllers\TabDashboardControllerTrait;
 use open20\amos\events\AmosEvents;
+use open20\amos\admin\AmosAdmin;
 use open20\amos\events\assets\EventsAsset;
 use open20\amos\events\models\Event;
 use open20\amos\news\AmosNews;
@@ -1492,4 +1493,126 @@ class NewsController extends CrudController
         //$this->view->registerMetaTag(['property' => 'og:title', 'content' => $this->model->titolo]);
         //$this->view->registerMetaTag(['property' => 'og:url', 'content' => $url]);
     }
+
+    /**
+     * Grid columns for export
+     * @param $model
+     * @return array[]
+     */
+    public function getExportRedactionColumns($model)
+    {
+        /** @var AmosNews $newsModule */
+        $newsModule = \Yii::$app->getModule(AmosNews::getModuleName());
+        $hidePubblicationDate = $newsModule->hidePubblicationDate;
+        $hideDataRimozioneView = $newsModule->hideDataRimozioneView;
+
+        return [
+            'id' => [
+                'attribute' => 'id',
+                'label' => '#ID',
+                'visible' => $newsModule->enableAgid,
+            ],
+            'status' => [
+                'attribute' => 'status',
+                'format' => 'raw',
+                'value' => function ($model) {
+                    /** @var News $model */
+                    return $model->hasWorkflowStatus() ? AmosNews::t('amosnews', $model->getWorkflowStatus()->getLabel()) : '--';
+                }
+            ],
+            'titolo' => [
+                'attribute' => 'title',
+                'label' => AmosNews::t('amosnews', 'Titolo'),
+            ],
+            'created_by' => [
+                'attribute' => 'created_by',
+                'label' => AmosNews::t('amosnews', 'Creatore'),
+                'value' => function ($model) {
+                    return $model->createdUserProfile->nomeCognome;
+                },
+                'format' => 'html'
+            ],
+            'date_news' => [
+                'attribute' => 'date_news',
+                'label' => 'Pubblicato il',
+                'visible' => $newsModule->enableAgid,
+            ],
+            'news_expiration_date' => [
+                'attribute' => 'news_expiration_date',
+                'visible' => $newsModule->enableAgid,
+            ],
+            'newsContentType.name' => [
+                'attribute' => 'newsContentType.name',
+                'format' => 'html',
+                'label' => AmosNews::t('amosnews', 'Tipologia content type'),
+                'value' => function ($model) {
+                    return $model->newsContentType->name;
+                },
+                'visible' => $newsModule->enableAgid,
+            ],
+            'updated_by_agid' => [
+                'attribute' => 'updated_by',
+                'label' => AmosNews::t('amosnews', 'Ultima modifica'),
+                'value' => function ($model) {
+                    if ($user_profile = $model->getUserProfileByUserId($model->updated_by)) {
+                        return $user_profile->nome . " " . $user_profile->cognome;
+                    }
+                    return '';
+                },
+                'format' => 'html',
+                'visible' => !$newsModule->enableAgid,
+            ],
+            'updated_at_agid' => [
+                'attribute' => 'updated_at',
+                'label' => AmosNews::t('amosnews', 'Data ultima modifica'),
+                'visible' => !$newsModule->enableAgid,
+                'value' => function($model){
+                    return \Yii::$app->formatter->asDatetime($model->updated_at, 'php:d/m/Y H:i');
+                },
+                'format' => 'raw',
+            ],
+            'updated_by' => [
+                'attribute' => 'updated_by',
+                'value' => function ($model) {
+                    if ($user_profile = $model->getUserProfileByUserId($model->updated_by)) {
+                        return $user_profile->nome . " " . $user_profile->cognome;
+                    }
+                    return '';
+                },
+                'format' => 'html',
+                'visible' => $newsModule->enableAgid,
+            ],
+            'updated_at' => [
+                'attribute' => 'updated_at',
+                'visible' => $newsModule->enableAgid,
+            ],
+            'data_pubblicazione' => [
+                'label' => $hidePubblicationDate ? AmosNews::t('amosnews', 'Pubblicato il') : AmosNews::t('amosnews', 'Inizio pubblicazione'),
+                'attribute' => 'data_pubblicazione',
+                'value' => function ($model) {
+                    /** @var News $model */
+                    return (is_null($model->data_pubblicazione)) ? AmosNews::t('amosnews', 'Immediata') : Yii::$app->formatter->asDatetime($model->data_pubblicazione,'php:d/m/Y H:i');
+                },
+                'format' => 'raw',
+                'visible' => !$newsModule->enableAgid,
+            ],
+            'data_rimozione' => [
+                'label' => AmosNews::t('amosnews', 'Fine pubblicazione'),
+                'visible' => (!$hidePubblicationDate && !$hideDataRimozioneView && !$newsModule->enableAgid),
+                'attribute' => 'data_rimozione',
+                'value' => function ($model) {
+                    /** @var News $model */
+                    return (is_null($model->data_rimozione) || $model->data_rimozione == '9999-12-31 00:00:00') ? AmosNews::t('amosnews', 'Mai') : Yii::$app->formatter->asDatetime($model->data_rimozione,'php:d/m/Y H:i');
+                },
+                'format' => 'raw',
+            ],
+
+            'news_categorie_id' => [
+                'attribute' => 'newsCategorie.titolo',
+                'label' => AmosNews::t('amosnews', 'Categoria'),
+                'visible' => $newsModule->showCategory,
+            ],
+        ];
+    }
+
 }

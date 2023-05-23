@@ -180,7 +180,7 @@ $newsModule = AmosNews::instance();
                                 $action = '/news/news/update?id=' . $model->id;
                                 $options = ModalUtility::getBackToEditPopup(
                                     $model,
-                                    'NewsValidate',
+                                    News::NEWS_WORKFLOW_STATUS_VALIDATO,
                                     $action,
                                     ['class' => 'btn btn-tools-secondary', 'title' => Yii::t('amoscore', 'Modifica'), 'data-pjax' => '0']
                                 );
