@@ -824,12 +824,19 @@ EOF
                                                     )</em>
                                             </h3> -->
                                 <?php
-                                    if (empty($model->primo_piano)) {
-                                        $model->primo_piano = 1;
+                                
+                                    if ($model->isNewRecord) {
+                                        if (empty($scope)) {
+
+                                            $model->primo_piano = 1;
+                                            $model->in_evidenza = 0;
+                                        } else {
+
+                                            $model->primo_piano = 0;
+                                            $model->in_evidenza = 0;
+                                        }
                                     }
-                                    if (empty($model->in_evidenza)) {
-                                        $model->in_evidenza = 0;
-                                    }
+
                                     $primoPiano = '<div class="col-md-6 col-xs-12">' . $form->field($model, 'primo_piano')->widget(Select::class, [
                                         'auto_fill' => true,
                                         'data' => [
@@ -846,7 +853,7 @@ EOF
                                                     }
                                                 "
                                         ]
-                                    ])->label('Mostra notizia')->hint('Scegli se rendere la notizia fruibile anche da un\'utenza non registrata');
+                                    ])->label('Mostra notizia')->hint('Scegli se rendere la notizia fruibile anche da un\'utenza non registrata') . '</div>';
                                     if ($publish_enabled) {
                                         echo $primoPiano;
                                     }
