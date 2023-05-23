@@ -60,7 +60,8 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
 
     // Sovrascrivo l'after validate del base/news per togliere l'bbligatorietà dell e news fatta da STEFAN
     // sarebbe  il caso di cambiare quel tipo di oobligatorietà e fare  in altra maniera
-    public function  afterValidate (){
+    public function afterValidate()
+    {
         // DO NOTING
     }
 
@@ -89,7 +90,7 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
             'data_pubblicazione'
         ];
     }
-    
+
     /**
      * @return array|string[]
      */
@@ -104,7 +105,7 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
             'metadesc',
         ];
     }
-    
+
     /**
      * @return array|string[]
      */
@@ -267,19 +268,24 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
      */
     public function highlightedAndHomepageNewsQuery($params)
     {
-        $now       = date('Y-m-d');
+        $now = date('Y-m-d');
         $tableName = $this->tableName();
-        $query     = $this->baseSearch($params)
+        $query = $this->baseSearch($params)
+            ->distinct()->leftJoin(EntitysTagsMm::tableName(), EntitysTagsMm::tableName() . ".classname = '" . str_replace('\\', '\\\\', News::className()) . "' and " . EntitysTagsMm::tableName() . ".record_id = " . News::tableName() . ".id  and " . EntitysTagsMm::tableName() . ".deleted_at is NULL")
             ->andWhere([
-                $tableName.'.status' => News::NEWS_WORKFLOW_STATUS_VALIDATO,
-                $tableName.'.in_evidenza' => 1,
-                $tableName.'.primo_piano' => 1
+                $tableName . '.status' => News::NEWS_WORKFLOW_STATUS_VALIDATO,
+                $tableName . '.in_evidenza' => 1,
+                $tableName . '.primo_piano' => 1
             ])
             ->andWhere(['<=', 'data_pubblicazione', $now])
             ->andWhere(['or',
-            ['>=', 'data_rimozione', $now],
-            ['data_rimozione' => null]]
-        );
+                    ['>=', 'data_rimozione', $now],
+                    ['data_rimozione' => null]]
+            )
+            ->andWhere(['or',
+                    ['>=', 'news_expiration_date', $now],
+                    ['news_expiration_date' => null]]
+            );
 
         return $query;
     }
@@ -293,39 +299,45 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
      */
     public function homepageNewsQuery($params)
     {
-        $now       = date('Y-m-d');
+        $now = date('Y-m-d');
         $tableName = $this->tableName();
         $query = $this->baseSearch($params)
-            ->distinct()->leftJoin(EntitysTagsMm::tableName(), EntitysTagsMm::tableName() . ".classname = '".  str_replace('\\','\\\\',News::className()) . "' and ".EntitysTagsMm::tableName(). ".record_id = ". News::tableName() . ".id  and " . EntitysTagsMm::tableName(). ".deleted_at is NULL")
+            ->distinct()->leftJoin(EntitysTagsMm::tableName(), EntitysTagsMm::tableName() . ".classname = '" . str_replace('\\', '\\\\', News::className()) . "' and " . EntitysTagsMm::tableName() . ".record_id = " . News::tableName() . ".id  and " . EntitysTagsMm::tableName() . ".deleted_at is NULL")
             ->andWhere([
                 $tableName . '.status' => News::NEWS_WORKFLOW_STATUS_VALIDATO,
                 $tableName . '.primo_piano' => 1
             ])
             ->andWhere(['<=', 'data_pubblicazione', $now])
             ->andWhere(['or',
-                ['>=', 'data_rimozione', $now],
-                ['data_rimozione' => null]]
+                    ['>=', 'data_rimozione', $now],
+                    ['data_rimozione' => null]]
             )
-        ->andWhere(['or',
-            ['>=', 'news_expiration_date', $now],
-            ['news_expiration_date' => null]]
-    );
+            ->andWhere(['or',
+                    ['>=', 'news_expiration_date', $now],
+                    ['news_expiration_date' => null]]
+            );
 
         return $query;
     }
 
     /**
      * Search method useful to retrieve news to show in frontend (with cms)
-     *
      * @param $params
-     * @param int|null $limit
+     * @param null $limit
+     * @param string $type
      * @return ActiveDataProvider
      */
-    public function cmsSearch($params, $limit = null)
+    public function cmsSearch($params, $limit = null, $type = 'all')
     {
         $params = array_merge($params, Yii::$app->request->get());
         $this->load($params);
-        $query  = $this->homepageNewsQuery($params);
+
+        if($type == 'in_evidenza'){
+            $query = $this->highlightedAndHomepageNewsQuery($params);
+        }else {
+            $query = $this->homepageNewsQuery($params);
+        }
+
         $this->applySearchFilters($query);
 
         $dataProvider = new ActiveDataProvider([
@@ -353,9 +365,27 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
                     $this->cmsFilterCategories($command, $query);
                 } else {
                     $query->andWhere(eval("return " . $command . ";"));
-                }            }
+                }
+            }
         }
 
+        return $dataProvider;
+    }
+
+    public function cmsSearchOwnInterestEvidenza($params, $limit = null)
+    {
+        if (\Yii::$app->user->isGuest) {
+            $dataProvider = $this->cmsSearch($params, $limit, 'in_evidenza');
+        } else {
+            $dataProvider = $this->searchOwnInterest($params, $limit);
+        }
+
+        if (!empty($params["withPagination"])) {
+            $dataProvider->setPagination(['pageSize' => $limit]);
+            $dataProvider->query->limit(null);
+        } else {
+            $dataProvider->query->limit($limit);
+        }
         return $dataProvider;
     }
 
@@ -373,10 +403,9 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
         } else {
             $dataProvider->query->limit($limit);
         }
-
         return $dataProvider;
     }
-    
+
     /**
      * This search is to retrieve the same news of the old WidgetGraphicsUltimeNews
      * @param array $params
@@ -397,11 +426,11 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
         } else {
             $dataProvider->query->limit($limit);
         }
-    
+
         if (!empty($params["conditionSearch"])) {
             $commands = explode(";", $params["conditionSearch"]);
             foreach ($commands as $command) {
-                $dataProvider->query->andWhere(eval("return ".$command.";"));
+                $dataProvider->query->andWhere(eval("return " . $command . ";"));
             }
         }
 
@@ -409,15 +438,16 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
     }
 
     /**
-     * Method Search useful to retrieve news to show in frontend (with cms) 
-     * 
+     * Method Search useful to retrieve news to show in frontend (with cms)
+     *
      * sort -> defaultOrder -> date_news = SORT_DESC
      *
      * @param array $params
      * @param [type] $limit
      * @return void
      */
-    public function cmsSearchByDateNews($params, $limit = null){
+    public function cmsSearchByDateNews($params, $limit = null)
+    {
 
         $params = array_merge($params, Yii::$app->request->get());
 
@@ -452,7 +482,7 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
         return $dataProvider;
     }
 
-    
+
     /**
      * @param array $params
      * @param int|ExpressionInterface|null $limit
@@ -484,7 +514,7 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
 //    
 //    return $dataProvider;
     }
-    
+
     /**
      * @param array $params
      * @param int|ExpressionInterface|null $limit
@@ -516,7 +546,7 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
 //    
 //    return $dataProvider;
     }
-    
+
     /**
      * @param array $params
      * @param int|ExpressionInterface|null $limit
@@ -548,7 +578,7 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
 //    
 //    return $dataProvider;
     }
-    
+
     /**
      * @param array $params
      * @param int|ExpressionInterface|null $limit
@@ -581,7 +611,7 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
 //    
 //    return $dataProvider;
     }
-    
+
     /**
      * @param array $params
      * @param int|ExpressionInterface|null $limit
@@ -614,7 +644,7 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
 //    
 //    return $dataProvider;
     }
-    
+
     /**
      * @param array $params
      * @param int|ExpressionInterface|null $limit
@@ -647,7 +677,7 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
 //    
 //    return $dataProvider;
     }
-    
+
     /**
      * @param array $params
      * @param int|ExpressionInterface|null $limit
@@ -680,7 +710,7 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
 //    
 //    return $dataProvider;
     }
-    
+
     /**
      * @param array $params
      * @param int|ExpressionInterface|null $limit
@@ -712,7 +742,7 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
 //    
 //    return $dataProvider;
     }
-    
+
     /**
      * @param array $params
      * @param int|ExpressionInterface|null $limit
@@ -745,7 +775,7 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
 //    
 //    return $dataProvider;
     }
-    
+
     /**
      * @param array $params
      * @param int|ExpressionInterface|null $limit
@@ -776,7 +806,7 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
 //    
 //    return $dataProvider;
     }
-    
+
     /**
      * @param array $params
      * @param int|ExpressionInterface|null $limit
@@ -808,7 +838,7 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
 //    
 //    return $dataProvider;
     }
-    
+
     /**
      * @param array $params
      * @param int|ExpressionInterface|null $limit
@@ -818,7 +848,7 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
     public function cmsSearchCampusParty($params, $limit = null)
     {
         $this->load($params);
-        $query        = $this->baseSearch($params);
+        $query = $this->baseSearch($params);
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
             'sort' => [
@@ -839,13 +869,13 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
         if (!empty($params["conditionSearch"])) {
             $commands = explode(";", $params["conditionSearch"]);
             foreach ($commands as $command) {
-                $query->andWhere(eval("return ".$command.";"));
+                $query->andWhere(eval("return " . $command . ";"));
             }
         }
 
         return $dataProvider;
     }
-    
+
     /**
      * @param array $params
      * @param int|ExpressionInterface|null $limit
@@ -855,7 +885,7 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
     public function cmsSearchStatiGenerali($params, $limit = null)
     {
         $this->load($params);
-        $query        = $this->baseSearch($params);
+        $query = $this->baseSearch($params);
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
             'sort' => [
@@ -876,13 +906,13 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
         if (!empty($params["conditionSearch"])) {
             $commands = explode(";", $params["conditionSearch"]);
             foreach ($commands as $command) {
-                $query->andWhere(eval("return ".$command.";"));
+                $query->andWhere(eval("return " . $command . ";"));
             }
         }
 
         return $dataProvider;
     }
-    
+
     /**
      * @param array $params
      * @param int|ExpressionInterface|null $limit
@@ -915,7 +945,7 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
 //    
 //    return $dataProvider;
     }
-    
+
     /**
      * @param array $params
      * @param int|ExpressionInterface|null $limit
@@ -948,7 +978,7 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
 //    
 //    return $dataProvider;
     }
-    
+
     /**
      * @param array $params
      * @param int|ExpressionInterface|null $limit
@@ -1014,7 +1044,7 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
 //    
 //    return $dataProvider;
     }
-    
+
     /**
      * @param array $params
      * @param int|ExpressionInterface|null $limit
@@ -1033,8 +1063,8 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
         $query
             ->limit($limit)
             ->andWhere([
-                $tableName.'.news_categorie_id' => $category,
-        ]);
+                $tableName . '.news_categorie_id' => $category,
+            ]);
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
@@ -1169,15 +1199,16 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
      * @param $command
      * @param $query ActiveQuery
      */
-    public function cmsFilterCategories($command, $query){
-        $explode = explode('=>',$command );
-        if(count($explode) == 2){
+    public function cmsFilterCategories($command, $query)
+    {
+        $explode = explode('=>', $command);
+        if (count($explode) == 2) {
             $val = trim($explode[1]);
             $val = str_replace('[', '', $val);
             $val = str_replace(']', '', $val);
             $categoryIds = explode(',', $val);
             $query->leftJoin('news_categorie_mm', 'news_categorie_mm.news_id = news.id')
-                ->andWhere([ 'OR',
+                ->andWhere(['OR',
                     ['news_categorie_mm.news_categorie_id' => $categoryIds],
                     ['news.news_categorie_id' => $categoryIds]
                 ]);

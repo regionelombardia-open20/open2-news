@@ -444,6 +444,7 @@ class NewsController extends CrudController
 
         $this->setUpLayout('detail-news');
         $this->view->params['containerFullWidth'] = true;
+        $this->setMetaTags();
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
             return $this->redirect(['view', 'id' => $model->id, 'idNews' => $id]);
@@ -1315,5 +1316,20 @@ class NewsController extends CrudController
         ]);
 
         $this->setDataProvider($dataProvider);
+    }
+
+    /**
+     * Set meta tags useful to get the right contents in social sharing
+     * @return void
+     */
+    public function setMetaTags()
+    {
+        $imgUrl = '/img/img_default.jpg';
+        if (!is_null($this->model->newsImage)) {
+            $imgUrl = $this->model->newsImage->getWebUrl('square_large', false, true);
+        }
+        $this->view->registerMetaTag(['property' => 'og:image', 'content' => $imgUrl]);
+        //$this->view->registerMetaTag(['property' => 'og:title', 'content' => $this->model->titolo]);
+        //$this->view->registerMetaTag(['property' => 'og:url', 'content' => $url]);
     }
 }
