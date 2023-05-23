@@ -2,6 +2,7 @@
 use open20\amos\news\AmosNews;
 use open20\amos\notificationmanager\AmosNotify;
 
+$notifyModule = AmosNotify::instance();
 ?>
 <tr>
     <td colspan="2" style="padding-bottom:10px;">

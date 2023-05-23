@@ -13,14 +13,9 @@ namespace open20\amos\news\widgets\icons;
 use open20\amos\core\widget\WidgetIcon;
 use open20\amos\core\widget\WidgetAbstract;
 use open20\amos\core\icons\AmosIcons;
-use open20\amos\dashboard\models\AmosUserDashboards;
-use open20\amos\news\widgets\icons\WidgetIconAllNews;
 use open20\amos\news\AmosNews;
-//use open20\amos\news\models\search\NewsSearch;
-//use open20\amos\news\models\News;
 use open20\amos\core\record\Record;
 use Yii;
-use yii\base\Exception;
 use yii\helpers\ArrayHelper;
 
 class WidgetIconNewsDashboard extends WidgetIcon

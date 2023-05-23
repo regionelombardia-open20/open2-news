@@ -17,7 +17,7 @@ use open20\amos\core\views\DataProviderView;
 use open20\amos\news\AmosNews;
 use open20\amos\news\models\News;
 use open20\amos\news\widgets\NewsCarouselWidget;
-//var_dump(Yii::$app->controller->action->id);die;
+
 /**
  * @var yii\web\View $this
  * @var yii\data\ActiveDataProvider $dataProvider

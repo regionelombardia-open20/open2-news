@@ -11,7 +11,6 @@
 
 use amos\sitemanagement\models\SiteManagementSliderElem;
 use open20\amos\attachments\components\AttachmentsInput;
-use open20\amos\attachments\components\GalleryInput;
 use open20\amos\attachments\components\AttachmentsList;
 use open20\amos\attachments\components\CropInput;
 use open20\amos\core\forms\AccordionWidget;
@@ -290,7 +289,17 @@ EOF
                         $newsCategoryId = 1;
                     }
                     ?>
-                    <?= $form->field($model, 'news_categorie_id')->widget(Select::class, ['auto_fill' => true, 'options' => ['placeholder' => AmosNews::t('amosnews', '#category_field_placeholder'), 'id' => 'news_categorie_id-id', 'disabled' => false, 'value' => $newsCategoryId], 'data' => ArrayHelper::map($newsCategories, 'id', 'titolo')])->label($labelCategory) ?>
+                    <?= $form->field($model, 'news_categorie_id')->widget(Select::class, [
+                        'auto_fill' => true,
+                        'options' => [
+                            'placeholder' => AmosNews::t('amosnews', '#category_field_placeholder'),
+                            'id' => 'news_categorie_id-id',
+                            'disabled' => false,
+                            'value' => $model->isNewRecord ? $newsCategoryId : $model->news_categorie_id
+                        ],
+                        'data' => ArrayHelper::map($newsCategories, 'id', 'titolo')
+                    ])->label($labelCategory);
+                    ?>
                 </div>
 
                 <?php if ($enableOtherNewsCategories) { ?>
@@ -334,9 +343,7 @@ EOF
                                 'placeholder' => AmosNews::t('amosnews', 'Inserisci...'),
                                 'triggerTextareaInput' => true
                             ],
-                            'clientOptions' => [
-                                'lang' => substr(Yii::$app->language, 0, 2)
-                            ]
+                            'clientOptions' => $clientOption
                         ])
                         ->hint($hint);
                     ?>

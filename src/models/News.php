@@ -15,7 +15,6 @@ use open20\amos\attachments\models\File;
 use open20\amos\attachments\behaviors\FileBehavior;
 use open20\amos\comments\models\CommentInterface;
 use open20\amos\community\models\Community;
-use open20\amos\community\utilities\CommunityUtil;
 use open20\amos\core\helpers\Html;
 use open20\amos\core\interfaces\CustomUrlModelInterface;
 use open20\amos\core\interfaces\ModelImageInterface;
@@ -23,7 +22,6 @@ use open20\amos\core\interfaces\ContentModelInterface;
 use open20\amos\core\interfaces\PublicationDateFieldsInterface;
 use open20\amos\core\interfaces\ViewModelInterface;
 use open20\amos\core\views\toolbars\StatsToolbarPanels;
-use open20\amos\core\utilities\CmsUtility;
 use open20\amos\news\AmosNews;
 use open20\amos\news\i18n\grammar\NewsGrammar;
 use open20\amos\news\models\base\NewsRelatedEventMm;
@@ -38,11 +36,9 @@ use open20\amos\report\utilities\ReportUtil;
 use open20\amos\seo\behaviors\SeoContentBehavior;
 use open20\amos\seo\interfaces\SeoModelInterface;
 use open20\amos\workflow\behaviors\WorkflowLogFunctionsBehavior;
-use open20\amos\core\helpers\StringHelper;
 use kartik\datecontrol\DateControl;
 use raoul2000\workflow\base\SimpleWorkflowBehavior;
 use open20\amos\core\interfaces\ContentPublicationInteraface;
-
 use Yii;
 use yii\log\Logger;
 use yii\helpers\Url;
@@ -1216,7 +1212,10 @@ class News
         }
 
         if (!empty($this->request_publish_on_hp) && $this->request_publish_on_hp == 1) {
-            if (($this->status == self::NEWS_WORKFLOW_STATUS_VALIDATO) && $this->isCommunityManagerLoggedUserInThisNews()) {
+            if (
+                $this->status == self::NEWS_WORKFLOW_STATUS_VALIDATO
+                && $this->isCommunityManagerLoggedUserInThisNews()
+            ) {
                 $whoCanPublishIds = \yii\helpers\ArrayHelper::merge(
                     \Yii::$app->authManager->getUserIdsByRole('ADMIN'),
                     \Yii::$app->authManager->getUserIdsByRole('NewsPublishOnHomePage')
@@ -1343,4 +1342,13 @@ class News
         return $result;
     }
 
+    /**
+     * @inheritdoc
+     */
+    public function getValidatorUsersId()
+    {
+        $validatori = \Yii::$app->getAuthManager()->getUserIdsByRole('AMMINISTRATORE_NEWS');
+
+        return $validatori;
+    }
 }

@@ -53,7 +53,7 @@ class NewsCategorieController extends CrudController
             $urlLinkAll   = '';
 
             $labelSigninOrSignup = AmosNews::t('amosnews', '#beforeActionCtaLoginRegister');
-            $titleSigninOrSignup = AAmosNews::t(
+            $titleSigninOrSignup = AmosNews::t(
                 'amosnews',
                 '#beforeActionCtaLoginRegisterTitle',
                 ['platformName' => \Yii::$app->name]

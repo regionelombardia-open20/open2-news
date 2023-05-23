@@ -72,6 +72,9 @@ use yii\helpers\ArrayHelper;
  */
 abstract class News extends ContentModel
 {
+     // Workflow ID
+    const NEWS_WORKFLOW = 'NewsWorkflow';
+    
     /**
      * @var type
      */
@@ -231,7 +234,14 @@ abstract class News extends ContentModel
     public function afterFind()
     {
         if($this->newsModule->enableRelateEvents){
-            $this->newsRelatedEventMmAttribute = ArrayHelper::map(NewsRelatedEventMm::find()->andWhere(['news_id' => $this->id])->asArray()->all(), 'event_id', 'event_id');
+            $this->newsRelatedEventMmAttribute = ArrayHelper::map(
+                NewsRelatedEventMm::find()
+                    ->andWhere(['news_id' => $this->id])
+                    ->asArray()
+                    ->all(),
+                'event_id',
+                'event_id'
+            );
         }
         return parent::afterFind();
     }
@@ -507,7 +517,7 @@ abstract class News extends ContentModel
         return ArrayHelper::map(
             ArrayHelper::getColumn(
                 (new \yii\db\Query())->from('sw_status')
-                    ->where(['workflow_id' => $this::NEWS_WORKFLOW])
+                    ->where(['workflow_id' => \open20\amos\news\models\News::NEWS_WORKFLOW])
                     ->orderBy(['sort_order' => SORT_ASC])
                     ->all(),
 

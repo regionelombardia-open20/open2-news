@@ -48,9 +48,9 @@ class NewsRelatedDocumentiMm extends \open20\amos\news\models\base\NewsRelatedDo
             ]);
     }
 
-    public static function getEditFields()
+    public function getEditFields()
     {
-        $labels = self::attributeLabels();
+        $labels = $this->attributeLabels();
 
         return [
             [

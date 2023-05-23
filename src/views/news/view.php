@@ -18,12 +18,10 @@ use open20\amos\news\utility\NewsUtility;
 use open20\amos\core\helpers\Html;
 use open20\amos\core\icons\AmosIcons;
 use open20\amos\news\AmosNews;
-use open20\amos\core\forms\CreatedUpdatedWidget;
 use open20\amos\attachments\components\AttachmentsList;
 use open20\amos\news\assets\ModuleNewsAsset;
-use \open20\amos\news\models\News;
+use open20\amos\news\models\News;
 use open20\amos\core\utilities\CurrentUser;
-
 
 ModuleNewsAsset::register($this);
 
@@ -55,10 +53,9 @@ $this->params['breadcrumbs'][] = $this->title;
 $eventsModule = Yii::$app->getModule('events');
 
 if (\Yii::$app->request->get('redactional')) {
-    $this->params['forceBreadcrumbs'][] = ['label' => AmosNews::t('amosnews',"News"), 'url' => ['/news/news/redaction-all-news']];
+    $this->params['forceBreadcrumbs'][] = ['label' => AmosNews::t('amosnews', "News"), 'url' => ['/news/news/redaction-all-news']];
     $this->params['forceBreadcrumbs'][] = ['label' => $this->title];
 }
-
 
 $hidePubblicationDate = Yii::$app->controller->newsModule->hidePubblicationDate;
 $numberListTag = Yii::$app->controller->newsModule->numberListTag;
@@ -87,54 +84,6 @@ if (!\Yii::$app->user->isGuest && $model->status != News::NEWS_WORKFLOW_STATUS_V
         'viewWidgetOnNewRecord' => true,
         'forceStatusLabel' => $customStatusLabel
     ]);
-
-    // NUOVO WIDGET CON BOTTONE
-//    $form = \open20\amos\core\forms\ActiveForm::begin([
-//        'action' => 'update?id=' . $model->id,
-//        'method' => 'post',
-//        'options' => [
-//            'enctype' => 'multipart/form-data'
-//        ]
-//    ]);
-//
-//    $workflowWithButtonStatus = [];
-//    if (Yii::$app->user->can('NewsValidate', ['model' => $model]) || Yii::$app->user->can('ADMIN')) {
-//        $workflowWithButtonStatus = [
-//            News::NEWS_WORKFLOW_STATUS_BOZZA => [
-//                'saveToStatus' => News::NEWS_WORKFLOW_STATUS_VALIDATO,
-//                'showConfirm' => true,
-//            ],
-//            News::NEWS_WORKFLOW_STATUS_DAVALIDARE => [
-//                'saveToStatus' => News::NEWS_WORKFLOW_STATUS_VALIDATO,
-//                'showConfirm' => true,
-//            ],
-//        ];
-//    } else {
-//        $workflowWithButtonStatus = [
-//            News::NEWS_WORKFLOW_STATUS_BOZZA => [
-//                'saveToStatus' => News::NEWS_WORKFLOW_STATUS_DAVALIDARE,
-//                'showConfirm' => true,
-//            ],
-//        ];
-//    }
-//
-//    echo \frontend\modules\news\widgets\WorkflowTransitionStateDescriptionAndButtons::widget([
-//        'form' => $form,
-//        'model' => $model,
-//        'workflowId' => News::NEWS_WORKFLOW,
-//        'addStatusHiddenField' => true,
-//        'stateDescriptorWidgetOptions' => [
-//            'classDivIcon' => '',
-//            'classDivMessage' => 'message',
-//        ],
-//        'buttonOptions' => [
-//            'status' => $workflowWithButtonStatus
-//        ],
-//        'viewWidgetOnNewRecord' => false
-//    ]);
-//
-//    \open20\amos\core\forms\ActiveForm::end();
-
 }
 
 $hideCategory = false;
@@ -151,7 +100,6 @@ if ($newsCategories->count() == 1) {
 ?>
 
 <div class="detail-news-hero-wrapper it-hero-wrapper it-dark it-overlay">
-    <!-- - img-->
     <div class="img-responsive-wrapper">
         <div class="img-responsive">
             <div class="img-wrapper">
@@ -159,31 +107,37 @@ if ($newsCategories->count() == 1) {
             </div>
         </div>
     </div>
-    <!-- - texts-->
+
     <div class="container">
         <div class="row">
             <div class="col-12">
                 <div class="it-hero-text-wrapper bg-dark">
-
                     <span class="it-category  <?= $customCategoryClass ?>" <?php if ((!empty($colorBgCategory))) : ?> style="background-color: <?= $colorBgCategory ?> !important; padding: 0 4px; " <?php endif; ?>><strong <?php if ((!empty($colorTextCategory))) : ?> style="color: <?= $colorTextCategory ?>" <?php endif; ?>><?= $category ?></strong></span>
                     <?php
                     /** @var  $otherCat \open20\amos\news\models\NewsCategorie */
                     foreach ($model->otherNewsCategories as $otherCat) {
-                        $customOtherCategoryClass = 'mb-1 px-1 ' . 'custom-category-bg-' . str_replace(' ', '-', strtolower($category)); ?>
+                        $customOtherCategoryClass = 'mb-1 px-1 '
+                            . 'custom-category-bg-'
+                            . str_replace(' ', '-', strtolower($category));
+                    ?>
                         <span class="it-category  <?= $customOtherCategoryClass ?>" <?php if ((!empty($otherCat->color_background))) : ?> style="background-color: <?= $otherCat->color_background ?> !important; padding: 0 4px; " <?php endif; ?>><strong <?php if ((!empty($otherCat->color_text))) : ?> style="color: <?= $otherCat->color_text ?>" <?php endif; ?>><?= $otherCat->titolo ?></strong></span>
                     <?php } ?>
+
                     <p class="date"><?= Yii::$app->getFormatter()->asDate($model->data_pubblicazione) ?></p>
                     <h1 class="no_toc"><?= $model->titolo ?></h1>
                     <p class="d-none d-lg-block"><?= $model->sottotitolo ?></p>
+         
                     <?php if (!empty(\open20\amos\core\utilities\CwhUtility::getTargetsString($model))) : ?>
                         <p><span class="mdi mdi-account-supervisor-circle mdi-24px"></span>
-                            <em><?= \open20\amos\core\utilities\CwhUtility::getTargetsString($model) ?></em></p>
+                            <em><?= \open20\amos\core\utilities\CwhUtility::getTargetsString($model) ?></em>
+                        </p>
                     <?php endif; ?>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
 <div class="news-view">
     <div class="container">
         <div class="row">
@@ -207,15 +161,6 @@ if ($newsCategories->count() == 1) {
                         ]);
                     }
                     ?>
-                    <?php /*echo CreatedUpdatedWidget::widget(['model' => $model, 'isTooltip' => true])*/ ?>
-                    <!-- < ?php
-                    $reportModule = \Yii::$app->getModule('report');
-                    if (isset($reportModule) && in_array($model->className(), $reportModule->modelsEnabled)) {
-                        echo \open20\amos\report\widgets\ReportFlagWidget::widget([
-                            'model' => $model,
-                        ]);
-                    }
-                    ?> -->
 
                     <div class="m-l-10">
                         <?= ContextMenuWidget::widget([
@@ -250,11 +195,10 @@ if ($newsCategories->count() == 1) {
                 if (!empty($eventsModule) && ($enableRelateEvents) && ($dataProviderEvents->getTotalCount() > 0)) {
                     open20\amos\events\assets\EventsAsset::register($this);
                     $urlIcon = '@vendor/open20/amos-events/src/views/event/_icon';
-                    ?>
+                ?>
 
                     <div class="event-index">
-                        <?php
-                        echo DataProviderView::widget([
+                        <?= DataProviderView::widget([
                             'dataProvider' => $dataProviderEvents,
                             'currentView' => $currentView,
                             'iconView' => [
@@ -285,15 +229,14 @@ if ($newsCategories->count() == 1) {
                                 <?php
                                 foreach ($arrayImg as $image) { ?>
                                     <div class="col-md-4 col-xs-6 m-b-30">
-                                        <img alt="<?= AmosNews::t('amosnews', 'Immagine galleria') ?>"
-                                             src="<?= $image ?>" class="img-responsive">
+                                        <img alt="<?= AmosNews::t('amosnews', 'Immagine galleria') ?>" src="<?= $image ?>" class="img-responsive">
                                     </div>
                                 <?php } ?>
                             </div>
 
                         </div>
                     </div>
-                    <?php
+                <?php
                 }
                 ?>
 
@@ -320,10 +263,10 @@ if ($newsCategories->count() == 1) {
                         ]);
                         ?>
                     </div>
-                    <?php if($enableLikeWidget) : ?>
+                    
+                    <?php if ($enableLikeWidget && $model->status == News::NEWS_WORKFLOW_STATUS_VALIDATO) : ?>
                         <div class="widget-body-content">
-                            <?php
-                            echo \open20\amos\core\forms\editors\likeWidget\LikeWidget::widget([
+                            <?= \open20\amos\core\forms\editors\likeWidget\LikeWidget::widget([
                                 'model' => $model,
                             ]);
                             ?>
@@ -377,10 +320,10 @@ if ($newsCategories->count() == 1) {
 
 
     <?php if (!is_null(\Yii::$app->getModule('sitemanagement')) && ($enableAgid)) : ?>
-        <?php if (!empty($model->image_site_management_slider_id)): ?>
+        <?php if (!empty($model->image_site_management_slider_id)) : ?>
             <?= \amos\sitemanagement\widgets\SMSliderWidget::widget(['sliderId' => $model->image_site_management_slider_id]); ?>
         <?php endif; ?>
-        <?php if (!empty($model->video_site_management_slider_id)): ?>
+        <?php if (!empty($model->video_site_management_slider_id)) : ?>
             <?= \amos\sitemanagement\widgets\SMSliderWidget::widget(['sliderId' => $model->video_site_management_slider_id]); ?>
         <?php endif; ?>
 

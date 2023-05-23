@@ -1,8 +1,7 @@
 <?php
 use open20\amos\notificationmanager\AmosNotify;
+
 $colors =  \open20\amos\notificationmanager\utility\NotifyUtility::getColorNetwork($color);
-
-
 $notifyModule = AmosNotify::instance();
 ?>
 <?php foreach ($arrayModels as $model) { ?>

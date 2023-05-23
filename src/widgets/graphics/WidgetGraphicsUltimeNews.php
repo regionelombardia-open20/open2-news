@@ -14,7 +14,6 @@ namespace open20\amos\news\widgets\graphics;
 use open20\amos\core\widget\WidgetAbstract;
 use open20\amos\core\widget\WidgetGraphic;
 use open20\amos\news\AmosNews;
-use open20\amos\news\models\search\NewsSearch;
 use open20\amos\notificationmanager\base\NotifyWidgetDoNothing;
 
 /**

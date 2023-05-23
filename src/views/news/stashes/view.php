@@ -9,20 +9,16 @@
  * @category   CategoryName
  */
 
-use open20\amos\attachments\components\AttachmentsTableWithPreview;
 use open20\amos\core\forms\ContextMenuWidget;
 use open20\amos\core\forms\ItemAndCardHeaderWidget;
-use open20\amos\core\forms\PublishedByWidget;
-use open20\amos\core\forms\ShowUserTagsWidget;
 use open20\amos\core\helpers\Html;
 use open20\amos\core\icons\AmosIcons;
-use open20\amos\core\views\toolbars\StatsToolbar;
 use open20\amos\news\AmosNews;
 use open20\amos\core\forms\CreatedUpdatedWidget;
 use open20\amos\attachments\components\AttachmentsList;
-use open20\amos\core\forms\InteractionMenuWidget;
 use open20\amos\news\assets\ModuleNewsAsset;
 use \open20\amos\news\models\News;
+
 ModuleNewsAsset::register($this);
 
 /**
