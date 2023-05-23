@@ -111,6 +111,12 @@ class AmosNews extends AmosModule implements ModuleInterface, SearchModuleInterf
     public $arrayTextEditorClients = [];
 
     /**
+     * disable menage categories and colum on table
+     * @var bool $showCategory
+     */
+    public $showCategory = true;
+    
+    /**
      * The ID of the default category pre-selected for the new News
      * @var integer
      */
@@ -166,6 +172,22 @@ class AmosNews extends AmosModule implements ModuleInterface, SearchModuleInterf
     public $viewPathEmailSummaryNetwork = [
         'open20\amos\news\models\News' => '@vendor/open20/amos-news/src/views/email/notify_summary_network'
     ];
+
+
+    /**
+     * @var string[]
+     */
+    public $viewPathCachedEmailSummaryNetwork = [
+        'open20\amos\news\models\News' => '@vendor/open20/amos-news/src/views/email/_item_notify_summary_network'
+    ];
+
+    /**
+     * @var string[]
+     */
+    public $viewPathCachedEmailSummary = [
+        'open20\amos\news\models\News' => '@vendor/open20/amos-news/src/views/email/_item_notify_summary'
+    ];
+
 
     /*
      * @var bool disableStandardWorkflow Disable standard worflow, direct publish
@@ -263,6 +285,19 @@ class AmosNews extends AmosModule implements ModuleInterface, SearchModuleInterf
      * @var bool $disableBefeControllerRules Enable this property to disable the BEFE rules in controller behaviors.
      */
     public $disableBefeControllerRules = false;
+    
+    /**
+     * @var bool $enableCustomOrderFields Enable this property to let user to choose which order fields to show
+     * 
+     * list of fields aviable are the same in params - fields
+     * 
+     */
+    public $enableCustomOrderFields = false;
+
+    /**
+     * @var bool
+     */
+    public $enablePrimoPianoOnCommunity = false;
 
     /**
      * @inheritdoc

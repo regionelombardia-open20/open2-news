@@ -40,7 +40,7 @@ class WidgetGraphicsUltimeNews extends WidgetGraphic
      */
     public function getHtml()
     {
-        $search = new NewsSearch();
+       $search = AmosNews::instance()->createModel('NewsSearch');
         $search->setNotifier(new NotifyWidgetDoNothing());
         
         $viewPath = '@vendor/open20/amos-news/src/widgets/graphics/views/';

@@ -10,6 +10,7 @@
  */
 
 return [
+    '#you_are_not_authorized_for_this' => 'You are not authorized to perform this operation',
     'Abilita commenti' => 'Enable comments',
     'Abilita pubblicazione' => 'Enable publication',
     'Abstract' => 'Abstract',

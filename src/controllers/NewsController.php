@@ -24,7 +24,6 @@ use open20\amos\news\models\News;
 use open20\amos\news\models\search\NewsSearch;
 use open20\amos\news\utility\NewsUtility;
 use open20\amos\news\widgets\icons\WidgetIconNewsCreatedBy;
-
 use raoul2000\workflow\base\WorkflowException;
 use Yii;
 use yii\data\ActiveDataProvider;
@@ -464,18 +463,24 @@ class NewsController extends CrudController
      * @param int $id News id.
      * @return \yii\web\Response
      */
-    public function actionValidateNews($id)
+    public function actionValidateNews($id, $uid = null)
     {
+        // check if the user is the right
+        if (($uid != null) && ($uid != Yii::$app->user->id)) {
+            Yii::$app->session->addFlash(
+                'danger',
+                AmosNews::t(
+                    'amosnews',
+                    '#you_are_not_authorized_for_this'
+                )
+            );
+
+            return $this->redirect(['/']);
+        }
+
         $news = News::findOne($id);
         try {
             $news->sendToStatus(News::NEWS_WORKFLOW_STATUS_VALIDATO);
-            //            if($news->data_pubblicazione == ''){
-            //                $news->data_pubblicazione = date('Y-m-d');
-            //            } else {
-            //                if(strtotime($news->data_pubblicazione) < strtotime(date('Y-m-d'))) {
-            //                    $news->data_pubblicazione = date('Y-m-d');
-            //                }
-            //            }
             $ok = $news->save(false);
             if ($ok) {
                 Yii::$app->session->addFlash('success', AmosNews::t('amosnews', 'News validated!'));
@@ -518,8 +523,21 @@ class NewsController extends CrudController
      * @param int $id News id.
      * @return \yii\web\Response
      */
-    public function actionRejectNews($id)
+    public function actionRejectNews($id, $uid = null)
     {
+        // check if the user is the right
+        if (($uid != null) && ($uid != Yii::$app->user->id)) {
+            Yii::$app->session->addFlash(
+                'danger',
+                AmosNews::t(
+                    'amosnews',
+                    '#you_are_not_authorized_for_this'
+                )
+            );
+
+            return $this->redirect(['/']);
+        }
+
         $newsModel = $this->newsModule->model('News');
         $news      = $newsModel::findOne($id);
         try {
@@ -1209,6 +1227,8 @@ class NewsController extends CrudController
      */
     public static function getManageLinks()
     {
+        $moduleNews = \Yii::$app->getModule(AmosNews::getModuleName());
+        
         $all = false;
         if (get_class(Yii::$app->controller) != 'open20\amos\news\controllers\NewsController') {
             $all = true;
@@ -1259,11 +1279,19 @@ class NewsController extends CrudController
             ];
         }
 
-        if (\Yii::$app->user->can(\open20\amos\news\widgets\icons\WidgetIconNewsCategorie::class)) {
+        if (\Yii::$app->user->can(\open20\amos\news\widgets\icons\WidgetIconNewsCategorie::class) && $moduleNews->showCategory) {
             $links[] = [
                 'title' => AmosNews::t('amosnews', 'Visualizza le categorie delle news'),
                 'label' => AmosNews::t('amosnews', 'Categorie'),
                 'url' => '/news/news-categorie/index',
+            ];
+        }
+        
+        if (\Yii::$app->user->can('MANAGE_ORDER_FIELDS') && $moduleNews->enableCustomOrderFields) {
+            $links[] = [
+                'title' => AmosNews::t('amoscore', 'manage_order_fields'),
+                'label' => AmosNews::t('amoscore', 'manage_order_fields'),
+                'url' => '/news/news/order-fields',
             ];
         }
 

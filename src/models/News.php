@@ -155,9 +155,6 @@ class News
     public function beforeSave($insert)
     {
         $moduleNews = \Yii::$app->getModule(AmosNews::getModuleName());
-        if ($this->data_pubblicazione && !$this->data_rimozione) {
-            $this->data_rimozione = '9999-12-31';
-        }
 
         if ($this->status == self::NEWS_WORKFLOW_STATUS_VALIDATO) {
             if ($this->data_pubblicazione == '') {
@@ -170,6 +167,10 @@ class News
                     $this->data_pubblicazione = date('Y-m-d');
                 }
             }
+        }
+
+        if ($this->data_pubblicazione && !$this->data_rimozione) {
+            $this->data_rimozione = '9999-12-31';
         }
 
         return parent::beforeSave($insert);

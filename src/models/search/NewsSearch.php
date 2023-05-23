@@ -14,6 +14,7 @@ use open20\amos\core\interfaces\CmsModelInterface;
 use open20\amos\core\interfaces\ContentModelSearchInterface;
 use open20\amos\core\interfaces\SearchModelInterface;
 use open20\amos\core\record\CmsField;
+use open20\amos\cwh\models\CwhConfig;
 use open20\amos\news\models\News;
 use open20\amos\news\AmosNews;
 use open20\amos\tag\models\EntitysTagsMm;
@@ -230,6 +231,50 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
         return $dataProvider;
     }
 
+    public function searchOtherPageNews($params)
+    {
+        $params = array_merge($params, Yii::$app->request->get());
+        $this->load($params);
+
+        $query = $this->otherPageNewsQuery($params);
+
+        if (\Yii::$app->user->isGuest) {
+            $query->andWhere(['primo_piano' => 1]);
+        }
+
+        $this->applySearchFilters($query);
+
+        $dataProvider = new ActiveDataProvider([
+            'query' => $query,
+            'sort' => [
+                'defaultOrder' => [
+                    'data_pubblicazione' => SORT_DESC,
+                    'created_at' => SORT_DESC,
+                ],
+            ],
+        ]);
+
+        if (!empty($params["withPagination"])) {
+            $dataProvider->setPagination(['pageSize' => $limit]);
+            $query->limit(null);
+        } else {
+            $query->limit($limit);
+        }
+
+        if (!empty($params["conditionSearch"])) {
+            $commands = explode(";", $params["conditionSearch"]);
+            foreach ($commands as $command) {
+                if (strpos($command, 'news_categorie_ids') !== false) {
+                    $this->cmsFilterCategories($command, $query);
+                } else {
+                    $query->andWhere(eval("return " . $command . ";"));
+                }
+            }
+        }
+
+        return $dataProvider;
+    }
+
     /**
      * Search method useful to retrieve validated news with primo_piano flag = true.
      *
@@ -297,10 +342,41 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
      * @param array $params
      * @return \yii\db\ActiveQuery
      */
+    public function otherPageNewsQuery($params)
+    {
+        $now = date('Y-m-d');
+        $tableName = $this->tableName();
+        $query = $this->baseSearch($params)
+            ->distinct()->leftJoin(EntitysTagsMm::tableName(), EntitysTagsMm::tableName() . ".classname = '" . str_replace('\\', '\\\\', News::className()) . "' and " . EntitysTagsMm::tableName() . ".record_id = " . News::tableName() . ".id  and " . EntitysTagsMm::tableName() . ".deleted_at is NULL")
+            ->andWhere([
+                $tableName . '.status' => News::NEWS_WORKFLOW_STATUS_VALIDATO
+                //rimossa condizione per filtro 'in_evidenza'
+            ])
+            ->andWhere(['<=', 'data_pubblicazione', $now])
+            ->andWhere(['or',
+                    ['>=', 'data_rimozione', $now],
+                    ['data_rimozione' => null]]
+            )
+            ->andWhere(['or',
+                    ['>=', 'news_expiration_date', $now],
+                    ['news_expiration_date' => null]]
+            );
+
+        return $query;
+    }
+
+    /**
+     * get the query used by the related searchHomepageNews method
+     * return just the query in case data provider/query itself needs editing
+     *
+     * @param array $params
+     * @return \yii\db\ActiveQuery
+     */
     public function homepageNewsQuery($params)
     {
         $now = date('Y-m-d');
         $tableName = $this->tableName();
+
         $query = $this->baseSearch($params)
             ->distinct()->leftJoin(EntitysTagsMm::tableName(), EntitysTagsMm::tableName() . ".classname = '" . str_replace('\\', '\\\\', News::className()) . "' and " . EntitysTagsMm::tableName() . ".record_id = " . News::tableName() . ".id  and " . EntitysTagsMm::tableName() . ".deleted_at is NULL")
             ->andWhere([
@@ -320,6 +396,8 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
         return $query;
     }
 
+
+
     /**
      * Search method useful to retrieve news to show in frontend (with cms)
      * @param $params
@@ -332,13 +410,27 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
         $params = array_merge($params, Yii::$app->request->get());
         $this->load($params);
 
-        if($type == 'in_evidenza'){
+        if ($type == 'in_evidenza') {
             $query = $this->highlightedAndHomepageNewsQuery($params);
-        }else {
+        } else {
             $query = $this->homepageNewsQuery($params);
         }
 
         $this->applySearchFilters($query);
+
+        if (!empty($params["conditionSearch"])) {
+            $commands = explode(";", $params["conditionSearch"]);
+            foreach ($commands as $command) {
+                if (strpos($command, 'news_categorie_ids') !== false) {
+                    $this->cmsFilterCategories($command, $query);
+                } elseif (strpos($command, 'scope_community_id')) {
+                    $communityId = $this->extractCommunityIdFromCommand($command);
+                    $query = $this->cmsFilterScopeCommunity($query, $communityId);
+                } else {
+                    $query->andWhere(eval("return " . $command . ";"));
+                }
+            }
+        }
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
@@ -358,19 +450,48 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
             $query->limit($limit);
         }
 
-        if (!empty($params["conditionSearch"])) {
-            $commands = explode(";", $params["conditionSearch"]);
-            foreach ($commands as $command) {
-                if (strpos($command, 'news_categorie_ids') !== false) {
-                    $this->cmsFilterCategories($command, $query);
-                } else {
-                    $query->andWhere(eval("return " . $command . ";"));
-                }
-            }
-        }
-
         return $dataProvider;
     }
+
+    /**
+     * @param $command
+     * @return string|null
+     */
+    public function extractCommunityIdFromCommand($command)
+    {
+        $community_id = null;
+        $explode = explode('=>', $command);
+        if (count($explode) == 2) {
+            $community_id = trim($explode[1]);
+        }
+        return $community_id;
+    }
+
+    /**
+     * @param $query
+     * @param $community_id
+     * @return mixed|\yii\db\ActiveQuery
+     * @throws \yii\base\InvalidConfigException
+     */
+    public function cmsFilterScopeCommunity($query, $community_id)
+    {
+        if ($community_id) {
+            $cwhConfig = CwhConfig::find()->andWhere(['tablename' => 'community'])->one();
+            if ($cwhConfig) {
+                $cwhActiveQuery = new \open20\amos\cwh\query\CwhActiveQuery(
+                    News::className(),
+                    [
+                        'queryBase' => $query,
+                        'bypassScope' => false
+                    ]
+                );
+                $query = $cwhActiveQuery->getQueryCwhAll($cwhConfig->id, $community_id, false);
+            }
+        }
+        return $query;
+    }
+
+
 
     public function cmsSearchOwnInterestEvidenza($params, $limit = null)
     {
@@ -1080,6 +1201,18 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
     }
 
     /**
+     * Show only news in evidence (in_evidenza = true).
+     * Method for cms.
+     * @param $params
+     * @param $limit
+     * @return ActiveDataProvider
+     */
+    public function cmsSearchInEvidenza($params, $limit = null)
+    {
+        return $this->cmsSearch($params, $limit, 'in_evidenza');
+    }
+
+    /**
      * @return array
      */
     public function cmsViewFields()
@@ -1213,5 +1346,15 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
                     ['news.news_categorie_id' => $categoryIds]
                 ]);
         }
+    }
+
+    public function search($params, $queryType = null, $limit = null, $onlyDrafts = false, $pageSize = null)
+    {
+        $activeRecord = parent::search($params, $queryType, $limit, $onlyDrafts, $pageSize);
+        $baseName = \open20\amos\core\utilities\ClassUtility::getClassBasename($this);
+        if (isset($params[$baseName]['status'])) {
+            $activeRecord->query->andFilterWhere([static::tableName() . '.' . 'status' => $params[$baseName]['status']]);
+        }
+        return $activeRecord;
     }
 }

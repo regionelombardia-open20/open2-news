@@ -143,7 +143,8 @@ $newsModule = AmosNews::instance();
                 ],
                 'news_categorie_id' => [
                     'attribute' => 'newsCategorie.titolo',
-                    'label' => AmosNews::t('amosnews', 'Categoria')
+                    'label' => AmosNews::t('amosnews', 'Categoria'),
+                    'visible'=>$newsModule->showCategory,
                 ],
                 [
                     'class' => 'open20\amos\core\views\grid\ActionColumn',

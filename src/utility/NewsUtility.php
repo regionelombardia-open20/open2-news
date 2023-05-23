@@ -14,6 +14,7 @@ use open20\amos\news\models\News;
 use open20\amos\news\models\NewsCategorie;
 use open20\amos\news\models\NewsCategoryRolesMm;
 use open20\amos\core\utilities\Email;
+use open20\amos\admin\models\UserProfile;
 
 use Yii;
 use yii\base\BaseObject;
@@ -130,8 +131,9 @@ class NewsUtility extends BaseObject
         if (is_array($whoCanPublishIds)) {
             $emailBasePath = '@vendor/open20/amos-news/src/views/email/';
 
-            $userProfiles = \open20\amos\admin\models\UserProfile::find()
+            $userProfiles = UserProfile::find()
                 ->andWhere(['user_id' => $whoCanPublishIds])
+				->andWhere(['attivo' => UserProfile::STATUS_ACTIVE])
                 ->all();
             if (!empty($userProfiles)) {
                 $controller = \Yii::$app->controller;

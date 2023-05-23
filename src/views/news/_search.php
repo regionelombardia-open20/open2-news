@@ -102,21 +102,27 @@ $enableAutoOpenSearchPanel = isset(\Yii::$app->params['enableAutoOpenSearchPanel
 
     <?php  if ($newsModule->enableAgid) : ?>
 
-        <div class="col-sm-6 col-lg-4">
-            <?=
-                $form->field($model, 'updated_by')->widget(Select::className(), [
-                'data' => ArrayHelper::map(\open20\amos\admin\models\UserProfile::find()->andWhere(['deleted_at' => NULL])->all(), 'user_id', function($model) {
-                    return $model->nome . " " . $model->cognome;
-                }),
-                    'language' => substr(Yii::$app->language, 0, 2),
-                    'options' => [
-                        'multiple' => false,
-                        'placeholder' => AmosNews::t('amosnews', '#select_choose') . '...'
-                    ],
+       <div class="col-sm-6 col-lg-4">
+            <?php
+            $updateUser = '';
+            $userProfileUpdate = $model->updatedUserProfile;
+            if (!empty($userProfileUpdate)) {
+                $updateUser = $userProfileUpdate->getNomeCognome();
+            }
+            echo $form->field($model, 'updated_by')->widget(Select2::className(), [
+                    'data' => (!empty($model->updated_by) ? [$model->updated_by => $updateUser] : []),
+                    'options' => ['placeholder' => AmosNews::t('amosnews', 'Cerca ...')],
                     'pluginOptions' => [
-                        'allowClear' => true
+                        'allowClear' => true,
+                        'minimumInputLength' => 3,
+                        'ajax' => [
+                            'url' => \yii\helpers\Url::to(['/' . AmosAdmin::getModuleName() . '/user-profile-ajax/ajax-user-list']),
+                            'dataType' => 'json',
+                            'data' => new \yii\web\JsExpression('function(params) { return {q:params.term}; }')
+                        ],
                     ],
-                ])->label(AmosNews::t('amosnews', '#updated_by'));
+                ]
+            );
             ?>
         </div>
 

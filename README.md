@@ -127,6 +127,14 @@ If in your platform, for example, you don't want title to be a mandatory field, 
     'newsRequiredFields' => ['news_categorie_id', 'status']  
 ],
 ```
+* **showCategory** - boolean, default = true 
+Show or hide category column on grid and from manage links
+```php
+'news' => [
+    'class' => 'open20\amos\news\AmosNews',
+    'showCategory' => true  
+],
+```
 
 * **defaultCategory** - integer 
 The ID of the default category pre-selected for the new News

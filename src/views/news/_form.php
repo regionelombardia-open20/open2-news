@@ -47,6 +47,7 @@ $dateErrorMessage = AmosNews::t('error', "Controllare data");
 /** @var AmosNews $newsModule */
 $newsModule = \Yii::$app->getModule(AmosNews::getModuleName());
 $enableOtherNewsCategories = $newsModule->enableOtherNewsCategories;
+$enablePrimoPianoOnCommunity = $newsModule->enablePrimoPianoOnCommunity;
 
 $todayDate = date('d-m-Y');
 $tomorrowDate = (new DateTime('tomorrow'))->format('d-m-Y');
@@ -883,6 +884,10 @@ $form = ActiveForm::begin([
                             }
                         }
 
+                        if($enablePrimoPianoOnCommunity && $isCommunityManager){
+                            $publish_enabled = true;
+                        }
+
                         if ($publish_enabled) {
                             if (
                                 Yii::$app->getModule('news')->params['site_publish_enabled']
@@ -1141,6 +1146,7 @@ $form = ActiveForm::begin([
                 ]
             ];
         }
+        $closeButtonUrl = !empty(\Yii::$app->request->get('urlRedirect')) ? \Yii::$app->request->get('urlRedirect') : Yii::$app->session->get('previousUrl');
 
         echo WorkflowTransitionButtonsWidget::widget([
             'form' => $form,
@@ -1150,7 +1156,7 @@ $form = ActiveForm::begin([
             //'closeSaveButtonWidget' => CloseSaveButtonWidget::widget($config),
             'closeButton' => Html::a(
                 AmosNews::t('amosnews', 'Annulla'),
-                Yii::$app->session->get('previousUrl'),
+                $closeButtonUrl,
                 ['class' => 'btn btn-secondary']
             ),
             'initialStatusName' => "BOZZA",
