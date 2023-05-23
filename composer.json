@@ -25,7 +25,7 @@
         "open20/amos-notify":"^1.10.2",
         "open20/amos-report":"^1.0.5",
         "open20/amos-seo": "*",
-        "open20/amos-workflow": "^1.0.10",
+        "open20/amos-workflow": "^1.4.0",
         "open20/agid-organizationalunit": "*",
         "open20/agid-person": "*",
         "open20/agid-service": "*",

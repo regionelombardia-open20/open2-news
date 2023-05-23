@@ -334,6 +334,11 @@ class AmosNews extends AmosModule implements ModuleInterface, SearchModuleInterf
     public $enableLikeWidget = true;
 
     /**
+     * @var bool $enableCustomStatusLabel
+     */
+    public $enableCustomStatusLabel = false;
+
+    /**
      * @inheritdoc
      */
     public static function getModuleName()

@@ -65,7 +65,7 @@ $numberListTag = Yii::$app->controller->newsModule->numberListTag;
 $enableGalleryAttachment = Yii::$app->controller->newsModule->enableGalleryAttachment;
 $enableRelateEvents = Yii::$app->controller->newsModule->enableRelateEvents;
 $enableLikeWidget = Yii::$app->controller->newsModule->enableLikeWidget;
-
+$enableCustomStatusLabel = Yii::$app->controller->newsModule->enableCustomStatusLabel;
 
 $url = '/img/img_default.jpg';
 if (!is_null($model->newsImage)) {
@@ -76,7 +76,7 @@ if (!\Yii::$app->user->isGuest && $model->status != News::NEWS_WORKFLOW_STATUS_V
 
     $customStatusLabel = [];
 
-    if (Yii::$app->user->can('NewsValidate', ['model' => $model]) || Yii::$app->user->can('ADMIN')) {
+    if ($enableCustomStatusLabel && (Yii::$app->user->can('NewsValidate', ['model' => $model]) || Yii::$app->user->can('ADMIN'))) {
         $customStatusLabel[News::NEWS_WORKFLOW_STATUS_DAVALIDARE] = Yii::t('amosnews', 'La notizia è in fase di approvazione per la pubblicazione');
     }
 
