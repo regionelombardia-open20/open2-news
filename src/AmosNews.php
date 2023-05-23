@@ -300,6 +300,17 @@ class AmosNews extends AmosModule implements ModuleInterface, SearchModuleInterf
     public $enablePrimoPianoOnCommunity = false;
 
     /**
+     * @var bool
+     */
+    public $enableOnlyRedactional = false;
+    
+    /**
+     * 
+     * @var bool
+     */
+    public $enableFreeTags = false;
+
+    /**
      * @inheritdoc
      */
     public static function getModuleName()
@@ -309,7 +320,7 @@ class AmosNews extends AmosModule implements ModuleInterface, SearchModuleInterf
 
     /**
      * @inheritdoc
-     */
+     */ 
     public static function getModelSearchClassName()
     {
         return AmosNews::instance()->model('NewsSearch');
@@ -416,6 +427,7 @@ class AmosNews extends AmosModule implements ModuleInterface, SearchModuleInterf
             'news/index',
             'news-categorie/index',
             'news/all-news',
+            'news/redaction-all-news',
             'news/own-news',
             'news/admin-all-news',
             'news/to-validate-news',

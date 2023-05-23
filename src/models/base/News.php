@@ -221,7 +221,7 @@ abstract class News extends ContentModel
                 'descrizione' => AmosNews::t('amosnews', '#description_field'),
                 'metakey' => AmosNews::t('amosnews', 'Meta key'),
                 'metadesc' => AmosNews::t('amosnews', 'Meta descrizione'),
-                'primo_piano' => AmosNews::t('amosnews', 'Vuoi rendere visibile la notizia anche ad utenti non registrati (guest)?'),
+                'primo_piano' => AmosNews::t('amosnews', 'Mostra notizia ad utenti non registrati'),
                 'in_evidenza' => AmosNews::t('amosnews', 'In evidenza'),
                 'hits' => AmosNews::t('amosnews', 'Visualizzazioni'),
                 'abilita_pubblicazione' => AmosNews::t('amosnews', 'Abilita pubblicazione'),

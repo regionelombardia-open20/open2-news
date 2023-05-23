@@ -46,6 +46,12 @@ $this->params['breadcrumbs'][] = ['label' => Yii::$app->session->get('previousTi
 $this->params['breadcrumbs'][] = $this->title;
 
 
+if (!empty($_GET['redactional'])) {
+    $this->params['forceBreadcrumbs'][] = ['label' => AmosNews::t('amosnews',"News"), 'url' => ['/news/news/redaction-all-news']];
+    $this->params['forceBreadcrumbs'][] = ['label' => $this->title];
+}
+
+
 $hidePubblicationDate = Yii::$app->controller->newsModule->hidePubblicationDate;
 $numberListTag = Yii::$app->controller->newsModule->numberListTag;
 
@@ -93,10 +99,10 @@ if ($newsCategories->count() == 1) {
 
                     <span class="it-category  <?= $customCategoryClass ?>" <?php if ((!empty($colorBgCategory))) : ?> style="background-color: <?= $colorBgCategory ?> !important; padding: 0 4px; " <?php endif; ?>><strong <?php if ((!empty($colorTextCategory))) : ?> style="color: <?= $colorTextCategory ?>" <?php endif; ?>><?= $category ?></strong></span>
                     <?php
-                    /** @var  $otherCat \open20\amos\news\models\NewsCategorie*/
+                    /** @var  $otherCat \open20\amos\news\models\NewsCategorie */
                     foreach ($model->otherNewsCategories as $otherCat) {
                         $customOtherCategoryClass = 'mb-1 px-1 ' . 'custom-category-bg-' . str_replace(' ', '-', strtolower($category)); ?>
-                        <span class="it-category  <?= $customOtherCategoryClass ?>" <?php if ((!empty($otherCat->color_background ))) : ?> style="background-color: <?= $otherCat->color_background ?> !important; padding: 0 4px; " <?php endif; ?>><strong <?php if ((!empty($otherCat->color_text))) : ?> style="color: <?= $otherCat->color_text ?>" <?php endif; ?>><?= $otherCat->titolo ?></strong></span>
+                        <span class="it-category  <?= $customOtherCategoryClass ?>" <?php if ((!empty($otherCat->color_background))) : ?> style="background-color: <?= $otherCat->color_background ?> !important; padding: 0 4px; " <?php endif; ?>><strong <?php if ((!empty($otherCat->color_text))) : ?> style="color: <?= $otherCat->color_text ?>" <?php endif; ?>><?= $otherCat->titolo ?></strong></span>
                     <?php } ?>
                     <p class="date"><?= Yii::$app->getFormatter()->asDate($model->data_pubblicazione) ?></p>
                     <h1 class="no_toc"><?= $model->titolo ?></h1>

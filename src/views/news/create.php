@@ -23,6 +23,11 @@ $this->title = AmosNews::t('amosnews', 'Inserisci notizia');
 $this->params['breadcrumbs'][] = ['label' => Yii::$app->session->get('previousTitle'), 'url' => Yii::$app->session->get('previousUrl')];
 $this->params['breadcrumbs'][] = $this->title;
 
+if (!empty($_GET['redactional'])) {
+    $this->params['forceBreadcrumbs'][] = ['label' => AmosNews::t('amosnews',"News"), 'url' => ['/news/news/redaction-all-news']];
+    $this->params['forceBreadcrumbs'][] = ['label' => $this->title];
+}
+
 ?>
 <div class="news-create">
     <?= $this->render(

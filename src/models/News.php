@@ -110,6 +110,8 @@ class News
      * @var string $distance Distanza
      */
     public $distance;
+    
+    public $tag_free;
 
     /**
      * @var File $newsImage
@@ -353,6 +355,7 @@ class News
             parent::rules(),
             [
                 [$requiredArray, 'required'],
+                [['tag_free'], 'safe'],
                 [['otherCategories', 'slug', 'destinatari_pubblicazione', 'destinatari_notifiche'], 'safe'],
                 [['attachments'], 'file', 'maxFiles' => 0],
                 [['newsImage'], 'file', 'extensions' => 'jpeg, jpg, png, gif', 'maxFiles' => 1],
@@ -473,7 +476,8 @@ class News
         return ArrayHelper::merge(
             parent::attributeLabels(),
             [
-                'newsImage' => AmosNews::t('amosnews', 'News image')
+                'newsImage' => AmosNews::t('amosnews', 'News image'),
+                'tag_free' => AmosNews::t('amosnews', 'Tag'),
             ]
         );
     }

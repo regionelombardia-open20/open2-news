@@ -324,7 +324,7 @@ $form = ActiveForm::begin([
                     )->hint($hint);
                     ?>
                 </div>
-            </div>
+            </div>           
         </div>
 
         <!--documenti e allegati-->
@@ -847,7 +847,7 @@ $form = ActiveForm::begin([
                 <div class="section-modalita-pubblicazione">
                     <?=
                     Html::tag('h2', $tagTitle, ['class' => 'subtitle-form'])
-                    ?>
+                    ?>                    
                     <div class="row">
                         <div class="col-xs-12">
                             <div class="content-mod-pubb">
@@ -992,8 +992,37 @@ $form = ActiveForm::begin([
                         }
                         ?>
                     </div>
+                        <?php if ($newsModule->enableFreeTags) { ?>
+                            <div class="row">
+
+                                <div class="col-xs-12 col-md-12">
+                                    <?=
+                                    $form->field($model, 'tag_free')->widget(\xj\tagit\Tagit::className(), [
+                                        'clientOptions' => [
+                                            'tagSource' => \yii\helpers\Url::to(['/tag/manager/autocomplete-free-tag', 'id' => ($model->isNewRecord ? null : $model->id)]),
+                                            'autocomplete' => [
+                                                'delay' => 200,
+                                                'minLength' => 3,
+                                            ],
+                                            'singleField' => true,
+                                            'beforeTagAdded' => new \yii\web\JsExpression(
+                                                    <<<EOF
+                                function(event, ui){
+                                    if (!ui.duringInitialization) {
+                                        /*console.log(event);
+                                        console.log(ui);*/
+                                    }
+                                }
+EOF
+                                            ),
+                                        ],
+                                    ]);
+                                    ?>
+                                </div>
+                            </div>
+                        <?php } ?>
+                    </div>
                 </div>
-            </div>
         <?php endif; ?>
 
         <?php

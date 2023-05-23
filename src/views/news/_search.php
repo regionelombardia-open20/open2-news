@@ -37,7 +37,6 @@ $enableAutoOpenSearchPanel = isset(\Yii::$app->params['enableAutoOpenSearchPanel
 ?>
 
 <div class="news-search element-to-toggle" data-toggle-element="form-search">
-    <div class="col-xs-12"><p class="h3"><?= AmosNews::t('amosnews', 'Cerca per') ?>:</p></div>
 
     <?php $form = ActiveForm::begin([
         'action' => Yii::$app->controller->action->id,
@@ -62,20 +61,20 @@ $enableAutoOpenSearchPanel = isset(\Yii::$app->params['enableAutoOpenSearchPanel
         <?= $form->field($model, 'sottotitolo') ?>
     </div>
 
-    <div class="col-sm-6 col-lg-4">
+    <div class="col-sm-12 col-lg-4">
         <?= $form->field($model, 'descrizione') ?>
     </div>
 
     <div class="clearfix"></div>
 
-    <div class="col-sm-6 col-lg-4">
+    <div class="col-sm-4 col-lg-4">
         <?= $form->field($model, 'data_pubblicazione')->widget(DateControl::className(), [
             'type' => DateControl::FORMAT_DATE
         ])->hint('') ?>
     </div>
 
     <?php if (!\Yii::$app->user->isGuest) { ?>
-        <div class="col-sm-6 col-lg-4">
+        <div class="col-sm-4 col-lg-4">
             <?php
             $creator = '';
             $userProfileCreator = $model->createdUserProfile;
@@ -99,6 +98,24 @@ $enableAutoOpenSearchPanel = isset(\Yii::$app->params['enableAutoOpenSearchPanel
             ?>
         </div>
     <?php } ?>
+
+    <div class="col-sm-4 col-lg-4">
+        <?=
+        $form->field($model, 'status')->widget(Select::className(), [
+            'data' => $model->getAllWorkflowStatus(),
+
+            'language' => substr(Yii::$app->language, 0, 2),
+            'options' => [
+                'multiple' => false,
+                'placeholder' => AmosNews::t('amosnews', '#select_choose') . '...',
+                'value' => $model->status = \Yii::$app->request->get(end(explode("\\", $model::className())))['status']
+            ],
+            'pluginOptions' => [
+                'allowClear' => true
+            ],
+        ]);
+        ?>
+    </div>
 
     <?php  if ($newsModule->enableAgid) : ?>
 
@@ -126,23 +143,7 @@ $enableAutoOpenSearchPanel = isset(\Yii::$app->params['enableAutoOpenSearchPanel
             ?>
         </div>
 
-        <div class="col-sm-6 col-lg-4">
-            <?=
-                $form->field($model, 'status')->widget(Select::className(), [
-                    'data' => $model->getAllWorkflowStatus(),
 
-                    'language' => substr(Yii::$app->language, 0, 2),
-                    'options' => [
-                        'multiple' => false,
-                        'placeholder' => AmosNews::t('amosnews', '#select_choose') . '...',
-                        'value' => $model->status = \Yii::$app->request->get(end(explode("\\", $model::className())))['status']
-                    ],
-                    'pluginOptions' => [
-                        'allowClear' => true
-                    ],
-                ]);
-            ?>
-        </div>
 
         <div class="col-sm-6 col-lg-4">
             <?=
