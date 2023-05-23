@@ -838,7 +838,6 @@ EOF
                                         ],
                                         'options' => [
                                             'prompt' => AmosNews::t('amosnews', 'Seleziona'),
-                                            'disabled' => false, // DEMO - AS REQUESTED
                                             'onchange' => "
                                                     if($(this).val() == 1) $('#news-in_evidenza').prop('disabled', false);
                                                     if($(this).val() == 0) {
@@ -847,7 +846,7 @@ EOF
                                                     }
                                                 "
                                         ]
-                                    ])->label('Mostra notizia')->hint('Scegli se rendere la notizia fruibile anche da un\'utenza non registrata') . "<div style=\"display:none\">" . $form->field($model, 'primo_piano')->hiddenInput(['value' => 1])->label(false) . '</div></div>'; // DEMO - AS REQUESTED
+                                    ])->label('Mostra notizia')->hint('Scegli se rendere la notizia fruibile anche da un\'utenza non registrata');
                                     if ($publish_enabled) {
                                         echo $primoPiano;
                                     }
