@@ -43,7 +43,7 @@ use yii\widgets\ActiveForm;
             $modulo = AmosNews::getModuleName();           
             $moduloObj = Yii::$app->getModule($modulo); 
             
-            if($moduloObj->hasProperty(enableCustomOrderFields) && $moduloObj->enableCustomOrderFields){
+            if($moduloObj->hasProperty('enableCustomOrderFields') && $moduloObj->enableCustomOrderFields){
             
                 $defaultOrderField = $moduloObj->params['orderParams'][$modulo]['default_field'];
                 $defaultOrderFieldLabel = isset($orderAttributes[$defaultOrderField]) ? $orderAttributes[$defaultOrderField] : Yii::t('amoscore','default-mancante');
