@@ -147,7 +147,7 @@ if ($newsCategories->count() == 1) {
                         'model' => $model,
                         'publicationDateNotPresent' => true,
                         'showPrevalentPartnership' => true,
-                        'enableLink' => !(CurrentUser::isPlatformGuest()),
+                        'enableLink' => (AmosNews::instance()->enableLinkProfile ? !(CurrentUser::isPlatformGuest()) : false),
                         'absoluteUrlAvatar' => true,
                     ]
                 ) ?>

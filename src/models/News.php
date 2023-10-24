@@ -159,13 +159,22 @@ class News
 
         if ($this->status == self::NEWS_WORKFLOW_STATUS_VALIDATO) {
             if ($this->data_pubblicazione == '') {
-                $this->data_pubblicazione = date('Y-m-d');
-            } else {
-                if (
-                    $moduleNews->autoUpdatePublicationDate === true
-                    && (strtotime($this->data_pubblicazione) < strtotime(date('Y-m-d')))
-                ) {
+                if ($moduleNews->dateFormatNews == DateControl::FORMAT_DATETIME) {
+                    $this->data_pubblicazione = date('Y-m-d H:i');
+                } else {
                     $this->data_pubblicazione = date('Y-m-d');
+                }
+            } else {
+                if ($moduleNews->autoUpdatePublicationDate === true) {
+                    if ($moduleNews->dateFormatNews == DateControl::FORMAT_DATETIME) {
+                        if (strtotime($this->data_pubblicazione) < strtotime(date('Y-m-d H:i'))) {
+                            $this->data_pubblicazione = date('Y-m-d H:i');
+                        }
+                    } else {
+                        if (strtotime($this->data_pubblicazione) < strtotime(date('Y-m-d'))) {
+                            $this->data_pubblicazione = date('Y-m-d');
+                        }
+                    }
                 }
             }
         }
@@ -1334,12 +1343,11 @@ class News
      * @return bool
      */
     public function theDatesAreDatetime() {
-        $result = false;
-        $newsModule = Yii::$app->getModule('news');
-        if($newsModule){
-            $result = ($newsModule->dateFormatNews == DateControl::FORMAT_DATETIME);
+        if (AmosNews::instance()->dateFormatNews == DateControl::FORMAT_DATETIME) {
+            return true;
         }
-        return $result;
+
+        return false;
     }
 
     /**

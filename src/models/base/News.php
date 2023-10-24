@@ -303,8 +303,8 @@ abstract class News extends ContentModel
             [
                 'id' => AmosNews::t('amosnews', ''),
                 'titolo' => AmosNews::t('amosnews', '#title_field_hint'),
-                'sottotitolo' => AmosNews::t('amosnews', '#subtitle_field_hint'),
-                'descrizione_breve' => AmosNews::t('amosnews', '#abstract_field_hint'),
+                'sottotitolo' => AmosNews::t('amosnews', 'Limite massimo: {maxLength} caratteri. Compare nella notizia dopo il titolo', ['maxLength' => 100]),
+                'descrizione_breve' => AmosNews::t('amosnews', 'Limite massimo: {maxLength} caratteri. Un breve testo che presenta la notizia in sommario e nelle notifiche in email', ['maxLength' => 250]),
                 'descrizione' => AmosNews::t('amosnews', ''),
                 'metakey' => AmosNews::t('amosnews', ''),
                 'metadesc' => AmosNews::t('amosnews', ''),

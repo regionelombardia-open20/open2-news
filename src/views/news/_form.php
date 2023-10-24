@@ -223,7 +223,10 @@ JS
 
                 <?php if (!$enableAgid) : ?>
                     <div class="col-xs-12">
-                        <?= $form->field($model, 'sottotitolo')->textInput(['maxlength' => true, 'placeholder' => AmosNews::t('amosnews', '#subtitle_field_plceholder')])->hint(AmosNews::t('amosnews', '#subtitle_field_hint')) ?>
+                        <?= $form->field($model, 'sottotitolo')->textInput([
+                            'maxlength' => true,
+                            'placeholder' => AmosNews::t('amosnews', '#subtitle_field_plceholder')
+                        ])->hint($model->attributeHints()['sottotitolo']) ?>
                     </div>
                 <?php endif; ?>
 
@@ -315,7 +318,10 @@ EOF
             <h2 class="subtitle-form"><?= AmosNews::t('amosnews', 'Testi') ?></h2>
             <div class="row">
                 <div class="col-xs-12">
-                    <?= $form->field($model, 'descrizione_breve')->textarea(['maxlength' => 160, 'placeholder' => AmosNews::t('amosnews', '#abstract_field_placeholder')])->hint(AmosNews::t('amosnews', '#abstract_field_hint')) ?>
+                    <?= $form->field($model, 'descrizione_breve')->textarea([
+                        'maxlength' => true,
+                        'placeholder' => AmosNews::t('amosnews', '#abstract_field_placeholder')
+                    ])->hint($model->attributeHints()['descrizione_breve']) ?>
                 </div>
 
                 <div class="col-xs-12">
@@ -931,7 +937,7 @@ EOF
                     $model->data_rimozione = null;
                 }
                 if ($newsModule->hidePubblicationDate == false) {
-                    $tooltipDataPubblicazione = '<span class="mdi mdi-information-outline" title="' . AmosNews::t('amosnews', 'Se non settata la data di pubblicazione, la notizia sarà pubblicata immediatamente al passaggio in stato Pubblicata') . '" data-toggle="tooltip"></span>';
+                    $tooltipDataPubblicazione = '<span class="mdi mdi-information-outline" title="' . AmosNews::t('amosnews', 'Se non impostata la data di pubblicazione, la notizia sarà pubblicata immediatamente al passaggio in stato Pubblicata') . '" data-toggle="tooltip"></span>';
                     $publicationDate = Html::tag(
                         'div',
                         $form->field($model, 'data_pubblicazione')

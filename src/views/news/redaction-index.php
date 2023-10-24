@@ -134,7 +134,7 @@ $dataProvider->setSort([
                     }
                 ],
                 'titolo' => [
-                    'attribute' => 'title',
+                    'attribute' => 'titolo',
                     'label' => AmosNews::t('amosnews', 'Titolo'),
                     'value' => function ($model) {
                         return '<strong>' . $model->title . '</strong>';

@@ -32,8 +32,9 @@ if ($newsCategories->count() == 1) {
     $colorTextCategory = $model->newsCategorie->color_text;
 }
 
-if (strlen($model->descrizione) > 150)
-$model->descrizione = strip_tags($model->descrizione, 0, 147) . '...';
+if (strlen($model->descrizione) > 150){
+    $model->descrizione = substr(strip_tags($model->descrizione), 0, 147) . '...';
+}
 /**
  * @var \open20\amos\news\models\News $model
  */
@@ -77,7 +78,7 @@ $model->descrizione = strip_tags($model->descrizione, 0, 147) . '...';
                         ItemAndCardHeaderWidget::widget([
                                 'model' => $model,
                                 'publicationDateNotPresent' => true,
-                                'enableLink' => !(CurrentUser::isPlatformGuest()),
+                                'enableLink' => (AmosNews::instance()->enableLinkProfile ? !(CurrentUser::isPlatformGuest()) : false),
                                 'showPrevalentPartnership' => true,
                                 
                             ]

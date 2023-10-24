@@ -79,6 +79,12 @@ class AmosNews extends AmosModule implements ModuleInterface, SearchModuleInterf
      * @var bool|false $hideWidgetGraphicsActions
      */
     public $hideWidgetGraphicsActions = false;
+    
+    /**
+     * If set to true it enables the link to the users profile 
+     * @var bool Default true
+     */
+    public $enableLinkProfile = true;
 
     /**
      * @var array $newsRequiredFields - mandatory fields in News form

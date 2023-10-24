@@ -98,11 +98,11 @@ WorkflowTransitionStateDescriptorWidget::widget([
             ?>
             <?=
             $form->field($model, 'sottotitolo')->textInput(['maxlength' => true, 'placeholder' => AmosNews::t('amosnews',
-                '#subtitle_field_plceholder')])->hint(AmosNews::t('amosnews', '#subtitle_field_hint'))
+                '#subtitle_field_plceholder')])->hint($model->attributeHints()['sottotitolo']);
             ?>
             <?=
             $form->field($model, 'descrizione_breve')->textarea(['maxlength' => true, 'placeholder' => AmosNews::t('amosnews',
-                '#abstract_field_placeholder')])->hint(AmosNews::t('amosnews', '#abstract_field_hint'))
+                '#abstract_field_placeholder')])->hint($model->attributeHints()['descrizione_breve']);
             ?>
             <?=
             $form->field($model, 'descrizione')->widget(TextEditorWidget::className(),
