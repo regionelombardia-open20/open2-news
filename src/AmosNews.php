@@ -22,6 +22,7 @@ use open20\amos\news\widgets\icons\WidgetIconNewsCategorie;
 use open20\amos\news\widgets\icons\WidgetIconNewsCreatedBy;
 use open20\amos\news\widgets\icons\WidgetIconNewsDashboard;
 use open20\amos\news\widgets\icons\WidgetIconNewsDaValidare;
+use yii\console\Application;
 use yii\helpers\ArrayHelper;
 use kartik\datecontrol\DateControl;
 
@@ -46,6 +47,11 @@ class AmosNews extends AmosModule implements ModuleInterface, SearchModuleInterf
      * @var string $name
      */
     public $name = 'Notizie';
+
+    /**
+     * @var string $controllerNamespace
+     */
+    public $controllerNamespace = 'open20\amos\news\controllers';
 
     /**
      * If this attribute is true the validation of the publication date is active
@@ -86,6 +92,8 @@ class AmosNews extends AmosModule implements ModuleInterface, SearchModuleInterf
      */
     public $enableLinkProfile = true;
 
+    public $hideCwhPubblicationBox = false;
+
     /**
      * @var array $newsRequiredFields - mandatory fields in News form
      */
@@ -122,6 +130,12 @@ class AmosNews extends AmosModule implements ModuleInterface, SearchModuleInterf
      * @var bool $showCategory
      */
     public $showCategory = true;
+
+     /**
+     * The default value for signature
+     * @var bool $showSignature
+     */
+    public $showSignature = true;
     
     /**
      * The ID of the default category pre-selected for the new News
@@ -165,6 +179,17 @@ class AmosNews extends AmosModule implements ModuleInterface, SearchModuleInterf
      * @var bool
      */
     public $showAllCategoriesForCommunity = true;
+    
+    
+    /**
+     * @var bool
+     */
+    public $EnableCategoryFilter = true;
+    
+    /**
+     * @var bool
+     */
+    public $addTags = false;
 
     /**
      * @var array
@@ -309,6 +334,11 @@ class AmosNews extends AmosModule implements ModuleInterface, SearchModuleInterf
     /**
      * @var bool
      */
+    public $disableFormParamPrimoPiano = false;
+
+    /**
+     * @var bool
+     */
     public $enableOnlyRedactional = false;
     
     /**
@@ -343,6 +373,66 @@ class AmosNews extends AmosModule implements ModuleInterface, SearchModuleInterf
      * @var bool $enableCustomStatusLabel
      */
     public $enableCustomStatusLabel = false;
+
+    /**
+     * Enable news download in console with plugin open20/taskmanager instead of standard download with ExportMenu.
+     * Useful if you have a lot of news to download and ExportMenu goes in timeout.
+     * In order to work, you have to install open20/taskmanager plugin
+     * and configure $backgroundDownloadOptions array param if you need to change options.
+     * @var bool $enableCustomActivities
+     */
+    public $enableBackgroundDownload = false;
+
+    /**
+     * Options for background download.
+     * @var array $backgroundDownloadOptions
+     */
+    public $backgroundDownloadOptions = [
+        'exportAction' => '/news/news/extract-news',
+        'redirectUrl' => '/taskmanager',
+    ];
+
+    /**
+     * Hide download button in redaction index view.
+     * @var bool $hideDownloadRedactionIndex
+     */
+    public $hideDownloadRedactionIndex = true;
+
+    /**
+     * Enable the function to clone platform news into communities from the community open-join view.
+     * @var bool $enableCloningIntoCommunities
+     */
+    public $enableCloningIntoCommunities = false;
+
+    /**
+     * Hide download button in index view for guests.
+     * @var bool $hideDownloadIndexForGuests
+     */
+    public $hideDownloadIndexForGuests = false;
+
+    /**
+     * Hide change view type button in index view for guests.
+     * @var bool $hideChangeViewTypeIndexForGuests
+     */
+    public $hideChangeViewTypeIndexForGuests = false;
+
+    /**
+     * Enable news creation with point of interest and search by point of interest.
+     * @var bool $enableMap
+     */
+    public $enableMap = false;
+
+    public $hideAccessOrRegister = false;
+
+    /** Hides attachments list in view if empty
+     * @var bool $hideWidgetAttachmentsOnViewIfEmpty
+     */
+    public $hideWidgetAttachmentsOnViewIfEmpty = false;
+
+    /** Hides tags widget on view if empty
+     * @var bool $hideWidgetTagsOnViewIfEmpty
+     */
+    public $hideWidgetTagsOnViewIfEmpty = false;
 
     /**
      * @inheritdoc
@@ -388,6 +478,9 @@ class AmosNews extends AmosModule implements ModuleInterface, SearchModuleInterf
         //Configuration: merge default module configurations loaded from config.php with module configurations set by the application
         $config = require(__DIR__ . DIRECTORY_SEPARATOR . self::$CONFIG_FOLDER . DIRECTORY_SEPARATOR . 'config.php');
         \Yii::configure($this, ArrayHelper::merge($config, $this));
+        if (\Yii::$app instanceof Application) {
+            $this->controllerNamespace = 'open20\amos\news\commands\controllers';
+        }
     }
 
     /**

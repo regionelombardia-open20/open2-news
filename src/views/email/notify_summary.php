@@ -4,6 +4,9 @@ use open20\amos\news\AmosNews;
 use open20\amos\notificationmanager\AmosNotify;
 
 $notifyModule = AmosNotify::instance();
+
+$moduleNews = AmosNews::instance();
+$showSignature =$moduleNews->showSignature;
 ?>
 
 
@@ -44,15 +47,18 @@ $notifyModule = AmosNotify::instance();
                             <td>
                                 <table width="100%">
                                     <tr>
-                                        <td width="400">
-                                            <table width="100%">
-                                                <tr>
-                                                        <?= \open20\amos\notificationmanager\widgets\ItemAndCardWidgetEmailSummaryWidget::widget([
-                                                            'model' => $model,
-                                                        ]); ?>
-                                                </tr>
-                                            </table>
-                                        </td>
+                                        <?php if($showSignature): ?>
+                                            <td width="400">
+                                                <table width="100%">
+                                                    <tr>
+                                                            <?= \open20\amos\notificationmanager\widgets\ItemAndCardWidgetEmailSummaryWidget::widget([
+                                                                'model' => $model,
+                                                            ]); ?>
+                                                    </tr>
+                                                </table>
+                                            </td>
+                                        <?php endif; ?>
+
                                         <td align="right" width="85" valign="bottom" style="text-align: center; padding-left: 10px;">
                                             <a href="<?=  Yii::$app->urlManager->createAbsoluteUrl($model->getFullViewUrl())?>" 
                                             style="background:<?= $notifyModule->mailThemeColor['bgPrimary'] ?>;

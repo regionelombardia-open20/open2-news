@@ -26,7 +26,7 @@ use yii\widgets\ActiveForm;
     </div>
 
     <?php $form = ActiveForm::begin([
-        'action' => Yii::$app->controller->action->id,
+        'action' => isset($originAction) ? [$originAction] : Yii::$app->controller->action->id,
         'method' => 'get',
         'options' => [
             'class' => 'default-form'
@@ -90,7 +90,7 @@ use yii\widgets\ActiveForm;
 
     <div class="col-xs-12">
         <div class="pull-right">
-            <?= Html::a(AmosNews::t('amosnews', 'Annulla'), [Yii::$app->controller->action->id, 'currentView' => Yii::$app->request->getQueryParam('currentView')],
+            <?= Html::a(AmosNews::t('amosnews', 'Annulla'), [isset($originAction) ? $originAction : Yii::$app->controller->action->id, 'currentView' => Yii::$app->request->getQueryParam('currentView')],
                 ['class'=>'btn btn-secondary']) ?>
             <?= Html::submitButton(AmosNews::t('amosnews', 'Ordina'), ['class' => 'btn btn-navigation-primary']) ?>
         </div>

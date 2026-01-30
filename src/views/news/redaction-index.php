@@ -26,6 +26,7 @@ use open20\amos\news\widgets\NewsCarouselWidget;
  * @var \open20\amos\dashboard\models\AmosUserDashboards $currentDashboard
  * @var string $currentView
  */
+
 $actionColumnDefault = '{view}{update}{delete}';
 $actionColumnToValidate = '{validate}{reject}';
 $actionColumn = $actionColumnDefault;
@@ -43,7 +44,7 @@ $newsModule = AmosNews::instance();
 /** @var NewsController $appController */
 $appController = \Yii::$app->controller;
 
-\Yii::$app->params['hideDownload'] = true;
+\Yii::$app->params['hideDownload'] = AmosNews::instance()->hideDownloadRedactionIndex;
 
 $textActionView = AmosNews::t('amosnews', 'Visualizza');
 
@@ -121,7 +122,7 @@ $dataProvider->setSort([
                 ],
                 'immagine' => [
                     'label' => AmosNews::t('amosnews', 'Immagine'),
-                    'format' => 'html',
+                    'format' => 'raw',
                     'value' => function ($model) {
                         /** @var News $model */
                         $url = '/img/img_default.jpg';
@@ -280,7 +281,14 @@ $dataProvider->setSort([
                         'update' => function ($url, $model) {
                             /** @var News $model */
                             if (Yii::$app->user->can('NEWS_UPDATE', ['model' => $model])) {
-                                $action = '/news/news/update?id=' . $model->id . '&redactional=1';
+                                $action = '/news/news/update?id=' . $model->id;
+
+                                /** @var AmosNews $newsModule */
+                                $newsModule = Yii::$app->getModule(AmosNews::getModuleName());
+                                if($newsModule->enableOnlyRedactional) {
+                                    $action .= '&redactional=1';
+                                }
+
                                 $options = ModalUtility::getBackToEditPopup(
                                     $model,
                                     News::NEWS_WORKFLOW_STATUS_VALIDATO,
@@ -301,7 +309,14 @@ $dataProvider->setSort([
                                 $textActionView = AmosNews::t('amosnews', 'Visualizza');
                             }
                             /** @var News $model */
-                            $url = $model->getFullViewUrl() . '?redactional=1';
+                            $url = $model->getFullViewUrl();
+
+                            /** @var AmosNews $newsModule */
+                            $newsModule = Yii::$app->getModule(AmosNews::getModuleName());
+                            if($newsModule->enableOnlyRedactional) {
+                                $url .= '?redactional=1';
+                            }
+
                             if (Yii::$app->user->can('NEWS_READ', ['model' => $model])) {
                                 return Html::a(AmosIcons::show('file'), $url, [
                                     'class' => 'btn btn-tools-secondary',
@@ -317,7 +332,9 @@ $dataProvider->setSort([
         'exportConfig' => [
             'exportEnabled' => true,
             'exportColumns' => $appController->getExportRedactionColumns($model),
-            'noExportColumns' => []
+            'noExportColumns' => [],
+            'enableBackgroundDownload' => AmosNews::instance()->enableBackgroundDownload,
+            'backgroundDownloadOptions' => AmosNews::instance()->backgroundDownloadOptions,
         ],
         'listView' => [
             'itemView' => '_item',

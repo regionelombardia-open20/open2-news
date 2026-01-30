@@ -262,5 +262,14 @@ return [
     'Non ci sono news che corrispondono ai tuoi interessi!' => 'There is no news that matches your interests!',
     'Clicca e scopri tutte le news della piattaforma' => 'Click and discover all the news of the platform',
     'e scopri ora tutte le news di' => 'and find out now all the news of',
-    'Non sono presenti news' => 'There are no news'
+    'Non sono presenti news' => 'There are no news',
+    'Intervallo di tempo' => 'Time interval',
+    'Ultima settimana' => 'Last week',
+    'Ultimo mese' => 'Last month',
+    'Ultimi 3 mesi' => 'Last 3 months',
+    'Ultimo anno' => 'Last year',
+    'Personalizzato' => 'Custom',
+    'Data inizio' => 'Start date',
+    'Data fine' => 'End date',
+
 ];

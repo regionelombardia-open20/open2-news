@@ -19,20 +19,24 @@ use open20\amos\core\forms\editors\Select;
 use open20\amos\core\forms\RequiredFieldsTipWidget;
 use open20\amos\core\forms\TextEditorWidget;
 use open20\amos\core\helpers\Html;
+use open20\amos\core\module\BaseAmosModule;
 use open20\amos\news\AmosNews;
 use open20\amos\news\models\News;
 use open20\amos\news\models\NewsContentType;
 use open20\amos\news\utility\NewsUtility;
+use open20\amos\core\forms\editors\maps\PlaceWidget;
 use open20\amos\workflow\widgets\WorkflowTransitionButtonsWidget;
 use open20\amos\workflow\widgets\WorkflowTransitionStateDescriptorWidget;
 use open20\amos\core\icons\AmosIcons;
 use open20\amos\attachments\FileModule;
 use kartik\datecontrol\DateControl;
 use kartik\select2\Select2;
+use kartik\widgets\SwitchInput;
 use open20\agid\organizationalunit\models\AgidOrganizationalUnit;
 use open20\agid\person\models\AgidPersonType;
 use yii\helpers\ArrayHelper;
 use yii\helpers\Url;
+use open20\amos\comments\AmosComments;
 
 /**
  *
@@ -42,6 +46,7 @@ use yii\helpers\Url;
  * @var amos\sitemanagement\Module|null $siteManagementModule
  * @var \open20\amos\news\models\NewsRelatedEventMm $newsRelatedEvent
  */
+
 $dateErrorMessage = AmosNews::t('error', "Controllare data");
 /** @var AmosNews $newsModule */
 $newsModule = \Yii::$app->getModule(AmosNews::getModuleName());
@@ -59,15 +64,46 @@ $reportModule = \Yii::$app->getModule('report');
 
 $moduleTag = \Yii::$app->getModule('tag');
 $activateTagFree = (isset($newsModule->enableFreeTags)) ? $newsModule->enableFreeTags : false;
-$tagTitle = ($enableAgid ? AmosNews::t('amosnews', '#tag') : AmosNews::t('amosnews', '#tags_title'));
 
 // ENABLE AGID FIELDS
 $enableAgid = $newsModule->enableAgid;
+$enableAgidAllegati = $newsModule->enableAgidReferenti;
 $rtePlugins = $newsModule->rtePlugins;
 $rteToolbar = $newsModule->rteToolbar;
 $eventsModule = Yii::$app->getModule('events');
 
+$tagTitle = ($enableAgid ? AmosNews::t('amosnews', '#tag') : AmosNews::t('amosnews', '#tags_title'));
 $textAlertCategory = AmosNews::t('news', "Questa categoria è già stata scelta come categoria principale.");
+
+/** @var AmosComments $moduleComments */
+$moduleComments = \Yii::$app->getModule('comments');
+$renderFormSectionComments = ($moduleComments && in_array(get_class($model), $moduleComments->modelsEnabled));
+
+// Comments moderation
+if (!$model->isNewRecord && $moduleComments && $model->comments_enabled && $model->checkCommentsModeration()) {
+    $moderationValue = $moduleComments->getContextModerationValue($model->modelClassName, $model->id);
+    // Modal confirm moderation
+    echo $this->render('@vendor/open20/amos-comments/src/views/comment-dashboard/parts/_modal');
+
+    $jsSwitchInputChange = <<<JS
+    function switchInputChange(e, state) {
+        var value = e.target.checked;
+        var modal = $('.modal-comments-moderation');
+        var confirmBtn = $('.modal-comments-moderation #modalConfirmBtn');
+        var switchInput = $(this);
+        var moderationValue = '{$moderationValue}';
+        
+        if (state === false && moderationValue == true) {
+            switchInput.bootstrapSwitch('state', !state, true);
+            modal.modal('show');
+            confirmBtn.on('click', function (e) {
+                switchInput.bootstrapSwitch('state', state, true);
+                modal.modal('hide');
+            });
+        }
+    }
+JS;
+}
 
 $js2 = <<<JS
   $(document).ready(function () {
@@ -210,6 +246,9 @@ JS
                     ])->label($newsImageLabel)->hint(AmosNews::t('amosnews', '#image_field_hint'))
                     ?>
                 </div>
+            </div>
+            <div>
+                <?= $form->field($model, 'alt')->textInput(['maxlength' => true, 'placeholder' => AmosNews::t('amosnews', "Inserisci l'alt")])->label(AmosNews::t('amosnews', 'Alt'))->hint(AmosNews::t('amosnews', '#title_field_hint')) ?>
             </div>
         </div>
 
@@ -396,6 +435,16 @@ EOF
                 </div>
             </div>
         </div>
+
+        <!-- Point of interest -->
+        <?php if ($newsModule->enableMap && !empty(Yii::$app->params['google_places_api_key'])) { ?>
+            <div class="col-xs-12 section-form m-t-30">
+                <h2 class="subtitle-form"><?= BaseAmosModule::t('amoscore', 'Punto di interesse') ?></h2>
+
+                <?= $form->field($model, 'place_id')->widget(PlaceWidget::className(), [])->label(false); ?>
+
+            </div>
+        <?php } ?>
 
         <?php if ($enableGalleryAttachment) : ?>
             <!--Gallery, inserimento di più immagini-->
@@ -769,9 +818,13 @@ EOF
         }
         ?>
         <?php
+        $hideCwhBox = '';
+        if($newsModule->hideCwhPubblicationBox){
+            $hideCwhBox = 'display:none;';
+        }
         if (isset($moduleTag)) :
         ?>
-            <div class="col-xs-12 section-form">
+            <div style="<?= $hideCwhBox?>" class="col-xs-12 section-form">
                 <div class="row">
                     <div class="col-xs-12">
                         <div class="section-modalita-pubblicazione">
@@ -798,7 +851,7 @@ EOF
 
                 <?php
                 $isCommunityManager = \open20\amos\community\utilities\CommunityUtil::isLoggedCommunityManager();
-                $publish_enabled = !empty(Yii::$app->getModule('news')->params['publication_always_enabled']) || (\Yii::$app->user->can('NEWS_PUBLISHER_FRONTEND') && empty($scope) && !$pubblicatedForCommunity);
+                $publish_enabled = !empty($newsModule->params['publication_always_enabled']) || (\Yii::$app->user->can('NEWS_PUBLISHER_FRONTEND') && empty($scope) && !$pubblicatedForCommunity);
 
                 $adminOrSuperUser = false;
                 if (\Yii::$app->user->can('ADMIN') || \Yii::$app->user->can('ADMIN_ARIA')) {
@@ -820,31 +873,36 @@ EOF
                 }
 
                 if ($publish_enabled) {
-                    if (Yii::$app->getModule('news')->params['site_publish_enabled'] || Yii::$app->getModule('news')->params['site_featured_enabled']) {
+                    if ($newsModule->params['site_publish_enabled'] || $newsModule->params['site_featured_enabled']) {
                 ?>
                         <div class="col-xs-12">
                             <div class="row">
-                                <?php if (Yii::$app->getModule('news')->params['site_publish_enabled']) { ?>
+                                <?php if ($newsModule->params['site_publish_enabled']) { ?>
                                     <!-- <h3 class="subtitle-section-form">< ?= AmosNews::t('amosnews', "Pubblication on the portal mode") ?>
                                                 <em>(< ?= AmosNews::t('amosnews', "Choose if you want to publish the news also on the portal") ?>
                                                     )</em>
                                             </h3> -->
                                 <?php
-                                
+                                    $attrDisabledPrimoPiano = false;
+                                    $hiddenPrimoPiano = '';
+
                                     if ($model->isNewRecord) {
                                         if (empty($scope)) {
-
                                             $model->primo_piano = 1;
                                             $model->in_evidenza = 0;
                                         } else {
-
                                             $model->primo_piano = 0;
                                             $model->in_evidenza = 0;
                                         }
                                     }
+                                    if(isset($newsModule->disableFormParamPrimoPiano) && $newsModule->disableFormParamPrimoPiano) {
+                                        $attrDisabledPrimoPiano = true;
+                                        $hiddenPrimoPiano = '<div class="hide">' . $form->field($model, 'primo_piano')->hiddenInput(['value' => $model->primo_piano])->label(false) . '</div>';
+                                    }
 
                                     $primoPiano = '<div class="col-md-6 col-xs-12">' . $form->field($model, 'primo_piano')->widget(Select::class, [
                                         'auto_fill' => true,
+                                        'disabled' => $attrDisabledPrimoPiano,
                                         'data' => [
                                             '0' => AmosNews::t('amosnews', 'solo a utenti registrati'),
                                             '1' => AmosNews::t('amosnews', 'a utenti registrati e non registrati')
@@ -862,10 +920,11 @@ EOF
                                     ])->label('Mostra notizia')->hint('Scegli se rendere la notizia fruibile anche da un\'utenza non registrata') . '</div>';
                                     if ($publish_enabled) {
                                         echo $primoPiano;
+                                        echo $hiddenPrimoPiano;
                                     }
                                 }
 
-                                if (Yii::$app->getModule('news')->params['site_featured_enabled']) {
+                                if ($newsModule->params['site_featured_enabled']) {
                                     $inEvidenza = '<div class="col-md-6 col-xs-12">' . $form->field($model, 'in_evidenza')->widget(Select::class, [
                                         'auto_fill' => true,
                                         'data' => [
@@ -987,27 +1046,88 @@ EOF
         </div>
     </div>
     <?php
-    if ($model->isNewRecord) { // default enable comment
-        $model->comments_enabled = $newsModule->defaultEnableComments;
-    ?>
-        <div class="row">
-            <div class="col-xs-12 section-form">
-                <h2 class="subtitle-form"><?= AmosNews::t('amosnews', 'Commenti') ?></h2>
-                <?php
-                $enableComments = Html::tag('div', $form->field($model, 'comments_enabled')
-                    ->inline()
-                    ->radioList([
-                        '1' => AmosNews::t('amosnews', '#comments_ok'),
-                        '0' => AmosNews::t('amosnews', '#comments_no')
-                    ], [
-                        'class' => 'comment-choice'
-                    ]), [
-                    // 'class' => 'col-xs-12'
-                ]);
-                ?>
-                <?= $enableComments ?>
+    if ($moduleComments && $renderFormSectionComments) {
+        if ($model->isNewRecord) { // default enable comment
+            $model->comments_enabled = $newsModule->defaultEnableComments; ?>
+            <div class="row">
+                <div class="col-xs-12 section-form">
+
+                    <h2 class="subtitle-form"><?= AmosNews::t('amosnews', 'Commenti') ?></h2>
+
+                    <!-- Comments enabled -->
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <div class="subcommunity-section" style="padding:24px 24px 0 24px">
+                                <div class="row">
+                                    <div class="col-sm-10 form-group m-b-0">
+                                        <?= Html::label(
+                                            $model->attributeLabels()['comments_enabled'],
+                                            'comments_enabled',
+                                            ['class' => 'control-label m-t-15']
+                                        ); ?>
+                                    </div>
+                                    <div class="col-sm-2">
+                                        <?= $form->field($model, 'comments_enabled')->widget(SwitchInput::classname(), [
+                                            'pluginOptions' => [
+                                                'onColor' => 'success',
+                                                'onText' => AmosNews::t('amosnews', '#comments_ok'),
+                                                'offText' => AmosNews::t('amosnews', '#comments_no'),
+                                                'options' => [
+                                                    'id' => 'comments_enabled'
+                                                ]
+                                            ],
+                                        ])->label(false); ?>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
             </div>
-        </div>
+        <?php } else {
+            // Comments moderation
+            if ($model->comments_enabled && $model->checkCommentsModeration()) { ?>
+                <div class="row">
+                    <div class="col-xs-12 section-form">
+
+                        <h2 class="subtitle-form"><?= AmosComments::t('amoscomments', 'Commenti') ?></h2>
+
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <div class="subcommunity-section">
+                                    <div class="row">
+                                        <div class="col-sm-10 form-group m-b-0">
+                                            <?= Html::label(
+                                                AmosComments::t('amoscomments', 'Attiva la moderazione dei commenti'),
+                                                'comments_moderation',
+                                                ['class' => 'control-label m-t-15']
+                                            ); ?>
+                                        </div>
+                                        <div class="col-sm-2">
+                                            <?= SwitchInput::widget([
+                                                'name' => 'comments_moderation',
+                                                'pluginOptions' => [
+                                                    'onColor' => 'success',
+                                                    'onText' => BaseAmosModule::t('amoscore', 'Sì'),
+                                                    'offText' => BaseAmosModule::t('amoscore', 'No'),
+                                                ],
+                                                'value' => $moderationValue,
+                                                'id' => 'comments_moderation',
+                                                'pluginEvents' => [
+                                                    "switchChange.bootstrapSwitch" => new \yii\web\JsExpression($jsSwitchInputChange),
+                                                ]
+                                            ]); ?>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            <?php } ?>
+        <?php } ?>
     <?php } ?>
     <?php
     $contentLanguage = '';
@@ -1022,7 +1142,7 @@ EOF
 
     <?php if ($moduleSeo) : ?>
         <div class="<?= $hideSeoModuleClass ?>">
-            <?= AccordionWidget::widget(['items' => [['header' => AmosNews::t('amosnews', '#settings_seo_title'), 'content' => \open20\amos\seo\widgets\SeoWidget::widget(['contentModel' => $model])]], 'headerOptions' => ['tag' => 'h2'], 'options' => Yii::$app->user->can('ADMIN') ? [] : ['style' => 'display:none;'], 'clientOptions' => ['collapsible' => true, 'active' => 'false', 'icons' => ['header' => 'ui-icon-amos am am-plus-square', 'activeHeader' => 'ui-icon-amos am am-minus-square']]]); ?>
+            <?= AccordionWidget::widget(['items' => [['header' => AmosNews::t('amosnews', '#settings_seo_title'), 'content' => \open20\amos\seo\widgets\SeoWidget::widget(['contentModel' => $model])]], 'headerOptions' => ['tag' => 'h2'], 'options' => (Yii::$app->user->can('ADMIN') || Yii::$app->user->can('CAPOREDATTORECMS')) ? [] : ['style' => 'display:none;'], 'clientOptions' => ['collapsible' => true, 'active' => 'false', 'icons' => ['header' => 'ui-icon-amos am am-plus-square', 'activeHeader' => 'ui-icon-amos am am-minus-square']]]); ?>
         </div>
     <?php endif; ?>
 

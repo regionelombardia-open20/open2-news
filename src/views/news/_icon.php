@@ -19,6 +19,10 @@ use open20\amos\core\utilities\CurrentUser;
 use open20\design\assets\ShimmerDesignAsset;
 ShimmerDesignAsset::register($this);
 
+$newsModule = AmosNews::instance();
+
+$showSignature =$newsModule->showSignature;
+$enableCategoryFilter =$newsModule->EnableCategoryFilter;
 $hideCategory = false;
 
 $newsCategories = NewsUtility::getAllNewsCategories();
@@ -26,17 +30,23 @@ if ($newsCategories->count() == 1) {
     $hideCategory = true;
 } else {
     $category = $model->newsCategorie->titolo;
+    $categoryId = $model->newsCategorie->id;
     $customCategoryClass = 'custom-category-bg-' . str_replace(' ', '-', strtolower($category));
     $colorBgCategory = $model->newsCategorie->color_background;
     $colorTextCategory = $model->newsCategorie->color_text;
 }
 
-if (strlen($model->descrizione) > 150){
+if (strlen($model->descrizione) > 150)
     $model->descrizione = substr($model->descrizione, 0, 147) . '...';
-}
 /**
  * @var \open20\amos\news\models\News $model
  */
+
+ if (is_null($model->alt)) {
+    $alt = '';
+} else {
+    $alt = $model->alt;
+}
 ?>
 
 <div class="listview-container news-item nop">
@@ -53,7 +63,7 @@ if (strlen($model->descrizione) > 150){
                         $contentImage = Html::img($url, [
                             'class' => 'news-image shimmer-image',
                             
-                            'alt' => AmosNews::t('amosnews', 'Vai alla notizia ' .  $model->titolo),
+                            'alt' => AmosNews::t('amosnews', $alt),
                             
                         ]);
                         ?>
@@ -83,20 +93,29 @@ if (strlen($model->descrizione) > 150){
                     </div>
                 </div>
                 <div class="card-body pl-0">
-                    <?=
-                    ItemAndCardHeaderWidget::widget(
-                        [
-                            'model' => $model,
-                            'publicationDateNotPresent' => true,
-                            'enableLink' => (AmosNews::instance()->enableLinkProfile ? !(CurrentUser::isPlatformGuest()) : false),
-                            'showPrevalentPartnership' => true,
-                        ]
-                    )
-                    ?>
-                    <hr class="w-75 my-2 ml-0">
-                    <?php if (!$hideCategory) : ?>
-                        <span class="card-category text-uppercase font-weight-normal <?= $customCategoryClass ?>  mb-3" <?php if ((!empty($colorBgCategory))) : ?> style="background-color: <?= $colorBgCategory ?> !important; padding:3px; " <?php endif; ?>><strong <?php if ((!empty($colorTextCategory))) : ?> style="color: <?= $colorTextCategory ?>" <?php endif; ?>><?= $category ?></strong></span>
+                    <?php if($showSignature): ?>
+                        <?=
+                        ItemAndCardHeaderWidget::widget(
+                            [
+                                'model' => $model,
+                                'publicationDateNotPresent' => true,
+                                'enableLink' => (AmosNews::instance()->enableLinkProfile ? !(CurrentUser::isPlatformGuest()) : false),
+                                'showPrevalentPartnership' => true,
+                            ]
+                        )
+                        ?>
+                        <hr class="w-75 my-2 ml-0">
                     <?php endif ?>
+
+                    <?php if (!$hideCategory) : ?>
+						<?php if (!$enableCategoryFilter) : ?>
+							<span class="card-category text-uppercase font-weight-normal <?= $customCategoryClass ?>  mb-3" <?php if ((!empty($colorBgCategory))) : ?> style="background-color: <?= $colorBgCategory ?> !important; padding:3px; " <?php endif; ?>><strong <?php if ((!empty($colorTextCategory))) : ?> style="color: <?= $colorTextCategory ?>" <?php endif; ?>><?= $category ?></strong></span>
+						<?php else: ?>
+						<?= Html::a(Html::tag('span', $category, ['class' => 'card-category text-uppercase font-weight-normal '.$customCategoryClass.' mb-3', 'style' => 'background-color: '.$colorBgCategory. '!important; padding:3px; color: '.$colorTextCategory]), 
+						[Yii::$app->controller->action->id,'NewsSearch[news_categorie_id]' => $categoryId, 'enableSearch' => '','currentView' => Yii::$app->request->getQueryParam('currentView')], 
+						['class' => 'link-list-title', 'title' => $category ]) ?>
+						<?php endif ?>
+					<?php endif ?>
                     <div>
 
                         <?= Html::a(Html::tag('h3', $model->titolo, ['class' => 'card-title font-weight-bold']), $model->getFullViewUrl(), ['class' => 'link-list-title', 'title' => 'Vai alla notizia ' .  $model->titolo]) ?>

@@ -12,30 +12,36 @@
 namespace open20\amos\news\controllers;
 
 use amos\sitemanagement\models\SiteManagementSlider;
+use open20\amos\admin\models\UserAccessLog;
+use open20\amos\attachments\models\File;
+use open20\amos\comments\AmosComments;
+use open20\amos\community\utilities\CommunityUtil;
 use open20\amos\core\controllers\CrudController;
 use open20\amos\core\helpers\BreadcrumbHelper;
 use open20\amos\core\helpers\Html;
+use open20\amos\core\helpers\PermissionHelper;
+use open20\amos\core\helpers\StringHelper;
 use open20\amos\core\icons\AmosIcons;
+use open20\amos\core\user\User;
 use open20\amos\cwh\query\CwhActiveQuery;
 use open20\amos\dashboard\controllers\TabDashboardControllerTrait;
-use open20\amos\events\AmosEvents;
 use open20\amos\admin\AmosAdmin;
-use open20\amos\events\assets\EventsAsset;
 use open20\amos\events\models\Event;
 use open20\amos\news\AmosNews;
 use open20\amos\news\assets\ModuleNewsAsset;
 use open20\amos\news\models\base\NewsRelatedEventMm;
 use open20\amos\news\models\News;
-use open20\amos\news\models\search\NewsSearch;
-use open20\amos\news\utility\NewsUtility;
 use open20\amos\news\widgets\icons\WidgetIconNewsCreatedBy;
 use raoul2000\workflow\base\WorkflowException;
 use Yii;
+use yii\base\InvalidConfigException;
 use yii\data\ActiveDataProvider;
 use yii\filters\AccessControl;
 use yii\filters\VerbFilter;
 use yii\helpers\ArrayHelper;
 use yii\helpers\Url;
+use yii\web\ForbiddenHttpException;
+use yii\web\NotFoundHttpException;
 use yii\web\View;
 
 /**
@@ -47,16 +53,18 @@ use yii\web\View;
  */
 class NewsController extends CrudController
 {
+
     /**
      * Trait used for initialize the news dashboard
      */
     use TabDashboardControllerTrait;
 
-    public $layout     = 'list'; // @var string $layout
+    public $layout = 'list'; // @var string $layout
+
+    /** @var AmosNews $newsModule */
     public $newsModule = null; // @var AmosNews|null $newsModule
     public $moduleCwh;
     public $scope;
-
 
     /**
      * @inheritdoc
@@ -71,7 +79,7 @@ class NewsController extends CrudController
         ModuleNewsAsset::register(Yii::$app->view);
 
         $this->newsModule = Yii::$app->getModule(AmosNews::getModuleName());
-        $this->moduleCwh  = Yii::$app->getModule('cwh');
+        $this->moduleCwh = Yii::$app->getModule('cwh');
 
         $this->scope = null;
         if (!empty($this->moduleCwh)) {
@@ -110,6 +118,11 @@ class NewsController extends CrudController
         }
 
         $this->setAvailableViews($availableViews);
+
+        // Disable mapParams configuration if the "enableMap" parameter is disabled in the module
+        if (!empty($this->newsModule->params['mapParams'][$this->id]['enable']) && !$this->newsModule->enableMap) {
+            $this->newsModule->params['mapParams'][$this->id]['enable'] = false;
+        }
 
         parent::init();
 
@@ -158,6 +171,96 @@ class NewsController extends CrudController
         );
     }
 
+    public function actionApiNews($userid = null, $channelid = null, $tenantId = null, $page = 0)
+    {
+        \Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+        $allowed_origins = !empty(\Yii::$app->params['corsApiTeams']) ? \Yii::$app->params['corsApiTeams'] : [];
+
+        header("Content-Type: application/json; charset=UTF-8");
+        header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+        header('Access-Control-Allow-Headers: Content-Type');
+//        header('Access-Control-Allow-Origin: *'); // Sostituisci con l'origine consentita
+        if (in_array($_SERVER['HTTP_ORIGIN'], $allowed_origins)) {
+            header("Access-Control-Allow-Origin: " . $_SERVER['HTTP_ORIGIN']);
+        }
+
+        if ($channelid) {
+            $community = \open20\amos\community\models\Community::find()->andWhere(['msgraph_channel_id' => $channelid])->one();
+            if ($community != null) {
+                $moduleCwh = \Yii::$app->getModule('cwh');
+                if (isset($moduleCwh)) {
+                    $moduleCwh->setCwhScopeInSession([
+                        'community' => $community->id
+                    ], [
+                        'mm_name' => 'community_user_mm',
+                        'entity_id_field' => 'community_id',
+                        'entity_id' => $community->id
+                    ]);
+                }
+            }
+        }
+        if ($userid) {
+            $msBuilder = new \open20\amos\community\models\clients\MsGraphBuilder();
+            if($tenantId == $msBuilder->getTenantId()) {
+                $msgraphUser = \open20\amos\community\models\CommunityMsgraphTokens::find()->andWhere(['msgraph_user_id' => $userid])->one();
+                if ($msgraphUser) {
+                    $user_id = $msgraphUser->user_id;
+                    $loginTimeout = Yii::$app->params['loginTimeout'] ?: 3600;
+                    $identity = User::findOne(['id' => $user_id]);
+
+                    //Login to selected user
+                    Yii::$app->user->login($identity, $loginTimeout);
+                }
+            }
+        }
+        $modelSearch = new \open20\amos\news\models\search\NewsSearch();
+        $dataProvider = $modelSearch->searchAll([]);
+        $query = $dataProvider->query;
+        if(!empty($page)){
+            $dataProvider->pagination->page = $page;
+        }
+        $dataProvider->pagination->pageSize = 18;
+        $models = $dataProvider->models;
+
+        $news = [];
+        /** @var  $model News */
+        foreach ($models as $model) {
+            $img_url = '/img/img_default.jpg';
+            if (!is_null($model->newsImage)) {
+                $img_url = $model->newsImage->getWebUrl('item_news', false, true);
+            }
+            $img_url = \Yii::$app->params['platform']['frontendUrl'] . $img_url;
+            $category = $model->newsCategorie->titolo;
+            $colorBgCategory = $model->newsCategorie->color_background;
+            $colorTextCategory = $model->newsCategorie->color_text;
+
+
+            $news [] = [
+                'title' => $model->titolo,
+                'content' => $model->descrizione,
+                'descrizione_breve' => $model->descrizione_breve,
+                'img_url' => $img_url,
+                'url' => \Yii::$app->params['platform']['frontendUrl'] . $model->getFullViewUrl(),
+                'publicatedFromDD' => \Yii::$app->getFormatter()->asDate($model->getPublicatedFrom(), 'dd'),
+                'publicatedFromMM' => \Yii::$app->getFormatter()->asDate($model->getPublicatedFrom(), 'MM'),
+                'publicatedFromYY' => \Yii::$app->getFormatter()->asDate($model->getPublicatedFrom(), 'y'),
+                'destinatari' => json_encode($model->destinatari),
+                'category' => $category,
+                'colorBgCategory' => $colorBgCategory,
+                'colorTextCategory' => $colorTextCategory,
+
+            ];
+        }
+//        return $news;
+        return [
+            'totalCount' => $dataProvider->totalCount,
+            'page' => $dataProvider->pagination->page,
+            'pageSize' => $dataProvider->pagination->pageSize,
+            'items' => $news
+        ];
+
+    }
+
     /**
      * @inheritdoc
      */
@@ -167,12 +270,19 @@ class NewsController extends CrudController
             [
                 'allow' => true,
                 'actions' => [
+                    'api-news',
+                ],
+            ],
+
+            [
+                'allow' => true,
+                'actions' => [
                     'own-news',
                     'to-validate-news',
                     'all-news',
                     'admin-all-news',
                     'own-interest-news',
-                    'redaction-all-news'
+                    'redaction-all-news',
                 ],
                 'roles' => ['AMMINISTRATORE_NEWS']
             ],
@@ -201,7 +311,12 @@ class NewsController extends CrudController
                 'actions' => [
                     'own-news',
                     'all-news',
-                    'own-interest-news'
+                    'own-interest-news',
+                    'extract-news',
+                    'clone-news',
+                    'search-news-title',
+                    'update-grid-view',
+                    'save-user-tags'
                 ],
                 'roles' => ['LETTORE_NEWS']
             ],
@@ -245,12 +360,14 @@ class NewsController extends CrudController
                     ((!empty(\Yii::$app->params['befe']) && \Yii::$app->params['befe'] == true) ? 'view' : 'nothingread')
                 ],
                 'matchCallback' => function ($rule, $action) {
-                    if (in_array($action->id, ['all-news', 'index'])) return true;
-                    if ($action->id != 'view') return false;
+                    if (in_array($action->id, ['all-news', 'index']))
+                        return true;
+                    if ($action->id != 'view')
+                        return false;
                     $id = (!empty(\Yii::$app->request->get()['id']) ? Yii::$app->request->get()['id'] : null);
                     if (!empty($id)) {
                         $model = News::findOne($id);
-            
+
                         if (!empty($model) && $model->primo_piano == 1) {
                             return true;
                         }
@@ -298,10 +415,10 @@ class NewsController extends CrudController
     {
         if (!empty($this->scope)) {
             if (isset($this->scope['community'])) {
-                $communityId                             = $this->scope['community'];
-                $community                               = \open20\amos\community\models\Community::findOne($communityId);
-                $dashboardCommunityTitle                 = AmosNews::t('amosnews', "Dashboard") . ' ' . $community->name;
-                $dasbboardCommunityUrl                   = Yii::$app->urlManager->createUrl(['community/join', 'id' => $communityId]);
+                $communityId = $this->scope['community'];
+                $community = \open20\amos\community\models\Community::findOne($communityId);
+                $dashboardCommunityTitle = AmosNews::t('amosnews', "Dashboard") . ' ' . $community->name;
+                $dasbboardCommunityUrl = Yii::$app->urlManager->createUrl(['community/join', 'id' => $communityId]);
                 Yii::$app->view->params['breadcrumbs'][] = ['label' => $dashboardCommunityTitle, 'url' => $dasbboardCommunityUrl];
             }
         }
@@ -316,7 +433,7 @@ class NewsController extends CrudController
 
         if (\Yii::$app->user->isGuest) {
             $titleSection = AmosNews::t('amosnews', 'Notizie');
-            $urlLinkAll   = '';
+            $urlLinkAll = '';
 
             $labelSigninOrSignup = AmosNews::t('amosnews', '#beforeActionCtaLoginRegister');
             $titleSigninOrSignup = AmosNews::t(
@@ -341,13 +458,12 @@ class NewsController extends CrudController
 
             $ctaLoginRegister = Html::a(
                 $labelLink,
-                isset(\Yii::$app->params['linkConfigurations']['loginLinkCommon']) ? \Yii::$app->params['linkConfigurations']['loginLinkCommon']
-                    : \Yii::$app->params['platform']['backendUrl'] . '/' . AmosAdmin::getModuleName() . '/security/login',
+                isset(\Yii::$app->params['linkConfigurations']['loginLinkCommon']) ? \Yii::$app->params['linkConfigurations']['loginLinkCommon'] : \Yii::$app->params['platform']['backendUrl'] . '/' . AmosAdmin::getModuleName() . '/security/login',
                 [
                     'title' => $titleLink
                 ]
             );
-            $subTitleSection  = Html::tag(
+            $subTitleSection = Html::tag(
                 'p',
                 AmosNews::t(
                     'amosnews',
@@ -355,10 +471,13 @@ class NewsController extends CrudController
                     ['platformName' => \Yii::$app->name, 'ctaLoginRegister' => $ctaLoginRegister]
                 )
             );
+            if($this->newsModule && $this->newsModule->hideAccessOrRegister){
+                $subTitleSection = null;
+            }
         } else {
             $titleSection = AmosNews::t('amosnews', 'Notizie');
             $labelLinkAll = AmosNews::t('amosnews', 'Tutte le notizie');
-            $urlLinkAll   = '/news/news/all-news';
+            $urlLinkAll = '/news/news/all-news';
             $titleLinkAll = AmosNews::t('amosnews', 'Visualizza la lista delle notizie');
 
             $subTitleSection = Html::tag('p', AmosNews::t('amosnews', '#beforeActionSubtitleSectionLogged'));
@@ -369,14 +488,14 @@ class NewsController extends CrudController
         $titleCreate = AmosNews::t('amosnews', 'Crea una nuova notizia');
         $labelManage = AmosNews::t('amosnews', 'Gestisci');
         $titleManage = AmosNews::t('amosnews', 'Gestisci le notizie');
-        $urlCreate   = '/news/news/create';
-        if($moduleNews->enableOnlyRedactional){
-            $urlCreate.='?isRedactional=1';
-            $labelLinkAll ='';
-            $urlLinkAll   = '';
+        $urlCreate = '/news/news/create';
+        if ($moduleNews->enableOnlyRedactional) {
+            $urlCreate .= '?isRedactional=1';
+            $labelLinkAll = '';
+            $urlLinkAll = '';
             $titleLinkAll = '';
         }
-        $urlManage   = null;
+        $urlManage = null;
 
         $this->view->params = [
             'isGuest' => \Yii::$app->user->isGuest,
@@ -393,7 +512,7 @@ class NewsController extends CrudController
             'urlCreate' => $urlCreate,
             'urlManage' => $urlManage,
         ];
-        
+
         // Lasciare qui questo if e return perché se no va in loop...
         if (!parent::beforeAction($action)) {
             return false;
@@ -409,7 +528,7 @@ class NewsController extends CrudController
         $moduleNews = \Yii::$app->getModule(AmosNews::getModuleName());
 
         $createurl = '/news/news/create';
-        if($moduleNews->enableOnlyRedactional){
+        if ($moduleNews->enableOnlyRedactional) {
             $createurl .= '?redactional=1';
         }
         Yii::$app->view->params['createNewBtnParams'] = [
@@ -459,11 +578,19 @@ class NewsController extends CrudController
     {
         /** @var News $model */
         $model = $this->findModel($id);
+
+        // Check permission, if user can see content
+        if (method_exists(PermissionHelper::class, 'canViewContent')) {
+            if (!PermissionHelper::canViewContent($model)) {
+                throw new NotFoundHttpException();
+            }
+        }
+
         $events = [];
         $dataProviderEvents = null;
-        if ($this->newsModule->enableRelateEvents){
+        if ($this->newsModule->enableRelateEvents) {
             $correlatedEvent = NewsRelatedEventMm::find()->andWhere(['news_id' => $id])->select('event_id')->asArray()->all();
-            foreach ($correlatedEvent as $ids){
+            foreach ($correlatedEvent as $ids) {
                 $events[] = $ids['event_id'];
             }
             $events = Event::find()
@@ -477,12 +604,12 @@ class NewsController extends CrudController
         if (isset(Yii::$app->params['isPoi']) && Yii::$app->params['isPoi'] == true) {
             if ($id == 2579) {
                 $cwhActiveQuery = new CwhActiveQuery(News::class);
-                $queryUsers     = $cwhActiveQuery->getRecipients(
+                $queryUsers = $cwhActiveQuery->getRecipients(
                     $model->regola_pubblicazione,
                     $model->tagValues,
                     $model->destinatari
                 );
-                $users          = ArrayHelper::map($queryUsers->all(), 'id', 'id');
+                $users = ArrayHelper::map($queryUsers->all(), 'id', 'id');
                 if (!in_array(Yii::$app->user->id, $users)) {
                     return $this->redirect('\dashboard');
                 }
@@ -590,7 +717,7 @@ class NewsController extends CrudController
         }
 
         $newsModel = $this->newsModule->model('News');
-        $news      = $newsModel::findOne($id);
+        $news = $newsModel::findOne($id);
         try {
             $news->sendToStatus(News::NEWS_WORKFLOW_STATUS_BOZZA);
             $ok = $news->save(false);
@@ -629,12 +756,13 @@ class NewsController extends CrudController
             $scenario = News::SCENARIO_CREATE;
         }
 
+        /** @var News $model */
         $model = $this->newsModule->createModel('News', ['scenario' => $scenario]);
         if (($enableAgid) && ($this->newsModule->request_publish_on_hp == false)) {
             $model->primo_piano = 1;
             $model->in_evidenza = 1;
         }
-        if(!empty(Yii::$app->request->get('category_id'))){
+        if (!empty(Yii::$app->request->get('category_id'))) {
             $model->news_categorie_id = Yii::$app->request->get('category_id');
         }
         $this->model = $model;
@@ -643,16 +771,16 @@ class NewsController extends CrudController
             if ($model->validate()) {
                 $validateOnSave = true;
                 if ($model->status == News::NEWS_WORKFLOW_STATUS_DAVALIDARE) {
-                    $model->status  = News::NEWS_WORKFLOW_STATUS_BOZZA;
+                    $model->status = News::NEWS_WORKFLOW_STATUS_BOZZA;
                     $model->save();
-                    $model->status  = News::NEWS_WORKFLOW_STATUS_DAVALIDARE;
+                    $model->status = News::NEWS_WORKFLOW_STATUS_DAVALIDARE;
                     $validateOnSave = false;
                 }
 
                 if ($model->status == News::NEWS_WORKFLOW_STATUS_VALIDATO) {
-                    $model->status  = News::NEWS_WORKFLOW_STATUS_BOZZA;
+                    $model->status = News::NEWS_WORKFLOW_STATUS_BOZZA;
                     $model->save();
-                    $model->status  = News::NEWS_WORKFLOW_STATUS_VALIDATO;
+                    $model->status = News::NEWS_WORKFLOW_STATUS_VALIDATO;
                     $validateOnSave = false;
                 }
 
@@ -665,12 +793,18 @@ class NewsController extends CrudController
                         $model->createNewsRelatedDocumentiMm();
                         $model->createNewsRelatedAgidServiceMm();
                     }
-                    if($enableOtherNewsCategories){
+                    if ($enableOtherNewsCategories) {
                         $model->saveOtherNewsCategories();
                     }
-                    
-                    if($this->newsModule->enableFreeTags){
+
+                    if ($this->newsModule->enableFreeTags) {
                         \open20\amos\tag\utility\TagFreeUtility::set($model->id, get_class($model), $model->tag_free);
+                    }
+
+                    /** @var AmosComments $moduleComments */
+                    $moduleComments = \Yii::$app->getModule('comments');
+                    if ($model->checkCommentsModeration()) {
+                        $moduleComments->saveCommentModeration($model->modelClassName, $model->id);
                     }
 
                     Yii::$app->getSession()->addFlash(
@@ -687,9 +821,9 @@ class NewsController extends CrudController
                     if (Yii::$app->getUser()->can('NewsValidate', ['model' => $model])) {
                         $redirectToUpdatePage = true;
                     }
-                    
+
                     if ($urlRedirect) {
-                        return $this->redirect([$urlRedirect,'id' => $model->id]);
+                        return $this->redirect([$urlRedirect, 'id' => $model->id]);
                     } else if ($redirectToUpdatePage) {
                         return $this->redirect(['/news/news/update', 'id' => $model->id]);
                     } else {
@@ -763,7 +897,6 @@ class NewsController extends CrudController
 
     /**
      * TBD manca la traduzione!!!!
-     
      * Il metodo crea il listener sull'evento di click per un qualche elemento del DOM.
      * L'evento mostra un messaggio e chiede conferma.
      *
@@ -795,7 +928,7 @@ class NewsController extends CrudController
         $model = $this->findModel($id);
         $this->model = $model;
         $model->loadOtherNewsCategories();
-        
+
         if ($this->newsModule->enableFreeTags) {
             $model->tag_free = \open20\amos\tag\utility\TagFreeUtility::get($model->id, get_class($model));
         }
@@ -807,7 +940,7 @@ class NewsController extends CrudController
         $enableAgid = $this->newsModule->enableAgid;
         $enableOtherNewsCategories = $this->newsModule->enableOtherNewsCategories;
 
-        $redirectToUpdatePage                           = false;
+        $redirectToUpdatePage = false;
         if (Yii::$app->getUser()->can('NEWS_UPDATE', ['model' => $model])) {
             $redirectToUpdatePage = true;
         }
@@ -835,8 +968,15 @@ class NewsController extends CrudController
                             $model->updateNewsRelatedAgidServiceMm();
                         }
 
-                        if($enableOtherNewsCategories){
+                        if ($enableOtherNewsCategories) {
                             $model->saveOtherNewsCategories();
+                        }
+
+                        /** @var AmosComments $moduleComments */
+                        $moduleComments = Yii::$app->getModule('comments');
+                        if ($model->checkCommentsModeration()) {
+                            $moderationValue = \Yii::$app->request->post('comments_moderation');
+                            $moduleComments->saveCommentModeration($model->modelClassName, $model->id, $moderationValue);
                         }
 
                         if ($urlRedirect) {
@@ -856,7 +996,7 @@ class NewsController extends CrudController
                                 'success',
                                 AmosNews::t('amosnews', 'Notizia aggiornata con successo.')
                             );
-                            
+
                             if (strpos($model->status, 'VALIDATO')) {
                                 return $this->redirect(['/news/news/update', 'id' => $model->id]);
                             } elseif (strpos($model->status, 'BOZZA') && strpos($previousStatus, 'DAVALIDARE')) {
@@ -988,7 +1128,6 @@ class NewsController extends CrudController
         $model = $this->findModel($id);
         $model->delete();
 
-
         if (!$model->hasErrors()) {
             Yii::$app->getSession()->addFlash('success', AmosNews::t('amosnews', 'Notizia cancellata correttamente.'));
         } else {
@@ -1019,11 +1158,10 @@ class NewsController extends CrudController
     {
         Url::remember();
 
+        $getParams = Yii::$app->request->get();
+        $viewToRender = 'index';
         Yii::$app->view->params['textHelp']['filename'] = 'news_dashboard_description';
-        $this->setDataProvider(
-            $this->getModelSearch()
-                ->searchOwnNews(Yii::$app->request->getQueryParams())
-        );
+        $this->setDataProvider($this->getModelSearch()->searchOwnNews(Yii::$app->request->getQueryParams()));
 
         $this->setTitleAndBreadcrumbs(AmosNews::t('amosnews', 'Notizie create da me'));
         $this->setListViewsParams();
@@ -1038,12 +1176,15 @@ class NewsController extends CrudController
                     ]
                 ),
                 'url' => '?currentView=grid'
-            ]
+            ],
         ]);
 
         $this->setCurrentView($this->getAvailableView('grid'));
-
         $this->setUpLayout('list');
+        if ($getParams['map'] && empty($getParams['currentView'])) {
+            $this->setupMapView();
+            $viewToRender = 'map';
+        }
         $this->view->params['currentDashboard'] = $this->getCurrentDashboard();
 
         if (!\Yii::$app->user->isGuest) {
@@ -1056,17 +1197,14 @@ class NewsController extends CrudController
             $this->setAgidNewsDataProvider();
         }
 
-        return $this->render(
-            'index',
-            [
-                'dataProvider' => $this->getDataProvider(),
-                'model' => $this->getModelSearch(),
-                'currentView' => $this->getCurrentView(),
-                'availableViews' => $this->getAvailableViews(),
-                'url' => ($this->url) ? $this->url : NULL,
-                'parametro' => ($this->parametro) ? $this->parametro : NULL
-            ]
-        );
+        return $this->render($viewToRender, [
+            'dataProvider' => $this->getDataProvider(),
+            'model' => $this->getModelSearch(),
+            'currentView' => $this->getCurrentView(),
+            'availableViews' => $this->getAvailableViews(),
+            'url' => ($this->url) ? $this->url : NULL,
+            'parametro' => ($this->parametro) ? $this->parametro : NULL
+        ]);
     }
 
     /**
@@ -1099,8 +1237,9 @@ class NewsController extends CrudController
 
         $this->setCurrentView($this->getAvailableView('grid'));
         $this->setUpLayout('list');
-        $this->view->params['currentDashboard'] = $this->getCurrentDashboard();
 
+        $this->view->params['hideMapSearch'] = true;
+        $this->view->params['currentDashboard'] = $this->getCurrentDashboard();
         if (!\Yii::$app->user->isGuest) {
             $this->view->params['titleSection'] = AmosNews::t('amosnews', 'Notizie da validare');
         }
@@ -1137,25 +1276,28 @@ class NewsController extends CrudController
             $currentView = reset($this->newsModule->defaultListViews);
         }
 
+        $getParams = Yii::$app->request->get();
+        $viewToRender = 'index';
         Yii::$app->view->params['textHelp']['filename'] = 'news_dashboard_description';
         $this->setDataProvider($this->getModelSearch()->searchAll(Yii::$app->request->getQueryParams()));
         $this->setTitleAndBreadcrumbs(AmosNews::t('amosnews', 'Tutte le notizie'));
         $this->setListViewsParams();
         $this->setCurrentView($this->getAvailableView($currentView));
-
         $this->setUpLayout('list');
+        if ($getParams['map'] && empty($getParams['currentView'])) {
+            $this->setupMapView();
+            $viewToRender = 'map';
+        }
         $this->view->params['currentDashboard'] = $this->getCurrentDashboard();
 
         if (!\Yii::$app->user->isGuest) {
             $bc = $this->model->getBullet(\open20\amos\core\record\Record::BULLET_TYPE_ALL, true);
             $this->view->params['titleSection'] = AmosNews::t('amosnews', 'Tutte le notizie');
             $this->view->params['labelLinkAll'] = AmosNews::t('amosnews', 'Notizie di mio interesse');
-            $this->view->params['urlLinkAll']   = AmosNews::t('amosnews', '/news/news/own-interest-news');
-            $this->view->params['titleLinkAll'] = AmosNews::t(
-                'amosnews',
-                'Visualizza la lista delle notizie di mio interesse'
-            );
+            $this->view->params['urlLinkAll'] = AmosNews::t('amosnews', '/news/news/own-interest-news');
+            $this->view->params['titleLinkAll'] = AmosNews::t('amosnews', 'Visualizza la lista delle notizie di mio interesse');
             $this->view->params['bulletCount'] = $bc;
+            $this->showCloneButton();
         } else {
             $this->view->params['titleSection'] = AmosNews::t('amosnews', 'Tutte le notizie');
         }
@@ -1166,17 +1308,14 @@ class NewsController extends CrudController
             $this->setAgidNewsDataProvider();
         }
 
-        return $this->render(
-            'index',
-            [
-                'dataProvider' => $this->getDataProvider(),
-                'model' => $this->getModelSearch(),
-                'currentView' => $this->getCurrentView(),
-                'availableViews' => $this->getAvailableViews(),
-                'url' => ($this->url) ? $this->url : NULL,
-                'parametro' => ($this->parametro) ? $this->parametro : NULL
-            ]
-        );
+        return $this->render($viewToRender, [
+            'dataProvider' => $this->getDataProvider(),
+            'model' => $this->getModelSearch(),
+            'currentView' => $this->getCurrentView(),
+            'availableViews' => $this->getAvailableViews(),
+            'url' => ($this->url) ? $this->url : NULL,
+            'parametro' => ($this->parametro) ? $this->parametro : NULL
+        ]);
     }
 
     /**
@@ -1217,6 +1356,9 @@ class NewsController extends CrudController
             $this->setAgidNewsDataProvider();
         }
 
+        $this->view->params['containerFullWidth'] = true;
+        $this->view->params['hideMapSearch'] = true;
+
         return $this->render(
             'redaction-index',
             [
@@ -1229,6 +1371,7 @@ class NewsController extends CrudController
             ]
         );
     }
+
     /**
      * @param null $currentView
      * @return string
@@ -1281,7 +1424,6 @@ class NewsController extends CrudController
         );
     }
 
-
     /**
      * Action for search all news.
      *
@@ -1291,6 +1433,8 @@ class NewsController extends CrudController
     {
         Url::remember();
 
+        $getParams = Yii::$app->request->get();
+        $viewToRender = 'index';
         Yii::$app->view->params['textHelp']['filename'] = 'news_dashboard_description';
         if (empty($currentView)) {
             $currentView = reset($this->newsModule->defaultListViews);
@@ -1301,24 +1445,116 @@ class NewsController extends CrudController
         $this->setTitleAndBreadcrumbs(AmosNews::t('amosnews', 'Notizie di mio interesse'));
         $this->setListViewsParams();
         $this->setCurrentView($this->getAvailableView($currentView));
-
         $this->setUpLayout('list');
+        if ($getParams['map'] && empty($getParams['currentView'])) {
+            $this->setupMapView();
+            $viewToRender = 'map';
+        }
         $this->view->params['currentDashboard'] = $this->getCurrentDashboard();
 
         if (!\Yii::$app->user->isGuest) {
             $bc = $this->model->getBullet(\open20\amos\core\record\Record::BULLET_TYPE_OWN, true);
             $this->view->params['titleSection'] = AmosNews::t('amosnews', 'Notizie di mio interesse');
             $this->view->params['bulletCount'] = $bc;
+            $this->showCloneButton();
         }
 
         // Agid news dataProvider
         if ($this->newsModule->enableAgid) {
-
             $this->setAgidNewsDataProvider();
         }
 
+        return $this->render($viewToRender, [
+            'dataProvider' => $this->getDataProvider(),
+            'model' => $this->getModelSearch(),
+            'currentView' => $this->getCurrentView(),
+            'availableViews' => $this->getAvailableViews(),
+            'url' => ($this->url) ? $this->url : null,
+            'parametro' => ($this->parametro) ? $this->parametro : null
+        ]);
+    }
+
+    /**
+     * @param integer $communityId
+     * @param integer $newsId
+     * @param string $currentView
+     * @return mixed
+     * @throws InvalidConfigException
+     * @throws NotFoundHttpException
+     */
+    public function actionCloneNews($communityId, $newsId = null, $currentView = null)
+    {
+        if (!AmosNews::instance()->enableCloningIntoCommunities) {
+            return $this->redirect(['index']);
+        }
+        if (empty($this->scope)) {
+            $this->moduleCwh->setCwhScopeInSession(['community' => $communityId]);
+        }
+        if (!CommunityUtil::isLoggedCommunityManager()) {
+            throw new ForbiddenHttpException(\Yii::t('amoscore', 'Non sei autorizzato a visualizzare questa pagina'));
+        }
+
+        if (!empty($newsId)) {
+            /** @var News $newsToClone */
+            $newsToClone = $this->findModel($newsId);
+            $attachmentsToClone = File::find()
+                ->andWhere(['model' => $newsToClone->modelClassName])
+                ->andWhere(['item_id' => $newsId])
+                ->all();
+
+            /** @var News $newsToCreate */
+            $newsToCreate = $this->newsModule->createModel('News', ['scenario' => News::SCENARIO_CREATE]);
+            $newsToCreate->setAttributes($newsToClone->getAttributes());
+            $newsToCreate->created_by = \Yii::$app->user->id;
+            $newsToCreate->status = News::NEWS_WORKFLOW_STATUS_BOZZA;
+            $newsToCreate->regola_pubblicazione = 3;
+            $newsToCreate->validatori = 'community-' . $communityId;
+
+//            $newsToCreate->detachBehaviors();
+            if ($newsToCreate->save(false)) {
+                if (!empty($attachmentsToClone)) {
+                    foreach ($attachmentsToClone as $attachmentToClone) {
+                        /** @var File $attachmentToClone */
+                        $attachmentToCreate = new File();
+                        $attachmentToCreate->setAttributes($attachmentToClone->getAttributes());
+                        $attachmentToCreate->item_id = $newsToCreate->id;
+                        $attachmentToCreate->save(false);
+                    }
+                }
+                $this->addFlash('success', AmosNews::t('amosnews', 'Notizia importata con successo.'));
+                return $this->redirect(['/news/news/update', 'id' => $newsToCreate->id]);
+            } else {
+                $this->addFlash('danger', AmosNews::t('amosnews', 'Errore durante l\'importazione della notizia.'));
+            }
+
+            return $this->redirect(['/news/news/clone-news', 'communityId' => $communityId]);
+        }
+
+        if (empty($currentView)) {
+            $currentView = reset($this->newsModule->defaultListViews);
+        }
+        $this->setDataProvider($this->getModelSearch()->searchClone(Yii::$app->request->getQueryParams()));
+        $this->setTitleAndBreadcrumbs(AmosNews::t('amosnews', 'Importa una news dalla piattaforma'));
+        $this->setListViewsParams();
+        $this->setAvailableViews([
+            'grid' => [
+                'name' => 'grid',
+                'label' => AmosIcons::show('view-list-alt') . Html::tag('p', AmosNews::t('amosnews', 'Tabella')),
+                'url' => '?currentView=grid'
+            ],
+        ]);
+        $this->setCurrentView($this->getAvailableView('grid'));
+        $this->setUpLayout('list');
+
+        $this->view->params['currentDashboard'] = $this->getCurrentDashboard();
+        $this->view->params['titleSection'] = AmosNews::t('amosnews', 'Importa una news dalla piattaforma');
+        $this->view->params['labelLinkAll'] = null;
+        $this->view->params['urlLinkAll'] = null;
+        $this->view->params['hideCreate'] = true;
+        $this->view->params['hideMan'] = true;
+
         return $this->render(
-            'index',
+            'clone-news',
             [
                 'dataProvider' => $this->getDataProvider(),
                 'model' => $this->getModelSearch(),
@@ -1330,6 +1566,91 @@ class NewsController extends CrudController
         );
     }
 
+    public function actionSaveUserTags($id)
+    {
+        $tag_utente = \open20\amos\cwh\models\CwhTagOwnerInterestMm::find()
+            ->innerJoin('tag', 'tag.id = tag_id')
+            ->andWhere([
+                'record_id' => \Yii::$app->user->id,
+            ])
+            ->orderBy([
+                'tag.nome' => SORT_DESC
+            ])->all();
+
+        $array_tag_utente = [];
+
+        foreach ($tag_utente as $tu) {
+            $array_tag_utente[] = $tu->tag_id;
+        }
+
+        $tag_news = \open20\amos\tag\models\EntitysTagsMm::find()
+            ->joinWith('tag')
+            ->andWhere([
+                'classname' => $this->model->className(),
+                'record_id' => $id,
+            ])
+            ->orderBy([
+                'tag.nome' => SORT_DESC
+            ])->all();
+
+        $array_tag_news = [];
+
+        foreach ($tag_news as $tn) {
+            $array_tag_news[] = $tn->tag_id;
+        }
+
+        $array_diff = array_diff($array_tag_news, $array_tag_utente);
+
+        $userProfileClass = AmosAdmin::instance()->model('UserProfile');
+
+        foreach ($array_diff as $tagId) {
+            $tagsMissing = \open20\amos\tag\models\Tag::Find()->andWhere(['id' => $tagId])->one();
+            $userTag = new \open20\amos\cwh\models\CwhTagOwnerInterestMm();
+            $userTag->interest_classname = 'simple-choice';
+            $userTag->classname = $userProfileClass;
+            $userTag->record_id = \Yii::$app->user->id;
+            $userTag->tag_id = $tagId;
+            $userTag->root_id = $tagsMissing->tagRoot->id;
+            $userTag->save();
+        }
+
+        $this->addFlash('success', AmosNews::t('amosnews', 'Tag aggiornati correttamente'));
+
+        $this->redirect(['view', 'id' => $id]);
+    }
+
+    /**
+     * @param string $title
+     * @return string
+     * @throws InvalidConfigException
+     */
+    public function actionUpdateGridView($title, $page)
+    {
+        \Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+
+        $this->setAvailableViews([
+            'grid' => [
+                'name' => 'grid',
+                'label' => AmosIcons::show('view-list-alt') . Html::tag('p', AmosNews::t('amosnews', 'Tabella')),
+                'url' => '?currentView=grid'
+            ],
+        ]);
+        $this->setCurrentView($this->getAvailableView('grid'));
+        $this->setUpLayout('list');
+
+        $dataProvider = $this->getModelSearch()->searchClone(Yii::$app->request->getQueryParams());
+        $dataProvider->query->andFilterWhere(['like', 'titolo', $title]);
+        if ($page) {
+            $dataProvider->pagination->page = $page;
+        }
+        $this->setDataProvider($dataProvider);
+
+        return $this->renderAjax('parts/_gridView', [
+            'dataProvider' => $this->getDataProvider(),
+            'currentView' => $this->getCurrentView()
+        ]);
+    }
+
     /**
      * @param $id
      * @return string
@@ -1337,7 +1658,7 @@ class NewsController extends CrudController
      */
     public function actionPublic($id)
     {
-        $model        = $this->findModel($id);
+        $model = $this->findModel($id);
         $this->layout = 'form';
         if ($this->isContentShared($id)) {
             return $this->render('public', ['model' => $model]);
@@ -1351,10 +1672,13 @@ class NewsController extends CrudController
     {
 
         $moduleNews = \Yii::$app->getModule(AmosNews::getModuleName());
-        if($moduleNews->enableOnlyRedactional && \Yii::$app->controller->action->id == 'redaction-all-news'){
+        if ($moduleNews->enableOnlyRedactional && \Yii::$app->controller->action->id == 'redaction-all-news') {
             return [];
         }
-        
+        if (Yii::$app->controller->action->id == 'clone-news') {
+            return [];
+        }
+
         $all = false;
         if (get_class(Yii::$app->controller) != 'open20\amos\news\controllers\NewsController') {
             $all = true;
@@ -1397,13 +1721,13 @@ class NewsController extends CrudController
             ];
         }
 
-        if($moduleNews->enableOnlyRedactional && \Yii::$app->user->can(\open20\amos\news\widgets\icons\WidgetIconAdminAllNews::class)){
+        if ($moduleNews->enableOnlyRedactional && \Yii::$app->user->can(\open20\amos\news\widgets\icons\WidgetIconAdminAllNews::class)) {
             $links[] = [
                 'title' => AmosNews::t('amosnews', 'Amministra tutte le news'),
                 'label' => AmosNews::t('amosnews', 'Notizie'),
                 'url' => '/news/news/admin-all-news'
             ];
-        }else if (\Yii::$app->user->can(\open20\amos\news\widgets\icons\WidgetIconAdminAllNews::class)) {
+        } else if (\Yii::$app->user->can(\open20\amos\news\widgets\icons\WidgetIconAdminAllNews::class)) {
             $links[] = [
                 'title' => AmosNews::t('amosnews', 'Amministra tutte le news'),
                 'label' => AmosNews::t('amosnews', 'Amministra'),
@@ -1419,7 +1743,7 @@ class NewsController extends CrudController
                 'url' => '/news/news-categorie/index',
             ];
         }
-        
+
         if (\Yii::$app->user->can('MANAGE_ORDER_FIELDS') && $moduleNews->enableCustomOrderFields) {
             $links[] = [
                 'title' => AmosNews::t('amoscore', 'manage_order_fields'),
@@ -1430,7 +1754,6 @@ class NewsController extends CrudController
 
         return $links;
     }
-
 
     /**
      * Method to set dataProvider for news when Agid is enabled
@@ -1489,7 +1812,7 @@ class NewsController extends CrudController
         if (!is_null($this->model->newsImage)) {
             $imgUrl = $this->model->newsImage->getWebUrl('square_large', false, true);
         }
-        $this->view->registerMetaTag(['property' => 'og:image', 'content' => $imgUrl]);
+        //$this->view->registerMetaTag(['property' => 'og:image', 'content' => $imgUrl]);
         //$this->view->registerMetaTag(['property' => 'og:title', 'content' => $this->model->titolo]);
         //$this->view->registerMetaTag(['property' => 'og:url', 'content' => $url]);
     }
@@ -1566,7 +1889,7 @@ class NewsController extends CrudController
                 'attribute' => 'updated_at',
                 'label' => AmosNews::t('amosnews', 'Data ultima modifica'),
                 'visible' => !$newsModule->enableAgid,
-                'value' => function($model){
+                'value' => function ($model) {
                     return \Yii::$app->formatter->asDatetime($model->updated_at, 'php:d/m/Y H:i');
                 },
                 'format' => 'raw',
@@ -1591,7 +1914,7 @@ class NewsController extends CrudController
                 'attribute' => 'data_pubblicazione',
                 'value' => function ($model) {
                     /** @var News $model */
-                    return (is_null($model->data_pubblicazione)) ? AmosNews::t('amosnews', 'Immediata') : Yii::$app->formatter->asDatetime($model->data_pubblicazione,'php:d/m/Y H:i');
+                    return (is_null($model->data_pubblicazione)) ? AmosNews::t('amosnews', 'Immediata') : Yii::$app->formatter->asDatetime($model->data_pubblicazione, 'php:d/m/Y H:i');
                 },
                 'format' => 'raw',
                 'visible' => !$newsModule->enableAgid,
@@ -1602,17 +1925,106 @@ class NewsController extends CrudController
                 'attribute' => 'data_rimozione',
                 'value' => function ($model) {
                     /** @var News $model */
-                    return (is_null($model->data_rimozione) || $model->data_rimozione == '9999-12-31 00:00:00') ? AmosNews::t('amosnews', 'Mai') : Yii::$app->formatter->asDatetime($model->data_rimozione,'php:d/m/Y H:i');
+                    return (is_null($model->data_rimozione) || $model->data_rimozione == '9999-12-31 00:00:00') ? AmosNews::t('amosnews', 'Mai') : Yii::$app->formatter->asDatetime($model->data_rimozione, 'php:d/m/Y H:i');
                 },
                 'format' => 'raw',
             ],
-
             'news_categorie_id' => [
                 'attribute' => 'newsCategorie.titolo',
                 'label' => AmosNews::t('amosnews', 'Categoria'),
                 'visible' => $newsModule->showCategory,
             ],
         ];
+    }
+
+    /**
+     * @return \yii\web\Response
+     */
+    public function actionExtractNews()
+    {
+        $basePath = realpath(\Yii::getAlias('@vendor/../common/uploads/temp'));
+        $filename = "news_export_" . date('Y_m_d_His') . ".xlsx";
+        $outputPath = $basePath . "/" . $filename;
+        $post = \Yii::$app->request->post();
+        $params = [];
+        $encryptionKey = Yii::$app->params['encryptionKey'];
+        if (empty($encryptionKey)) {
+            /** @var \open20\amos\layout\Module $moduleLayout */
+            $moduleLayout = Yii::$app->getModule('layout');
+            $encryptionKey = $moduleLayout->encryptionKey;
+        }
+
+        // Redirect url
+        if (!empty($post['redirectUrl'])) {
+            $redirectUrl = $post['redirectUrl'];
+        } else {
+            $redirectUrl = '/taskmanager';
+        }
+        // Query
+        if (!empty($post['query'])) {
+            $encryptedQuery = $post['query'];
+            $query = openssl_decrypt($encryptedQuery, 'aes-128-ecb', $encryptionKey);
+            if ($query) {
+                $params['query'] = $query;
+            }
+        }
+
+        /** @var \open20\amos\taskmanager\TaskManager $moduleTaskManager */
+        $moduleTaskManager = \Yii::$app->getModule('taskmanager');
+
+        $moduleTaskManager->scheduleJob(
+            "news/export/export-news",
+            'News',
+            $outputPath,
+            $params
+        );
+
+        return $this->redirect([$redirectUrl]);
+    }
+
+    /**
+     * @return void
+     * @throws InvalidConfigException
+     */
+    protected function showCloneButton()
+    {
+        if ($this->module->enableCloningIntoCommunities && !empty($this->scope) && !empty($this->scope['community'])) {
+            if (CommunityUtil::isLoggedCommunityManager()) {
+                $this->view->params['labelSecondAction'] = AmosNews::t('amosnews', 'Dalla piattaforma');
+                $this->view->params['titleSecondAction'] = AmosNews::t('amosnews', 'Importa una News dalla piattaforma');
+                $this->view->params['urlSecondAction'] = ['/news/news/clone-news', 'communityId' => $this->scope['community']];
+                $this->view->params['hideSecondAction'] = false;
+            }
+        }
+    }
+
+    /**
+     * @return void
+     */
+    protected function setupMapView()
+    {
+        $this->newsModule->params['searchParams'][$this->id]['enable'] = false;
+        $this->newsModule->params['orderParams'][$this->id]['enable'] = false;
+        $this->newsModule->params['mapParams'][$this->id]['enable'] = false;
+        $this->view->params['subTitleSection'] = AmosNews::t('amosnews', 'Notizie con punto di interesse');
+        $this->filterDataProviderMaps($this->getDataProvider(), Yii::$app->request->get());
+    }
+
+    /**
+     * Filter dataProvider to show only news with place_id not null
+     * @param ActiveDataProvider $dataProvider
+     * @return void
+     */
+    protected function filterDataProviderMaps($dataProvider, $getParams)
+    {
+        $dataProvider->query->andWhere(['is not', 'place_id', null])->andWhere(['!=', 'place_id', '']);
+        $searchParams = $getParams[StringHelper::basename(get_class($this->modelSearch))];
+        if (empty($searchParams['period'])) {
+            $modelSearch = $this->modelSearch;
+            $from = $modelSearch::getMapSearchFromTime(News::DEFAULT_PERIOD_MAP_SEARCH);
+            $fromDate = date('Y-m-d', $from);
+            $dataProvider->query->andWhere(['>=', 'data_pubblicazione', $fromDate]);
+        }
     }
 
 }

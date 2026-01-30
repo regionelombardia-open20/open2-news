@@ -15,6 +15,7 @@ use open20\amos\attachments\models\File;
 use open20\amos\attachments\behaviors\FileBehavior;
 use open20\amos\comments\models\CommentInterface;
 use open20\amos\community\models\Community;
+use open20\amos\comments\models\CommentModeration;
 use open20\amos\core\helpers\Html;
 use open20\amos\core\interfaces\CustomUrlModelInterface;
 use open20\amos\core\interfaces\ModelImageInterface;
@@ -23,14 +24,17 @@ use open20\amos\core\interfaces\PublicationDateFieldsInterface;
 use open20\amos\core\interfaces\ViewModelInterface;
 use open20\amos\core\views\toolbars\StatsToolbarPanels;
 use open20\amos\news\AmosNews;
+use open20\amos\news\controllers\NewsController;
 use open20\amos\news\i18n\grammar\NewsGrammar;
 use open20\amos\news\models\base\NewsRelatedEventMm;
 use open20\amos\news\models\NewsRelatedDocumentiMm;
 use open20\amos\news\models\NewsRelatedNewsMm;
+use open20\amos\news\models\search\NewsSearch;
 use open20\amos\news\utility\NewsUtility;
 use open20\amos\news\models\NewsRelatedAgidServiceMm;
 use open20\amos\news\models\NewsAgidPersonMm;
 use open20\amos\news\widgets\icons\WidgetIconNewsDashboard;
+use open20\amos\notificationmanager\base\NotifyWidgetDoNothing;
 use open20\amos\notificationmanager\behaviors\NotifyBehavior;
 use open20\amos\report\utilities\ReportUtil;
 use open20\amos\seo\behaviors\SeoContentBehavior;
@@ -44,6 +48,7 @@ use yii\log\Logger;
 use yii\helpers\Url;
 use yii\helpers\ArrayHelper;
 use yii\behaviors\SluggableBehavior;
+use open20\amos\core\interfaces\TagContentsModelInterface;
 
 /**
  * Class News
@@ -62,7 +67,8 @@ class News
     implements
     ContentModelInterface, CommentInterface, ViewModelInterface,
     ModelImageInterface, SeoModelInterface, CustomUrlModelInterface,
-    ContentPublicationInteraface, PublicationDateFieldsInterface
+    ContentPublicationInteraface, PublicationDateFieldsInterface,
+    TagContentsModelInterface
 {
     // Workflow ID
     const NEWS_WORKFLOW = 'NewsWorkflow';
@@ -131,6 +137,21 @@ class News
      * @var
      */
     public $otherCategories;
+
+    /**
+     * @var $period
+     */
+    public $period;
+
+    /**
+     * @var $data_pubblicazione_from
+     */
+    public $data_pubblicazione_from;
+
+    /**
+     * @var $data_pubblicazione_to
+     */
+    public $data_pubblicazione_to;
 
     /**
      */
@@ -530,6 +551,9 @@ class News
             [
                 'newsImage' => AmosNews::t('amosnews', 'News image'),
                 'tag_free' => AmosNews::t('amosnews', 'Tag'),
+                'period' => AmosNews::t('amosnews', 'Intervallo di tempo'),
+                'data_pubblicazione_from' => AmosNews::t('amosnews', 'Data pubblicazione da'),
+                'data_pubblicazione_to' => AmosNews::t('amosnews', 'Data pubblicazione a'),
             ]
         );
     }
@@ -1220,7 +1244,7 @@ class News
             $this->updateNewsRelatedEventMm();
         }
 
-        if (!empty($this->request_publish_on_hp) && $this->request_publish_on_hp == 1) {
+        if (!empty($this->newsModule->request_publish_on_hp) && $this->newsModule->request_publish_on_hp == 1) {
             if (
                 $this->status == self::NEWS_WORKFLOW_STATUS_VALIDATO
                 && $this->isCommunityManagerLoggedUserInThisNews()
@@ -1307,6 +1331,33 @@ class News
         }
     }
 
+    /**
+     * Check if module comments supports moderation
+     * @return bool
+     */
+    public function checkCommentsModeration()
+    {
+        $moduleComments = \Yii::$app->getModule('comments');
+        if ($moduleComments) {
+            if (method_exists($moduleComments, 'checkModerationStatus')) {
+                return $moduleComments->checkModerationStatus($this);
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * If true, can render CommentsBellNotificationWidget.
+     * @return bool
+     */
+    public function canShowCommentsNotificationBellWidget()
+    {
+        /** @var \open20\amos\comments\AmosComments $moduleComments */
+        $moduleComments = Yii::$app->getModule('comments');
+
+        return $moduleComments && class_exists('open20\amos\comments\widgets\CommentsBellNotificationWidget') && $this->comments_enabled;
+    }
 
     /**
      * Show if the content is visible
@@ -1351,12 +1402,48 @@ class News
     }
 
     /**
-     * @inheritdoc
+     * @return NewsController
+     * @throws \yii\base\InvalidConfigException
+     * @package open20\amos\core\interfaces\TagContentsModelInterface
      */
-    public function getValidatorUsersId()
+    public function getTagContentsControllerObj()
     {
-        $validatori = \Yii::$app->getAuthManager()->getUserIdsByRole('AMMINISTRATORE_NEWS');
+        $controllerId = 'news';
+        $route = AmosNews::getModuleName() . '/' . $controllerId;
+        return Yii::$app->createController($route)[0];
+        //return new NewsController('news', AmosNews::instance());
+    }
 
-        return $validatori;
+    /**
+     * @package open20\amos\core\interfaces\TagContentsModelInterface
+     * @return string
+     */
+    public function getTagContentsView()
+    {
+        return '@vendor/open20/amos-news/src/widgets/views/tag-contents';
+    }
+
+    /**
+     * @param $tag \open20\amos\tag\models\Tag
+     * @package open20\amos\core\interfaces\TagContentsModelInterface
+     * @return array
+     */
+    public function getTagContentsViewParams($tag)
+    {
+        // For override
+        $controller = $this->getTagContentsControllerObj();
+        if ($controller->hasMethod('getTagContentsViewParams')) {
+            return $controller->getTagContentsViewParams($tag);
+        }
+
+        return [
+            'titleSection' => Yii::t('amosnews', 'Notizie con tag: {tagName}', [
+                'tagName' => '<span>' . $tag->nome . '</span>'
+            ]),
+            'labelLinkAll' => Yii::t('amosnews', 'Vedi tutte'),
+            'titleLinkAll' => Yii::t('amosnews', 'Visualizza tutte le notizie con tag {tagName}', [
+                'tagName' => $tag->nome
+            ]),
+        ];
     }
 }

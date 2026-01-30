@@ -1,8 +1,13 @@
 <?php
 use open20\amos\notificationmanager\AmosNotify;
+use open20\amos\news\AmosNews;
+
 
 $colors =  \open20\amos\notificationmanager\utility\NotifyUtility::getColorNetwork($color);
 $notifyModule = AmosNotify::instance();
+
+$moduleNews = AmosNews::instance();
+$showSignature =$moduleNews->showSignature;
 ?>
 <?php foreach ($arrayModels as $model) { ?>
     <?php
@@ -33,15 +38,17 @@ $notifyModule = AmosNotify::instance();
                     <td colspan="2" style="padding:0 0 10px 0; border-bottom:1px solid #D8D8D8;">
                         <table width="100%">
                             <tr>
-                                <td width="400" style="text-align:left;">
-                                    <table width="100%">
-                                        <tr>
-                                                <?= \open20\amos\notificationmanager\widgets\ItemAndCardWidgetEmailSummaryWidget::widget([
-                                                    'model' => $model,
-                                                ]); ?>
-                                        </tr>
-                                    </table>
-                                </td>
+                                <?php if($showSignature): ?>
+                                    <td width="400" style="text-align:left;">
+                                        <table width="100%">
+                                            <tr>
+                                                    <?= \open20\amos\notificationmanager\widgets\ItemAndCardWidgetEmailSummaryWidget::widget([
+                                                        'model' => $model,
+                                                    ]); ?>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                <?php endif; ?>
                                 <td align="right" width="85" valign="bottom" style="text-align: center; padding-left: 10px;">
                                 <a href="<?=  Yii::$app->urlManager->createAbsoluteUrl($model->getFullViewUrl())?>"
                                     style="background:<?= ($notifyModule->mailThemeColor['bgPrimary']) ? $notifyModule->mailThemeColor['bgPrimary'] : '#297A38' ?>;

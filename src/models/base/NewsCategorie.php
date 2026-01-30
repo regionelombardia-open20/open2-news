@@ -12,6 +12,7 @@
 namespace open20\amos\news\models\base;
 
 use open20\amos\core\record\Record;
+use open20\amos\core\validators\StringHtmlValidator;
 use open20\amos\news\AmosNews;
 use yii\helpers\ArrayHelper;
 
@@ -58,6 +59,7 @@ class NewsCategorie extends Record
         return [
             [['titolo'], 'required'],
             [['descrizione'], 'string'],
+            [['descrizione'], StringHtmlValidator::className()],
             [['created_by', 'updated_by', 'deleted_by', 'version','notify_category'], 'integer'],
             [['created_at', 'updated_at', 'deleted_at'], 'safe'],
             [['titolo', 'sottotitolo', 'descrizione_breve'], 'string', 'max' => 255],

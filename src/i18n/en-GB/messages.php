@@ -283,4 +283,16 @@ return [
     'e scopri ora tutte le news di' => 'and find out now all the news of',
     'Non sono presenti news' => 'There are no news',
     'Questa categoria è già stata scelta come categoria principale.' => 'This category is already selected as a main category',
+    'Intervallo di tempo' => 'Time interval',
+    'Ultima settimana' => 'Last week',
+    'Ultimo mese' => 'Last month',
+    'Ultimi 3 mesi' => 'Last 3 months',
+    'Ultimo anno' => 'Last year',
+    'Personalizzato' => 'Custom',
+    'Data inizio' => 'Start date',
+    'Data fine' => 'End date',
+    'Notizie con tag: {tagName}' => 'News with tag: {tagName}',
+    'Visualizza tutte le notizie con tag {tagName}' => 'View all news with tag {tagName}',
+    'Vedi tutte' => 'See all',
+
 ];

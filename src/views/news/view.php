@@ -8,8 +8,8 @@
  * @package    open20\amos\news
  * @category   CategoryName
  */
-
 use open20\amos\core\forms\ContextMenuWidget;
+use open20\amos\core\forms\editors\maps\PlaceWidget;
 use open20\amos\core\forms\ItemAndCardHeaderWidget;
 use open20\amos\core\utilities\ModalUtility;
 use open20\amos\core\views\DataProviderView;
@@ -22,6 +22,8 @@ use open20\amos\attachments\components\AttachmentsList;
 use open20\amos\news\assets\ModuleNewsAsset;
 use open20\amos\news\models\News;
 use open20\amos\core\utilities\CurrentUser;
+use open20\amos\report\AmosReport;
+
 
 ModuleNewsAsset::register($this);
 
@@ -34,9 +36,12 @@ $enableAgid = AmosNews::instance()->enableAgid;
  * @var \open20\amos\events\models\Event $events
  * @var yii\data\ActiveDataProvider $dataProviderEvents
  * @var string $currentView
+ * @var AmosNews $moduleNews
  */
-
 $this->title = $model->titolo;
+$moduleNews = AmosNews::instance();
+
+$showSignature = $moduleNews->showSignature;
 
 $ruolo = Yii::$app->authManager->getRolesByUser(Yii::$app->getUser()->getId());
 if (isset($ruolo['ADMIN'])) {
@@ -51,6 +56,10 @@ $this->params['breadcrumbs'][] = $this->title;
 
 /** @var AmosEvents $eventsModule */
 $eventsModule = Yii::$app->getModule('events');
+
+/** @var AmosReport $reportModule */
+$reportModule = \Yii::$app->getModule('report');
+$showReportWidget = isset($reportModule) && in_array($model->className(), $reportModule->modelsEnabled);
 
 if (\Yii::$app->request->get('redactional')) {
     $this->params['forceBreadcrumbs'][] = ['label' => AmosNews::t('amosnews', "News"), 'url' => ['/news/news/redaction-all-news']];
@@ -97,13 +106,18 @@ if ($newsCategories->count() == 1) {
     $colorTextCategory = $model->newsCategorie->color_text;
 }
 
+if (is_null($model->alt)) {
+    $alt = '';
+} else {
+    $alt = $model->alt;
+}
 ?>
 
 <div class="detail-news-hero-wrapper it-hero-wrapper it-dark it-overlay">
     <div class="img-responsive-wrapper">
         <div class="img-responsive">
             <div class="img-wrapper">
-                <img src="<?= $url ?>" alt="<?= AmosNews::t('amosnews', 'Immagine della notizia') ?>">
+                <img src="<?= $url ?>" alt="<?= AmosNews::t('amosnews', $alt) ?>">
             </div>
         </div>
     </div>
@@ -113,25 +127,25 @@ if ($newsCategories->count() == 1) {
             <div class="col-12">
                 <div class="it-hero-text-wrapper bg-dark">
                     <span class="it-category  <?= $customCategoryClass ?>" <?php if ((!empty($colorBgCategory))) : ?> style="background-color: <?= $colorBgCategory ?> !important; padding: 0 4px; " <?php endif; ?>><strong <?php if ((!empty($colorTextCategory))) : ?> style="color: <?= $colorTextCategory ?>" <?php endif; ?>><?= $category ?></strong></span>
-                    <?php
-                    /** @var  $otherCat \open20\amos\news\models\NewsCategorie */
-                    foreach ($model->otherNewsCategories as $otherCat) {
-                        $customOtherCategoryClass = 'mb-1 px-1 '
-                            . 'custom-category-bg-'
-                            . str_replace(' ', '-', strtolower($category));
-                    ?>
+<?php
+/** @var  $otherCat \open20\amos\news\models\NewsCategorie */
+foreach ($model->otherNewsCategories as $otherCat) {
+    $customOtherCategoryClass = 'mb-1 px-1 '
+            . 'custom-category-bg-'
+            . str_replace(' ', '-', strtolower($category));
+    ?>
                         <span class="it-category  <?= $customOtherCategoryClass ?>" <?php if ((!empty($otherCat->color_background))) : ?> style="background-color: <?= $otherCat->color_background ?> !important; padding: 0 4px; " <?php endif; ?>><strong <?php if ((!empty($otherCat->color_text))) : ?> style="color: <?= $otherCat->color_text ?>" <?php endif; ?>><?= $otherCat->titolo ?></strong></span>
                     <?php } ?>
 
                     <p class="date"><?= Yii::$app->getFormatter()->asDate($model->data_pubblicazione) ?></p>
                     <h1 class="no_toc"><?= $model->titolo ?></h1>
                     <p class="d-none d-lg-block"><?= $model->sottotitolo ?></p>
-         
-                    <?php if (!empty(\open20\amos\core\utilities\CwhUtility::getTargetsString($model))) : ?>
+
+<?php if (!empty(\open20\amos\core\utilities\CwhUtility::getTargetsString($model))) : ?>
                         <p><span class="mdi mdi-account-supervisor-circle mdi-24px"></span>
                             <em><?= \open20\amos\core\utilities\CwhUtility::getTargetsString($model) ?></em>
                         </p>
-                    <?php endif; ?>
+<?php endif; ?>
                 </div>
             </div>
         </div>
@@ -142,20 +156,34 @@ if ($newsCategories->count() == 1) {
     <div class="container">
         <div class="row">
             <div class="col-xs-12 header-widget">
-                <?= ItemAndCardHeaderWidget::widget(
-                    [
-                        'model' => $model,
-                        'publicationDateNotPresent' => true,
-                        'showPrevalentPartnership' => true,
-                        'enableLink' => (AmosNews::instance()->enableLinkProfile ? !(CurrentUser::isPlatformGuest()) : false),
-                        'absoluteUrlAvatar' => true,
-                    ]
-                ) ?>
+                <?php if($showSignature): ?>
+                    <?= ItemAndCardHeaderWidget::widget(
+                        [
+                            'model' => $model,
+                            'publicationDateNotPresent' => true,
+                            'showPrevalentPartnership' => true,
+                            'showPrevalentPartnershipAndTargets' => false,
+                            'enableLink' => (AmosNews::instance()->enableLinkProfile ? !(CurrentUser::isPlatformGuest()) : false),
+                            'absoluteUrlAvatar' => true,
+                        ]
+                    ) ?>
+                <?php endif; ?>
 
                 <div class="more-info-content">
                     <?php
-                    $reportModule = \Yii::$app->getModule('report');
-                    if (isset($reportModule) && in_array($model->className(), $reportModule->modelsEnabled)) {
+                    if ($model->canShowCommentsNotificationBellWidget()) {
+                        // Comments notification bell widget
+                        echo \open20\amos\comments\widgets\CommentsBellNotificationWidget::widget([
+                            'modelClassname' => $model->modelClassName,
+                            'modelId' => $model->id,
+                            'buttonClass' => $showReportWidget ? 'btn btn-outline-tertiary m-r-10' : ''
+                        ]);
+                    }
+                    ?>
+
+                    <?php
+                    if ($showReportWidget) {
+                        // Report widget
                         echo \open20\amos\report\widgets\ReportDropdownWidget::widget([
                             'model' => $model,
                         ]);
@@ -163,13 +191,15 @@ if ($newsCategories->count() == 1) {
                     ?>
 
                     <div class="m-l-10">
-                        <?= ContextMenuWidget::widget([
+                        <?=
+                        ContextMenuWidget::widget([
                             'model' => $model,
                             'actionModify' => "/news/news/update?id=" . $model->id,
                             'actionDelete' => "/news/news/delete?id=" . $model->id,
                             'labelDeleteConfirm' => AmosNews::t('amosnews', 'Sei sicuro di voler cancellare questa notizia?'),
                             'modelValidatePermission' => 'NewsValidate'
-                        ]) ?>
+                        ])
+                        ?>
                     </div>
                 </div>
             </div>
@@ -177,7 +207,7 @@ if ($newsCategories->count() == 1) {
         <div class="row">
             <div class="col-md-12">
                 <div class="text-content">
-                    <?= $model->descrizione; ?>
+                <?= $model->descrizione; ?>
                 </div>
 
                 <?php
@@ -188,6 +218,7 @@ if ($newsCategories->count() == 1) {
                     'viewDeleteBtn' => false,
                     'viewDownloadBtn' => true,
                     'viewFilesCounter' => true,
+                    'hideWidgetIfEmpty' => $moduleNews->hideWidgetAttachmentsOnViewIfEmpty,
                 ]);
                 ?>
 
@@ -195,10 +226,11 @@ if ($newsCategories->count() == 1) {
                 if (!empty($eventsModule) && ($enableRelateEvents) && ($dataProviderEvents->getTotalCount() > 0)) {
                     open20\amos\events\assets\EventsAsset::register($this);
                     $urlIcon = '@vendor/open20/amos-events/src/views/event/_icon';
-                ?>
+                    ?>
 
                     <div class="event-index">
-                        <?= DataProviderView::widget([
+                        <?=
+                        DataProviderView::widget([
                             'dataProvider' => $dataProviderEvents,
                             'currentView' => $currentView,
                             'iconView' => [
@@ -211,40 +243,70 @@ if ($newsCategories->count() == 1) {
 
                 <?php
                 $tagsWidget = '';
+
                 $tagsWidget = \open20\amos\core\forms\ListTagsWidget::widget([
                     'userProfile' => $model->id,
                     'className' => $model->className(),
                     'viewFilesCounter' => true,
+                    'hideWidgetIfEmpty' => $moduleNews->hideWidgetTagsOnViewIfEmpty,
                 ]);
                 ?>
 
-                <?= $attachmentsWidget ?>
+<?= $attachmentsWidget ?>
 
-                <?php $arrayImg = $model->getGalleriaUrl();
-                if ($enableGalleryAttachment && $arrayImg != NULL) { ?>
+<?php $arrayImg = $model->getGalleriaUrl();
+if ($enableGalleryAttachment && $arrayImg != NULL) {
+    ?>
                     <div class="gallery-section m-t-30">
                         <div class="container">
                             <strong class="text-uppercase"><?= AmosNews::t('amosnews', 'Gallery') ?></strong>
                             <div class="row m-t-20">
-                                <?php
-                                foreach ($arrayImg as $image) { ?>
+                                <?php foreach ($arrayImg as $image) { ?>
                                     <div class="col-md-4 col-xs-6 m-b-30">
                                         <img alt="<?= AmosNews::t('amosnews', 'Immagine galleria') ?>" src="<?= $image ?>" class="img-responsive">
                                     </div>
-                                <?php } ?>
+                    <?php } ?>
                             </div>
 
                         </div>
                     </div>
-                <?php
-                }
-                ?>
+    <?php
+}
+?>
 
                 <div class="clearfix"></div>
 
                 <div class="tag-container">
                     <?= $tagsWidget ?>
+
+                     <?php 
+                    if ($moduleNews->addTags && !strpos($tagsWidget,'aree')) {
+                        echo $this->render('parts/_AddUserTag', [
+                            'model' => $model,
+                            'array_diff' => $array_diff,
+                        ]);
+                    }
+                    ?>
                 </div>
+
+                <!-- Point of interest -->
+<?php if ($moduleNews->enableMap && !empty(Yii::$app->params['google_places_api_key']) && !empty($model->place_id)): ?>
+                    <div class="clearfix"></div>
+                    <div class="poi poi-map-view m-t-20">
+                        <label class="text-uppercase m-b-10"><?= AmosNews::t('amosnews', 'Punto di interesse') ?></label>
+                        <?=
+                        PlaceWidget::widget([
+                            'options' => [
+                                'name' => 'poi_place_id',
+                                'hideOtherLocations' => true,
+                            ],
+                            'model' => $model,
+                            'attribute' => 'place_id',
+                            'showInput' => false,
+                        ]);
+                        ?>
+                    </div>
+<?php endif; ?>
 
                 <div class="clearfix"></div>
                 <div class="footer-content">
@@ -263,15 +325,16 @@ if ($newsCategories->count() == 1) {
                         ]);
                         ?>
                     </div>
-                    
-                    <?php if ($enableLikeWidget && $model->status == News::NEWS_WORKFLOW_STATUS_VALIDATO) : ?>
+
+                        <?php if ($enableLikeWidget && $model->status == News::NEWS_WORKFLOW_STATUS_VALIDATO) : ?>
                         <div class="widget-body-content">
-                            <?= \open20\amos\core\forms\editors\likeWidget\LikeWidget::widget([
+                            <?=
+                            \open20\amos\core\forms\editors\likeWidget\LikeWidget::widget([
                                 'model' => $model,
                             ]);
                             ?>
                         </div>
-                    <?php endif; ?>
+                <?php endif; ?>
                 </div>
                 <?php if (\Yii::$app->getModule('correlations')) { ?>
                     <?=
@@ -279,41 +342,10 @@ if ($newsCategories->count() == 1) {
                         'model' => $model
                     ]);
                     ?>
-                <?php } ?>
+<?php } ?>
                 <div class="clearfix"></div>
             </div>
-            <!-- <div class="col-md-3 col-xs-12">
-
-                < ?php
-
-                $attachmentsWidget = '';
-                $tagsWidget = '';
-
-                $attachmentsWidget = AttachmentsList::widget([
-                    'model' => $model,
-                    'attribute' => 'attachments',
-                    'viewDeleteBtn' => false,
-                    'viewDownloadBtn' => true,
-                    'viewFilesCounter' => true,
-                ]);
-
-                $tagsWidget = \open20\amos\core\forms\ListTagsWidget::widget([
-                    'userProfile' => $model->id,
-                    'className' => $model->className(),
-                    'viewFilesCounter' => true,
-                ]);
-
-                ?>
-                < ?=
-                    $this->render(
-                        '@vendor/open20/amos-layout/src/views/layouts/fullsize/parts/bi-view-detail-sidebar',
-                        [
-                            'attachments' => $attachmentsWidget,
-                            'tags' => $tagsWidget,
-                        ]
-                    );
-                ?>
-            </div> -->
+           
 
         </div>
     </div>
@@ -324,9 +356,9 @@ if ($newsCategories->count() == 1) {
             <?= \amos\sitemanagement\widgets\SMSliderWidget::widget(['sliderId' => $model->image_site_management_slider_id]); ?>
         <?php endif; ?>
         <?php if (!empty($model->video_site_management_slider_id)) : ?>
-            <?= \amos\sitemanagement\widgets\SMSliderWidget::widget(['sliderId' => $model->video_site_management_slider_id]); ?>
-        <?php endif; ?>
-
+        <?= \amos\sitemanagement\widgets\SMSliderWidget::widget(['sliderId' => $model->video_site_management_slider_id]); ?>
     <?php endif; ?>
+
+<?php endif; ?>
 
 </div>

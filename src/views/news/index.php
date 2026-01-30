@@ -15,29 +15,62 @@ use open20\amos\core\icons\AmosIcons;
 use open20\amos\core\utilities\ModalUtility;
 use open20\amos\core\views\DataProviderView;
 use open20\amos\news\AmosNews;
+use open20\amos\news\controllers\NewsController;
 use open20\amos\news\models\News;
 use open20\amos\news\widgets\NewsCarouselWidget;
 
 /**
  * @var yii\web\View $this
+ * @var open20\amos\news\models\News $model
  * @var yii\data\ActiveDataProvider $dataProvider
  * @var open20\amos\news\models\search\NewsSearch $searchModel
  * @var \open20\amos\dashboard\models\AmosUserDashboards $currentDashboard
  * @var string $currentView
  */
-$actionColumnDefault = '{view}{update}{delete}';
-$actionColumnToValidate = '{validate}{reject}';
-$actionColumn = $actionColumnDefault;
-if (Yii::$app->controller->action->id == 'to-validate-news') {
-    $actionColumn = $actionColumnToValidate . $actionColumnDefault;
-}
-$hidePubblicationDate = Yii::$app->controller->newsModule->hidePubblicationDate;
-$hideDataRimozioneView = Yii::$app->controller->newsModule->hideDataRimozioneView;
-
-$queryParamCurrentView = Yii::$app->request->getQueryParam('currentView');
 
 /** @var AmosNews $newsModule */
 $newsModule = AmosNews::instance();
+
+/** @var NewsController $appController */
+$appController = \Yii::$app->controller;
+
+$actionColumnDefault = '{view}{update}{delete}';
+$actionColumnToValidate = '{validate}{reject}';
+$actionColumn = $actionColumnDefault;
+if ($appController->action->id == 'to-validate-news') {
+    $actionColumn = $actionColumnToValidate . $actionColumnDefault;
+}
+$hidePubblicationDate = $appController->newsModule->hidePubblicationDate;
+$hideDataRimozioneView = $appController->newsModule->hideDataRimozioneView;
+
+$queryParamCurrentView = Yii::$app->request->getQueryParam('currentView');
+
+if (Yii::$app->user->isGuest) {
+    if ($newsModule->hideDownloadIndexForGuests) {
+        \Yii::$app->params['hideDownload'] = true;
+    }
+    if ($newsModule->hideChangeViewTypeIndexForGuests) {
+        $appController->module->params['hideChangeViewType'] = true;
+    }
+}
+
+// Accessibilità
+$js = <<< JS
+$('.pagination-wrapper .pagination li.prev').each(function(){
+    let el = $(this).find('a'); 
+            el.attr('title', 'Vai alla pagina precedente').attr('aria-label', 'Vai alla pagina precedente').attr('data-toggle', 'tooltip');
+        });
+$('.pagination-wrapper .pagination li:not(.next):not(.prev)').each(function(){
+    let el = $(this).find('a'); 
+            el.attr('title', 'Vai alla pagina ' + el.html()).attr('aria-label', 'Vai alla pagina ' + el.html()).attr('data-toggle', 'tooltip');
+        });
+$('.pagination-wrapper .pagination li.next').each(function(){
+    let el = $(this).find('a'); 
+            el.attr('title', 'Vai alla pagina successiva').attr('aria-label', 'Vai alla pagina successiva').attr('data-toggle', 'tooltip');
+        });
+JS;
+
+$this->registerJs($js);
 
 ?>
 <div class="news-index">
@@ -57,16 +90,21 @@ $newsModule = AmosNews::instance();
                 ],
                 'immagine' => [
                     'label' => AmosNews::t('amosnews', 'Immagine'),
-                    'format' => 'html',
+                    'format' => 'raw',
                     'value' => function ($model) {
                         /** @var News $model */
                         $url = '/img/img_default.jpg';
                         if (!is_null($model->newsImage)) {
                             $url = $model->newsImage->getWebUrl('table_small', false, true);
                         }
-                        $contentImage = Html::img($url, ['class' => 'gridview-image', 'alt' => AmosNews::t('amosnews', 'Immagine della notizia')]);
 
-                        return Html::a($contentImage, $model->getFullViewUrl());
+                        $alt = $model->titolo;
+                        if (!empty($model->alt)) {
+                            $alt = $model->alt;
+                        }
+   
+                        $contentImage = Html::img($url, ['class' => 'gridview-image', 'alt' => AmosNews::t('amosnews', $alt), 'aria' => ['label'=> 'Leggi '.$model->title ]]);
+                        return Html::a($contentImage, $model->getFullViewUrl(), ['title' => 'Vai al dettaglio della notizia '.$model->titolo, 'aria-label' => 'Vai al dettaglio della notizia ' . $model->title]);
                     }
                 ],
                 'titolo',
@@ -192,13 +230,19 @@ $newsModule = AmosNews::instance();
             ],
             'enableExport' => true
         ],
+        'exportConfig' => [
+            'exportEnabled' => true,
+            'noExportColumns' => ['immagine'],
+            'enableBackgroundDownload' => AmosNews::instance()->enableBackgroundDownload,
+            'backgroundDownloadOptions' => AmosNews::instance()->backgroundDownloadOptions,
+        ],
         'listView' => [
             'itemView' => '_item',
         ],
         'iconView' => [
             'itemView' => '_icon',
         ],
-
+        'viewIconClass' => 'open20\amos\core\views\ExtendedIconView'
     ]);
     ?>
 </div>

@@ -126,11 +126,11 @@ class NewsCategorie extends \open20\amos\news\models\base\NewsCategorie
             $newsCommunityMm->community_id = $community_id;
 
             $newsCommunityMm->visible_to_cm = 0;
-            if(array_search('COMMUNITY_MANAGER', $this->visibleToCommunityRole) !== false){
+            if($this->visibleToCommunityRole != '' && array_search('COMMUNITY_MANAGER', $this->visibleToCommunityRole) !== false){
                 $newsCommunityMm->visible_to_cm = 1;
             }
             $newsCommunityMm->visible_to_participant = 0;
-            if(array_search('PARTICIPANT', $this->visibleToCommunityRole) !== false){
+            if($this->visibleToCommunityRole != '' && array_search('PARTICIPANT', $this->visibleToCommunityRole) !== false){
                 $newsCommunityMm->visible_to_participant = 1;
 
             }

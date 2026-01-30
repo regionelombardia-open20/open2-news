@@ -37,7 +37,10 @@ class WidgetIconNewsDashboard extends WidgetIcon
         $this->setLabel(AmosNews::tHtml('amosnews', 'Notizie'));
         $this->setDescription(AmosNews::t('amosnews', 'Modulo news'));
 
-        if (!empty(Yii::$app->params['dashboardEngine']) && Yii::$app->params['dashboardEngine'] == WidgetAbstract::ENGINE_ROWS) {
+        if(!empty(Yii::$app->params['twoColorIcons'])){
+            $this->setIconFramework(AmosIcons::TWOTONES);
+            $this->setIcon('article');
+        }else if (!empty(Yii::$app->params['dashboardEngine']) && Yii::$app->params['dashboardEngine'] == WidgetAbstract::ENGINE_ROWS) {
             $this->setIconFramework(AmosIcons::IC);
             $this->setIcon('news');
             $paramsClassSpan = [];
@@ -47,7 +50,7 @@ class WidgetIconNewsDashboard extends WidgetIcon
 
         $this->setUrl(['/news']);
         $this->setCode('NEWS_MODULE');
-        $this->setModuleName('news-dashboard');
+        $this->setModuleName('news');
         $this->setNamespace(__CLASS__);
 
         $this->setClassSpan(

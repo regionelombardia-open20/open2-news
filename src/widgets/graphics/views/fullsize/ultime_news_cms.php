@@ -9,6 +9,7 @@
  * @category   CategoryName
  */
 
+use open20\amos\community\utilities\CommunityUtil;
 use open20\amos\news\AmosNews;
 use open20\amos\news\assets\ModuleNewsAsset;
 use open20\amos\news\controllers\NewsController;
@@ -43,6 +44,20 @@ $labelManage = AmosNews::t('amosnews', 'Gestisci');
 $titleManage = AmosNews::t('amosnews', 'Gestisci le notizie');
 $urlCreate = '/news/news/create';
 
+$labelSecondAction = AmosNews::t('amosnews', 'Dalla piattaforma');
+$titleSecondAction = AmosNews::t('amosnews', 'Importa una News dalla piattaforma');
+$urlSecondAction = ['/news/news/clone-news', 'communityId' => Yii::$app->request->getQueryParam('id')];
+
+if (!AmosNews::instance()->enableCloningIntoCommunities) {
+    $hideSecondAction = true;
+} else {
+    if (CommunityUtil::isLoggedCommunityManager()) {
+        $hideSecondAction = false;
+    } else {
+        $hideSecondAction = true;
+    }
+}
+
 $controller = NewsController::class;
 $manageLinks = (method_exists($controller, 'getManageLinks') ? $controller::getManageLinks() : []);
 
@@ -66,12 +81,17 @@ if (isset($moduleCwh)) {
                 'urlLinkAll' => $urlLinkAll,
                 'labelLinkAll' => $labelLinkAll,
                 'titleLinkAll' => $titleLinkAll,
+                'labelSecondAction' => $labelSecondAction,
+                'titleSecondAction' => $titleSecondAction,
+                'urlSecondAction' => $urlSecondAction,
+                'hideSecondAction' => $hideSecondAction,
                 'labelCreate' => $labelCreate,
                 'titleCreate' => $titleCreate,
                 'labelManage' => $labelManage,
                 'titleManage' => $titleManage,
                 'urlCreate' => $urlCreate,
                 'manageLinks' => $manageLinks,
+                'canCreate' => \Yii::$app->user->can('NEWS_CREATE', ['model' => AmosNews::instance()->createModel('News')]),
             ]
         );
         ?>

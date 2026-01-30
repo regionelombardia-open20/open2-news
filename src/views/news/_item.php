@@ -19,9 +19,10 @@ use open20\amos\core\utilities\CurrentUser;
 use open20\design\assets\ShimmerDesignAsset;
 ShimmerDesignAsset::register($this);
 
+$newsModule = AmosNews::instance();
 
+$showSignature =$newsModule->showSignature;
 $hideCategory = false;
-
 $newsCategories = NewsUtility::getAllNewsCategories();
 if ($newsCategories->count() == 1) {
     $hideCategory = true;
@@ -32,12 +33,18 @@ if ($newsCategories->count() == 1) {
     $colorTextCategory = $model->newsCategorie->color_text;
 }
 
-if (strlen($model->descrizione) > 150){
-    $model->descrizione = substr(strip_tags($model->descrizione), 0, 147) . '...';
+if (strlen($model->descrizione) > 150) {
+    $model->descrizione = \yii\helpers\StringHelper::truncate(strip_tags($model->descrizione), 150, '... ');
 }
 /**
  * @var \open20\amos\news\models\News $model
  */
+
+ if (is_null($model->alt)) {
+    $alt = '';
+} else {
+    $alt = $model->alt;
+}
 ?>
 
 <div class="listview-container news-item nop">
@@ -54,7 +61,7 @@ if (strlen($model->descrizione) > 150){
                             $contentImage = Html::img($url, [
                                 // 'class' => 'full-width',
                                 'class' => 'news-image shimmer-image',
-                                'alt' => AmosNews::t('amosnews', 'Vai alla notizia ' .  $model->titolo)
+                                'alt' => AmosNews::t('amosnews', $alt),
                             ]);
                         ?>
                         <?= Html::a($contentImage, $model->getFullViewUrl(), ['title' => 'Vai alla notizia ' .  $model->titolo,  'class' => 'img-shimmer']) ?>
@@ -74,18 +81,21 @@ if (strlen($model->descrizione) > 150){
                     </div>
                 </div>
                 <div class="card-body pl-0">
-                    <?= 
-                        ItemAndCardHeaderWidget::widget([
-                                'model' => $model,
-                                'publicationDateNotPresent' => true,
-                                'enableLink' => (AmosNews::instance()->enableLinkProfile ? !(CurrentUser::isPlatformGuest()) : false),
-                                'showPrevalentPartnership' => true,
-                                
-                            ]
-                        ) 
-                    ?>
+                    <?php if ($showSignature) : ?>
+                        <?= 
+                            ItemAndCardHeaderWidget::widget([
+                                    'model' => $model,
+                                    'publicationDateNotPresent' => true,
+                                    'enableLink' => (AmosNews::instance()->enableLinkProfile ? !(CurrentUser::isPlatformGuest()) : false),
+                                    'showPrevalentPartnership' => true,
+                                    
+                                ]
+                            ) 
+                        ?>
 
-                    <hr class="w-75 my-2 ml-0">
+                        <hr class="w-75 my-2 ml-0">
+                    <?php endif; ?>
+
                     <?php if (!$hideCategory) : ?>
                     <span class="card-category text-uppercase font-weight-normal <?= $customCategoryClass ?>  mb-3" <?php if ((!empty($colorBgCategory))) : ?> style="background-color: <?= $colorBgCategory ?> !important; padding:3px; " <?php endif; ?> ><strong <?php if ((!empty($colorTextCategory))) : ?> style="color: <?= $colorTextCategory ?>" <?php endif; ?>><?= $category ?></strong></span>
                     <?php endif ?>

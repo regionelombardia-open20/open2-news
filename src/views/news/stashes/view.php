@@ -42,6 +42,10 @@ $this->params['breadcrumbs'][] = $this->title;
 $hidePubblicationDate = Yii::$app->controller->newsModule->hidePubblicationDate;
 $numberListTag = Yii::$app->controller->newsModule->numberListTag;
 
+$newsModule = AmosNews::instance();
+
+$showSignature =$newsModule->showSignature;
+
 $url = '/img/img_default.jpg';
 if (!is_null($model->newsImage)) {
     $url = $model->newsImage->getUrl('square_large', false, true);
@@ -62,12 +66,15 @@ if($model->status != News::NEWS_WORKFLOW_STATUS_VALIDATO) {
     <div class="row">
         <div class="col-md-8 col-xs-12">
             <div class="col-xs-12 header-widget nop">
-                <?= ItemAndCardHeaderWidget::widget([
-                        'model' => $model,
-                        'publicationDateField' => 'data_pubblicazione',
-                        'showPrevalentPartnershipAndTargets' => true,
-                    ]
-                ) ?>
+                <?php if ($showSignature) : ?>
+
+                    <?= ItemAndCardHeaderWidget::widget([
+                            'model' => $model,
+                            'publicationDateField' => 'data_pubblicazione',
+                            'showPrevalentPartnershipAndTargets' => true,
+                        ]
+                    ) ?>
+                <?php endif; ?>
                 <?= ContextMenuWidget::widget([
                     'model' => $model,
                     'actionModify' => "/news/news/update?id=" . $model->id,

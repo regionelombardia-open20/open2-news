@@ -1,5 +1,7 @@
 <?php
 use open20\amos\notificationmanager\AmosNotify;
+use open20\amos\news\AmosNews;
+
 $notifyModule = AmosNotify::instance();
 
 $url = '/img/img_default.jpg';
@@ -7,6 +9,10 @@ if (!is_null($model->newsImage)) {
     $url = $model->newsImage->getWebUrl('square_large', false, true);
 }
 $url =  Yii::$app->urlManager->createAbsoluteUrl($url);
+
+$moduleNews = AmosNews::instance();
+$showSignature =$moduleNews->showSignature;
+
 ?>
 <tr>
     <td colspan="2" style="padding-bottom:10px;">
@@ -29,15 +35,17 @@ $url =  Yii::$app->urlManager->createAbsoluteUrl($url);
                 <td colspan="2" style="padding:0 0 10px 0; border-bottom:1px solid #D8D8D8;">
                     <table width="100%">
                         <tr>
-                            <td width="400" style="text-align:left;">
-                                <table width="100%">
-                                    <tr>
-                                        <?= \open20\amos\notificationmanager\widgets\ItemAndCardWidgetEmailSummaryWidget::widget([
-                                            'model' => $model,
-                                        ]); ?>
-                                    </tr>
-                                </table>
-                            </td>
+                            <?php if($showSignature): ?>
+                                <td width="400" style="text-align:left;">
+                                    <table width="100%">
+                                        <tr>
+                                            <?= \open20\amos\notificationmanager\widgets\ItemAndCardWidgetEmailSummaryWidget::widget([
+                                                'model' => $model,
+                                            ]); ?>
+                                        </tr>
+                                    </table>
+                                </td>
+                            <?php endif; ?>
                             <td align="right" width="85" valign="bottom" style="text-align: center; padding-left: 10px;">
                                 <a href="<?=  Yii::$app->urlManager->createAbsoluteUrl($model->getFullViewUrl())?>"
                                    style="background:___network_color1___;

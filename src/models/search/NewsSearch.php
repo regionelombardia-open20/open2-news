@@ -10,27 +10,35 @@
 
 namespace open20\amos\news\models\search;
 
+use open20\amos\core\helpers\StringHelper;
 use open20\amos\core\interfaces\CmsModelInterface;
 use open20\amos\core\interfaces\ContentModelSearchInterface;
 use open20\amos\core\interfaces\SearchModelInterface;
 use open20\amos\core\record\CmsField;
 use open20\amos\cwh\models\CwhConfig;
+use open20\amos\cwh\models\CwhConfigContents;
+use open20\amos\cwh\models\CwhRegolePubblicazione;
 use open20\amos\news\models\News;
 use open20\amos\news\AmosNews;
 use open20\amos\tag\models\EntitysTagsMm;
+use kartik\datecontrol\DateControl;
 use Yii;
 use yii\data\ActiveDataProvider;
+use yii\db\ActiveQuery;
+use yii\db\Expression;
 use yii\db\ExpressionInterface;
 use yii\di\Container;
+use open20\amos\core\interfaces\TagContentsModelSearchInterface;
 
 /**
  * NewsSearch represents the model behind the search form about `open20\amos\news\models\News`.
  */
-class NewsSearch extends News implements SearchModelInterface, ContentModelSearchInterface, CmsModelInterface
+class NewsSearch extends News implements SearchModelInterface, ContentModelSearchInterface, CmsModelInterface, TagContentsModelSearchInterface
 {
     /** @var  Container $container - used by ContentModel do not remove */
-    private
-        $container;
+    private $container;
+
+    public $keyword;
 
     /**
      * @inheritdoc
@@ -54,8 +62,9 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
         return [
             [['id', 'primo_piano', 'hits', 'abilita_pubblicazione', 'news_categorie_id', 'created_by', 'updated_by', 'deleted_by',
                 'version'], 'integer'],
+            ['keyword', 'string'],
             [['titolo', 'sottotitolo', 'descrizione_breve', 'descrizione', 'metakey', 'metadesc', 'data_pubblicazione', 'data_rimozione',
-                'created_at', 'updated_at', 'deleted_at'], 'safe'],
+                'created_at', 'updated_at', 'deleted_at', 'period', 'data_pubblicazione_from', 'data_pubblicazione_to'], 'safe'],
         ];
     }
 
@@ -120,6 +129,24 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
             'metakey',
             'metadesc',
         ];
+    }
+
+
+    /**
+     * ContentModel method to add custom search filters.
+     * @param ActiveQuery $query
+     * @return void
+     */
+    public function getSearchQuery($query)
+    {
+        if (!empty($this->period)) {
+            if ($this->period == 'custom') {
+                $query->andFilterWhere(['>=', 'data_pubblicazione', $this->data_pubblicazione_from]);
+                $query->andFilterWhere(['<=', 'data_pubblicazione', $this->data_pubblicazione_to]);
+            } else {
+                $this->searchSelectPeriodFilter($query);
+            }
+        }
     }
 
     /**
@@ -200,6 +227,26 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
     public function searchOwnInterest($params, $limit = null)
     {
         return $this->search($params, "own-interest", $limit, false, 9);
+    }
+
+    /**
+     * @param $params
+     * @param $limit
+     * @return ActiveDataProvider
+     */
+    public function searchClone($params, $limit = null)
+    {
+        $dataProvider = $this->searchAdminAll($params, $limit);
+        $cwhConfigContents = CwhConfigContents::findOne(['classname' => $this->modelClassName]);
+        if ($cwhConfigContents) {
+            $dataProvider->query->innerJoin('cwh_pubblicazioni', 'cwh_pubblicazioni.content_id = news.id');
+            $dataProvider->query->andWhere(['cwh_pubblicazioni.cwh_config_contents_id' => $cwhConfigContents->id]);
+            $dataProvider->query->andWhere(['cwh_pubblicazioni.cwh_regole_pubblicazione_id' => CwhRegolePubblicazione::ALL_USERS]);
+        }
+        $dataProvider->query->andWhere(['news.status' => News::NEWS_WORKFLOW_STATUS_VALIDATO]);
+
+
+        return $dataProvider;
     }
 
     /**
@@ -395,6 +442,10 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
     }
 
 
+    public function cmsSearchAllInEvidenza($params, $limit = null)
+    {
+        return $this->cmsSearch($params, $limit, 'all_in_evidenza');
+    }
 
     /**
      * Search method useful to retrieve news to show in frontend (with cms)
@@ -407,7 +458,6 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
     {
         $params = array_merge($params, Yii::$app->request->get());
         $this->load($params);
-
         if ($type == 'in_evidenza') {
             $query = $this->highlightedAndHomepageNewsQuery($params);
         } else {
@@ -415,6 +465,7 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
         }
 
         $this->applySearchFilters($query);
+        $this->applyExtraFilterSearch($query);
 
         if (!empty($params["conditionSearch"])) {
             $commands = explode(";", $params["conditionSearch"]);
@@ -430,14 +481,28 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
             }
         }
 
+        if ($type == 'all_in_evidenza') {
+            $query->orderBy(new Expression("in_evidenza DESC, data_pubblicazione DESC"));
+            $defaultOrder = [
+                'in_evidenza' => SORT_DESC,
+                'data_pubblicazione' => SORT_DESC,
+                'created_at' => SORT_DESC,
+            ];
+        }
+        if (isset($params['orderByTitle']) && $params['orderByTitle']) {
+            $query->orderBy('titolo ASC');
+        } else {
+            $defaultOrder = [
+                'data_pubblicazione' => SORT_DESC,
+                'created_at' => SORT_DESC,
+            ];
+        }
+
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
             'key' => 'id',
             'sort' => [
-                'defaultOrder' => [
-                    'data_pubblicazione' => SORT_DESC,
-                    'created_at' => SORT_DESC,
-                ],
+                'defaultOrder' => $defaultOrder
             ],
         ]);
 
@@ -490,7 +555,7 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
     }
 
     /**
-     * 
+     *
      */
     public function cmsSearchOwnInterestEvidenza($params, $limit = null)
     {
@@ -987,12 +1052,28 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
     }
 
     /**
+     * @param $query
+     * @return void
+     */
+    public function applyExtraFilterSearch($query)
+    {
+        if (!empty($this->keyword)) {
+            $query->andWhere(['OR',
+                ['LIKE', 'titolo', $this->keyword],
+                ['LIKE', 'descrizione', $this->keyword],
+                ['LIKE', 'sottotitolo', $this->keyword],
+                ['LIKE', 'descrizione_breve', $this->keyword],
+            ]);
+        }
+    }
+
+    /**
      * @param $params
      * @param $queryType
      * @param $limit
      * @param $onlyDrafts
      * @param $pageSize
-     * 
+     *
      * return ActiveQuery
      */
     public function search($params, $queryType = null, $limit = null, $onlyDrafts = false, $pageSize = null)
@@ -1002,10 +1083,75 @@ class NewsSearch extends News implements SearchModelInterface, ContentModelSearc
         if (isset($params[$baseName]['status'])) {
             $activeRecord->query->andFilterWhere([
                 static::tableName()
-                    . '.status' => $params[$baseName]['status']
-                ]);
+                . '.status' => $params[$baseName]['status']
+            ]);
         }
         return $activeRecord;
+    }
+
+    /**
+     * @param ActiveQuery $query
+     * @return ActiveQuery
+     */
+    public function searchSelectPeriodFilter($query)
+    {
+        $period = $this->period;
+        $from = self::getMapSearchFromTime($period);
+        $to = strtotime('now');
+
+        if ($this->newsModule->dateFormatNews == DateControl::FORMAT_DATE) {
+            $dateFrom = date('Y-m-d', $from);
+            $dateTo = date('Y-m-d', $to);
+        } else if ($this->newsModule->dateFormatNews == DateControl::FORMAT_DATETIME) {
+            $dateFrom = date('Y-m-d H:i:s', $from);
+            $dateTo = date('Y-m-d H:i:s', $to);
+        }
+
+        if (!empty($dateFrom)) {
+            $query->andWhere(['>=', 'data_pubblicazione', $dateFrom]);
+        }
+        if (!empty($dateTo)) {
+            $query->andWhere(['<=', 'data_pubblicazione', $dateTo]);
+        }
+
+        return $query;
+    }
+
+    /**
+     * Get data_pubblicazione_from based on period
+     * @param $period
+     * @return int
+     */
+    public static function getMapSearchFromTime($period)
+    {
+        switch ($period) {
+            case 'week':
+                $from = strtotime('-1 week');
+                break;
+            case 'month':
+                $from = strtotime('-1 month');
+                break;
+            case '3months':
+                $from = strtotime('-3 months');
+                break;
+            case 'year':
+                $from = strtotime('-1 year');
+                break;
+        }
+        return $from;
+    }
+
+    /**
+     * @param $params array
+     * @param int|null $limit
+     * @return ActiveDataProvider
+     */
+    public function searchTagContents($params, $limit = null)
+    {
+        if ($params['isActionIndex']) {
+            $limit = 3;
+        }
+        return $this->searchAll($params, $limit);
     }
 
 }

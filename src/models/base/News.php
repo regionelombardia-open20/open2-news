@@ -15,6 +15,7 @@ use amos\sitemanagement\models\SiteManagementSlider;
 use open20\amos\admin\models\base\UserProfile;
 use open20\amos\core\module\AmosModule;
 use open20\amos\core\record\ContentModel;
+use open20\amos\core\validators\StringHtmlValidator;
 use open20\amos\documenti\models\Documenti;
 use open20\amos\news\AmosNews;
 use open20\amos\news\models\NewsAgidPersonMm;
@@ -64,6 +65,8 @@ use yii\helpers\ArrayHelper;
  * @property integer $news_content_type_id
  * @property integer $news_groups_id
  * @property array $newsRelatedEventMmAttribute
+ * @property string $place_id
+ * @property string $alt
  *
  * @property \open20\amos\news\models\NewsCategorie $newsCategorie
  * @property \open20\amos\upload\models\FilemanagerMediafile $immagineNews
@@ -72,6 +75,9 @@ use yii\helpers\ArrayHelper;
  */
 abstract class News extends ContentModel
 {
+    // Default period for map search
+    const DEFAULT_PERIOD_MAP_SEARCH = 'month';
+
      // Workflow ID
     const NEWS_WORKFLOW = 'NewsWorkflow';
     
@@ -135,11 +141,13 @@ abstract class News extends ContentModel
         $rules = ArrayHelper::merge(
             parent::rules(),
             [
-                [['descrizione', 'metakey', 'metadesc'], 'string'],
+                [['descrizione', 'metakey', 'metadesc', 'place_id'], 'string'],
                 [['primo_piano', 'immagine', 'hits', 'abilita_pubblicazione', 'in_evidenza', 'news_categorie_id', 'created_by', 'updated_by', 'deleted_by', 'version', 'comments_enabled', 'news_groups_id'], 'integer'],
                 [['slug', 'data_pubblicazione', 'data_rimozione', 'created_at', 'updated_at', 'deleted_at', 'status', 'comments_enabled'], 'safe'],
                 [['titolo', 'sottotitolo'], 'string', 'max' => 100],
                 [['descrizione_breve'], 'string', 'max' => 250],
+                [['descrizione'], StringHtmlValidator::className()],
+                [['alt'], 'string', 'max' => 100]
             ]
         );
 
@@ -270,6 +278,7 @@ abstract class News extends ContentModel
                 'news_categorie_id' => AmosNews::t('amosnews', 'Categoria'),
                 'status' => AmosNews::t('amosnews', 'Stato'),
                 'comments_enabled' => AmosNews::t('amosnews', '#comments_enabled'),
+                'place_id' => AmosNews::t('amosnews', 'Punto di interesse'),
                 'created_at' => AmosNews::t('amosnews', 'Creato il'),
                 'updated_at' => AmosNews::t('amosnews', 'Aggiornato il'),
                 'deleted_at' => AmosNews::t('amosnews', 'Cancellato il'),
@@ -290,6 +299,7 @@ abstract class News extends ContentModel
                 'video_site_management_slider_id' => AmosNews::t('project_cards', 'video_site_management_slider_id'),
                 'image_site_management_slider_id' => AmosNews::t('project_cards', 'image_site_management_slider_id'),
                 'request_publish_on_hp' => AmosNews::t('amosnews', '#placeholder_for_choose_to_publish_on_hp'),
+                'alt' => AmosNews::t('amosnews', 'Alt'),
             ]
         );
     }

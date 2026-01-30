@@ -24,7 +24,7 @@ return [
         //active the order
         'orderParams' => [
             'news' => [
-                'enable' => false,
+                'enable' => true,
                 'fields' => [
                     'titolo',
                     'data_pubblicazione'
@@ -33,7 +33,12 @@ return [
                 'order_type' => SORT_DESC
             ]
         ],
-
+        //active map search
+        'mapParams' => [
+            'news' => [
+                'enable' => true,
+            ]
+        ],
         //active the introduction
         'introductionParams' => [
             'news' => [
