@@ -1,5 +1,6 @@
 {
     "name": "open20/amos-news",
+    "license": "GPL-3.0-or-later",
     "description": "Sistema AMOS per le news",
     "keywords": ["amos", "yii2", "news"],
     "homepage": "http://www.open20.it/",
